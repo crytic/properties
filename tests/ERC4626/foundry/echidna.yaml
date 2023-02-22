@@ -1,0 +1,5 @@
+coverage: true 
+corpusDir: "corpus"
+testMode: assertion
+testLimit: 10000
+codeSize: 0xffffff

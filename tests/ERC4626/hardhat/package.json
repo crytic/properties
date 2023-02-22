@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "hardhat": "^2.12.4",
+    "solmate": "^6.6.1",
+    "@crytic/properties": "file:../../.."
+  },
+  "scripts": {
+    "echidna4626": "echidna-test . --contract Echidna4626Harness --config ./echidna.yaml"
+  }
+}

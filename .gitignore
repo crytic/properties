@@ -1,0 +1,43 @@
+# Cache
+**/.cache
+**/cache
+**/.config
+**/.git
+**/.node-gyp
+**/.npm
+**/crytic-compile
+**/crytic-export
+**/corpus
+
+# Local storage
+**/*.local
+.env
+
+# Compiled output
+.flags
+artifacts/
+build/
+dist/
+node_modules/
+corpus/
+**/out
+*corpus*
+
+# IDEs and editors
+*.launch
+*.sublime-workspace
+*.sw[opq]
+.c9/
+.classpath
+.idea
+.project
+.pki
+.settings/
+.vscode
+
+# Logs
+*.log*
+
+# OS
+.bash_history
+.DS_Store

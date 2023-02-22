@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "hardhat": "^2.12.4"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.0",
+    "@crytic/properties": "file:../../.."
+  }
+}
