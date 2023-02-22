@@ -5,12 +5,15 @@
 [submodule "lib/solmate"]
 	path = lib/solmate
 	url = https://github.com/transmissions11/solmate
+        tag = v6
 [submodule "lib/ERC4626"]
 	path = lib/ERC4626
 	url = https://github.com/fubuloubu/ERC4626
+	branch = main
 [submodule "contracts/Math/ABDKMath64x64/abdk-libraries-solidity"]
 	path = contracts/Math/ABDKMath64x64/abdk-libraries-solidity
 	url = https://github.com/abdk-consulting/abdk-libraries-solidity.git
+	tag = v3.2
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
