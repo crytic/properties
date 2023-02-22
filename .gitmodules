@@ -10,7 +10,7 @@
 	url = https://github.com/fubuloubu/ERC4626
 [submodule "contracts/Math/ABDKMath64x64/abdk-libraries-solidity"]
 	path = contracts/Math/ABDKMath64x64/abdk-libraries-solidity
-	url = git@github.com:abdk-consulting/abdk-libraries-solidity.git
+	url = https://github.com/abdk-consulting/abdk-libraries-solidity.git
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
