@@ -199,7 +199,7 @@ If you are using Hardhat:
     // change to your vault implementation
     import "./Basic4626Impl.sol";
 
-    contract Crytic4626Harness is CryticERC4626PropertyTests {
+    contract CryticERC4626Harness is CryticERC4626PropertyTests {
         constructor () {
             TestERC20Token _asset = new TestERC20Token("Test Token", "TT", 18);
             Basic4626Impl _vault = new Basic4626Impl(_asset);
