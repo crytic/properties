@@ -14,6 +14,7 @@
     - [Clamping](#clamping)
 - [HEVM cheat codes support](#hevm-cheat-codes-support)
   - [Usage example](#usage-example)
+- [How to contribute to this repo?](#how-to-contribute-to-this-repo)
 
 
 # Properties
@@ -416,3 +417,6 @@ contract TestProperties {
 }
 
 ```
+
+# How to contribute to this repo?
+Contributions are welcome! You can read more about the contribution guidelines and directory structure in the [CONTRIBUTING.md](CONTRIBUTING.md) file. 
