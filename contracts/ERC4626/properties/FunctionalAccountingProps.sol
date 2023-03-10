@@ -16,9 +16,7 @@ contract CryticERC4626FunctionalAccounting is CryticERC4626PropertyBase {
         (, uint256 receiverSharesBeforeDeposit) = measureAddressHoldings(receiver, "receiver", "before deposit");
 
         uint256 sharesExpected = vault.previewDeposit(tokens);
-        uint256 sharesMinted;
-        try vault.deposit(tokens,receiver) returns (uint256 sharesMinted2) {sharesMinted = sharesMinted2;} catch {assert(false);}
-        //uint256 sharesMinted = vault.deposit(tokens, receiver);
+        uint256 sharesMinted = vault.deposit(tokens, receiver);
         assertGte(sharesMinted, sharesExpected, "deposit() must always mint greater than or equal to the shares predicted by previewDeposit()");
 
         (uint256 senderAssetsAfterDeposit,) = measureAddressHoldings(sender, "sender", "after deposit");
