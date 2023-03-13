@@ -9,7 +9,7 @@ These properties are designed to be verified using Echidna, and _do not_ use Har
 Learn more:
 - [crytic/properties](https://github.com/crytic/properties)
 - [Echidna Fuzzer](https://github.com/crytic/echidna)
-- [Echidna tutorials](https://github.com/crytic/building-secure-contracts/tree/master/program-analysis/echidna)
+- [Echidna tutorials](https://secure-contracts.com/program-analysis/echidna/index.html)
 
 ## Requirements
 

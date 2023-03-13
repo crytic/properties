@@ -54,7 +54,7 @@ To test an ERC20 token, follow these steps:
 You can see the output for a [compliant token](#example-output-for-a-compliant-token), and [non compliant token](#example-output-for-a-non-compliant-token).
 
 #### Integration
-Decide if you want to do internal or external testing. Both approaches have advantanges and disadvantages, you can check more information about them [here](https://github.com/crytic/building-secure-contracts/blob/master/program-analysis/echidna/basic/common-testing-approaches.md). 
+Decide if you want to do internal or external testing. Both approaches have advantanges and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html). 
 
 For internal testing, create a new Solidity file containing the `CryticERC20InternalHarness` contract. `USER1`, `USER2` and `USER3` constants are initialized by default in `PropertiesConstants` contract to be the addresses from where echidna sends transactions, and `INITIAL_BALANCE` is by default `1000e18`:
 ```Solidity
@@ -276,7 +276,7 @@ Run the test suite using `echidna-test . --contract CryticABDKMath64x64Harness -
 
 ## Additional resources
 
-- [Building secure contracts](https://github.com/crytic/building-secure-contracts/tree/master/program-analysis "Building secure contracts")
+- [Building secure contracts](https://secure-contracts.com/program-analysis/index.html)
 - Our [EmpireSlacking](https://empireslacking.herokuapp.com/) slack server, channel #ethereum
 - Watch our [fuzzing workshop](https://www.youtube.com/watch?v=QofNQxW_K08&list=PLciHOL_J7Iwqdja9UH4ZzE8dP1IxtsBXI)
 
