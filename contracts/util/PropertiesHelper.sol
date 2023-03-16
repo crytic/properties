@@ -153,16 +153,32 @@ abstract contract PropertiesAsserts {
     }
 
     /// @notice Clamps value to be between low and high, both inclusive
-    function clampBetween(uint256 value, uint256 low, uint256 high) internal pure returns (uint256) {
-        return low + (value % (high - low + 1));
+    function clampBetween(uint256 value, uint256 low, uint256 high) internal returns (uint256) {
+        if(value < low || value > high) {
+            uint ans = low + (value % (high - low + 1));
+            string memory valueStr = PropertiesLibString.toString(value);
+            string memory ansStr = PropertiesLibString.toString(ans);
+            bytes memory message = abi.encodePacked("Clamping value ", valueStr, " to ", ansStr);
+            emit LogString(string(message));
+            return ans;
+        }
+        return value;
     }
 
     /// @notice int256 version of clampBetween
-    function clampBetween(int256 value, int256 low, int256 high) internal pure returns (int256) {
-        int range = high - low + 1;
-        int clamped = (value - low) % (range);
-        if (clamped < 0) clamped += range;
-        return low + clamped;
+    function clampBetween(int256 value, int256 low, int256 high) internal returns (int256) {
+        if(value < low || value > high) {
+            int range = high - low + 1;
+            int clamped = (value - low) % (range);
+            if (clamped < 0) clamped += range;
+            int ans = low + clamped;
+            string memory valueStr = PropertiesLibString.toString(value);
+            string memory ansStr = PropertiesLibString.toString(ans);
+            bytes memory message = abi.encodePacked("Clamping value ", valueStr, " to ", ansStr);
+            emit LogString(string(message));
+            return ans;
+        }
+        return value;
     }
 
     /// @notice clamps a to be less than b
