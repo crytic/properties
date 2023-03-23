@@ -80,7 +80,7 @@ In the `CryticERC20ExternalHarness` contract you can specify which properties to
 ```Solidity
 pragma solidity ^0.8.0;
 import "./MyToken.sol";
-import {ICryticTokenMock} from "@crytic/properties/contracts/ERC20/external/util/ITokenMock.sol";
+import {ITokenMock} from "@crytic/properties/contracts/ERC20/external/util/ITokenMock.sol";
 import {CryticERC20ExternalBasicProperties} from "@crytic/properties/contracts/ERC20/external/properties/ERC20ExternalBasicProperties.sol";
 import {PropertiesConstants} from "@crytic/properties/contracts/util/PropertiesConstants.sol";
 
@@ -88,7 +88,7 @@ import {PropertiesConstants} from "@crytic/properties/contracts/util/PropertiesC
 contract CryticERC20ExternalHarness is CryticERC20ExternalBasicProperties {   
     constructor() {
         // Deploy ERC20
-        token = ICryticTokenMock(address(new CryticTokenMock()));
+        token = ITokenMock(address(new CryticTokenMock()));
     }
 }
 
