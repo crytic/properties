@@ -17,7 +17,6 @@
 - [Trophies](#trophies)
 - [How to contribute to this repo?](#how-to-contribute-to-this-repo)
 
-
 # Properties
 
 This repository contains 168 code properties for:
@@ -27,6 +26,7 @@ This repository contains 168 code properties for:
 - [ABDKMath64x64](https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.md) fixed-point library invariants ([106 properties](PROPERTIES.md#abdkmath64x64)).
 
 The goals of these properties are to:
+
 - Detect vulnerabilities
 - Ensure adherence to relevant standards
 - Provide educational guidance for writing invariants
@@ -37,8 +37,9 @@ The properties can be used through unit tests or through fuzzing with [Echidna](
 
 1. Install [Echidna](https://github.com/crytic/echidna#installation).
 2. Import the properties into to your project:
-    - In case of using Hardhat, use: `npm install https://github.com/crytic/properties.git` or `yarn add https://github.com/crytic/properties.git`
-    - In case of using Foundry, use: `forge install crytic/properties`
+
+   - In case of using Hardhat, use: `npm install https://github.com/crytic/properties.git` or `yarn add https://github.com/crytic/properties.git`
+   - In case of using Foundry, use: `forge install crytic/properties`
 
 3. According to tests required, go the the specific sections:
    - [ERC20 tests](#erc20-tests)
@@ -48,6 +49,7 @@ The properties can be used through unit tests or through fuzzing with [Echidna](
 ### ERC20 tests
 
 To test an ERC20 token, follow these steps:
+
 1. [Integration](#integration)
 2. [Configuration](#configuration)
 3. [Run](#run)
@@ -55,9 +57,11 @@ To test an ERC20 token, follow these steps:
 You can see the output for a [compliant token](#example-output-for-a-compliant-token), and [non compliant token](#example-output-for-a-non-compliant-token).
 
 #### Integration
-Decide if you want to do internal or external testing. Both approaches have advantanges and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html). 
+
+Decide if you want to do internal or external testing. Both approaches have advantanges and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html).
 
 For internal testing, create a new Solidity file containing the `CryticERC20InternalHarness` contract. `USER1`, `USER2` and `USER3` constants are initialized by default in `PropertiesConstants` contract to be the addresses from where echidna sends transactions, and `INITIAL_BALANCE` is by default `1000e18`:
+
 ```Solidity
 pragma solidity ^0.8.0;
 import "@crytic/properties/contracts/ERC20/internal/properties/ERC20BasicProperties.sol";
@@ -86,7 +90,7 @@ import {CryticERC20ExternalBasicProperties} from "@crytic/properties/contracts/E
 import {PropertiesConstants} from "@crytic/properties/contracts/util/PropertiesConstants.sol";
 
 
-contract CryticERC20ExternalHarness is CryticERC20ExternalBasicProperties {   
+contract CryticERC20ExternalHarness is CryticERC20ExternalBasicProperties {
     constructor() {
         // Deploy ERC20
         token = ITokenMock(address(new CryticTokenMock()));
@@ -110,6 +114,7 @@ contract CryticTokenMock is MyToken, PropertiesConstants {
 ```
 
 #### Configuration
+
 Create the following Echidna config file
 
 ```yaml
@@ -128,21 +133,23 @@ multi-abi: true
 
 To perform more than one test, save the files with a descriptive path, to identify what test each file or corpus belongs to. For these examples, we use `tests/crytic/erc20/echidna-internal.yaml` and `tests/crytic/erc20/echidna-external.yaml` for the Echidna tests for ERC20. We recommended to modify the `corpusDir` for external tests accordingly.
 
-The above configuration will start Echidna in assertion mode. Contract will be deployed from address `0x10000`, and transactions will be sent from the owner and two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once Echidna finishes the fuzzing campaign, corpus and coverage results will be available in the `tests/crytic/erc20/echidna-corpus-internal` directory. 
-
+The above configuration will start Echidna in assertion mode. Contract will be deployed from address `0x10000`, and transactions will be sent from the owner and two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once Echidna finishes the fuzzing campaign, corpus and coverage results will be available in the `tests/crytic/erc20/echidna-corpus-internal` directory.
 
 #### Run
-Run Echidna: 
-- For internal testing: `echidna-test . --contract CryticERC20InternalHarness --config tests/crytic/erc20/echidna-internal.yaml` 
-- For external testing: `echidna-test . --contract CryticERC20ExternalHarness --config tests/crytic/erc20/echidna-external.yaml` 
-  
+
+Run Echidna:
+
+- For internal testing: `echidna-test . --contract CryticERC20InternalHarness --config tests/crytic/erc20/echidna-internal.yaml`
+- For external testing: `echidna-test . --contract CryticERC20ExternalHarness --config tests/crytic/erc20/echidna-external.yaml`
+
 Finally, inspect the coverage report in `tests/crytic/erc20/echidna-corpus-internal` or `tests/crytic/erc20/echidna-corpus-external` when it finishes.
 
 #### Example: Output for a compliant token
 
 If the token under test is compliant and no properties will fail during fuzzing, the Echidna output should be similar to the screen below:
+
 ```
-$ echidna-test . --contract CryticERC20InternalHarness --config tests/echidna.config.yaml 
+$ echidna-test . --contract CryticERC20InternalHarness --config tests/echidna.config.yaml
 Loaded total of 23 transactions from corpus/coverage
 Analyzing contract: contracts/ERC20/CryticERC20InternalHarness.sol:CryticERC20InternalHarness
 name():  passed! 🎉
@@ -156,6 +163,7 @@ totalSupply():  passed! 🎉
 #### Example: Output for a non-compliant token
 
 For this example, the ExampleToken's approval function was modified to perform no action:
+
 ```
 function approve(address spender, uint256 amount) public virtual override(ERC20) returns (bool) {
   // do nothing
@@ -164,6 +172,7 @@ function approve(address spender, uint256 amount) public virtual override(ERC20)
 ```
 
 In this case, the Echidna output should be similar to the screen below, notice that all functions that rely on `approve()` to work correctly will have their assertions broken, and will report the situation.
+
 ```
 $ echidna-test . --contract CryticERC20ExternalHarness --config tests/echidna.config.yaml
 Loaded total of 25 transactions from corpus/coverage
@@ -172,7 +181,7 @@ name():  passed! 🎉
 test_ERC20_transferFromAndBurn():  passed! 🎉
 approve(address,uint256):  passed! 🎉
 ...
-test_ERC20_setAllowance(): failed!💥  
+test_ERC20_setAllowance(): failed!💥
   Call sequence:
     test_ERC20_setAllowance()
 
@@ -183,10 +192,10 @@ Event sequence: Panic(1), AssertEqFail("Equal assertion failed. Message: Failed 
 ### ERC4626 Tests
 
 To test an ERC4626 token, follow these steps:
+
 1. [Integration](#integration-1)
 2. [Configuration](#configuration-1)
 3. [Run](#run-1)
-
 
 #### Integration
 
@@ -229,6 +238,7 @@ If you are using Foundry:
 ```
 
 #### Configuration
+
 Create a minimal Echidna config file (e.g. `tests/echidna.config.yaml`)
 
 ```yaml
@@ -240,12 +250,13 @@ sender: ["0x10000"]
 ```
 
 #### Run
+
 Run the test suite using `echidna-test . --contract CryticERC4626Harness --config tests/echidna.config.yaml` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
 
 Example repositories are available for [Hardhat](tests/ERC4626/hardhat) and [Foundry](tests/ERC4626/foundry).
 
 Once things are up and running, consider adding internal testing methods to your Vault ABI to allow testing special edge case properties like rounding. For more info, see the [ERC4626 readme](contracts/ERC4626/README.md#adding-internal-test-methods).
-    
+
 ### ABDKMath64x64 tests
 
 The Solidity smart contract programming language does not have any inbuilt feature for working with decimal numbers, so for contracts dealing with non-integer values, a third party solution is needed. [ABDKMath64x64](https://github.com/abdk-consulting/abdk-libraries-solidity) is a fixed-point arithmetic Solidity library that operates on 64.64-bit numbers.
@@ -255,6 +266,7 @@ A 64.64-bit fixed-point number is a data type that consists of a sign bit, a 63-
 ABDKMath64x64 library implements [19 arithmetic operations](https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.md#simple-arithmetic "19 arithmetic operations") using fixed-point numbers and [6 conversion functions](https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.md#conversions "6 conversion functions") between integer types and fixed-point types.
 
 We provide a number of tests related with fundamental mathematical properties of the floating point numbers. To include these tests into your repository, follow these steps:
+
 1. [Integration](#integration-2)
 2. [Run](#run-2)
 
@@ -272,8 +284,8 @@ contract CryticABDKMath64x64Harness is CryticABDKMath64x64PropertyTests {
 ```
 
 #### Run
-Run the test suite using `echidna-test . --contract CryticABDKMath64x64Harness --seq-len 1 --test-mode assertion --corpus-dir tests/echidna-corpus` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
 
+Run the test suite using `echidna-test . --contract CryticABDKMath64x64Harness --seq-len 1 --test-mode assertion --corpus-dir tests/echidna-corpus` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
 
 ## Additional resources
 
@@ -281,12 +293,12 @@ Run the test suite using `echidna-test . --contract CryticABDKMath64x64Harness -
 - Our [EmpireSlacking](https://empireslacking.herokuapp.com/) slack server, channel #ethereum
 - Watch our [fuzzing workshop](https://www.youtube.com/watch?v=QofNQxW_K08&list=PLciHOL_J7Iwqdja9UH4ZzE8dP1IxtsBXI)
 
-
 # Helper functions
 
 The repository provides a collection of functions and events meant to simplify the debugging and testing of assertions in Echidna. Commonly used functions, such as integer clamping or logging for different types are available in [contracts/util/PropertiesHelper.sol](contracts/util/PropertiesHelper.sol).
 
 Available helpers:
+
 - `LogXxx`: Events that can be used to log values in fuzzing tests. `string`, `uint256` and `address` loggers are provided. In Echidna's assertion mode, when an assertion violation is detected, all events emitted in the call sequence are printed.
 - `assertXxx`: Asserts that a condition is met, logging violations. Assertions for equality, non-equality, greater-than, greater-than-or-equal, less-than and less-than-or-equal comparisons are provided, and user-provided messages are supported for logging.
 - `clampXxx`: Limits an `int256` or `uint256` to a certain range. Clamps for less-than, less-than-or-equal, greater-than, greater-than-or-equal, and range are provided.
@@ -303,25 +315,22 @@ pragma solidity ^0.8.0;
 import "@crytic/properties/contracts/util/PropertiesHelper.sol";
 
 contract TestProperties is PropertiesAsserts {
-    
+  // ...
+
+  function test_some_invariant(uint256 someValue) public {
     // ...
 
-    function test_some_invariant(uint256 someValue) public {
-        // ...
-
-        LogUint256("someValue is: ", someValue);
-
-        // ...
-
-        assert(fail);
-
-        // ...
-    }
+    LogUint256("someValue is: ", someValue);
 
     // ...
 
+    assert(fail);
+
+    // ...
+  }
+
+  // ...
 }
-
 ```
 
 ### Assertions
@@ -334,27 +343,23 @@ pragma solidity ^0.8.0;
 import "@crytic/properties/contracts/util/PropertiesHelper.sol";
 
 contract TestProperties is PropertiesAsserts {
-    
+  // ...
+
+  function test_some_invariant(uint256 someValue) public {
     // ...
 
-    function test_some_invariant(uint256 someValue) public {
-        // ...
-
-        assertEq(someValue, 25, "someValue doesn't have the correct value");
-
-        // ...
-    }
+    assertEq(someValue, 25, "someValue doesn't have the correct value");
 
     // ...
+  }
 
+  // ...
 }
-
 ```
 
 In case this assertion fails, for example if `someValue` is 30, the following will be printed in Echidna:
 
 `Invalid: 30!=25, reason: someValue doesn't have the correct value`
-
 
 ### Clamping
 
@@ -366,22 +371,19 @@ pragma solidity ^0.8.0;
 import "@crytic/properties/contracts/util/PropertiesHelper.sol";
 
 contract TestProperties is PropertiesAsserts {
+  int256 constant MAX_VALUE = 2 ** 160;
+  int256 constant MIN_VALUE = -2 ** 24;
 
-    int256 constant MAX_VALUE = 2**160;
-    int256 constant MIN_VALUE = -2**24;
-    
-    // ...
+  // ...
 
-    function test_some_invariant(int256 someValue) public {
-        someValue = clampBetween(someValue, MIN_VALUE, MAX_VALUE);
-
-        // ...
-    }
+  function test_some_invariant(int256 someValue) public {
+    someValue = clampBetween(someValue, MIN_VALUE, MAX_VALUE);
 
     // ...
+  }
 
+  // ...
 }
-
 ```
 
 # HEVM cheat codes support
@@ -400,23 +402,20 @@ pragma solidity ^0.8.0;
 import "@crytic/properties/contracts/util/Hevm.sol";
 
 contract TestProperties {
-    
+  // ...
+
+  function test_some_invariant(uint256 someValue) public {
     // ...
 
-    function test_some_invariant(uint256 someValue) public {
-        // ...
-
-        hevm.prank(newSender);
-        otherContract.someFunction(someValue);  // This call's msg.sender will be newSender
-        otherContract.someFunction(someValue);  // This call's msg.sender will be address(this)
-
-        // ...
-    }
+    hevm.prank(newSender);
+    otherContract.someFunction(someValue); // This call's msg.sender will be newSender
+    otherContract.someFunction(someValue); // This call's msg.sender will be address(this)
 
     // ...
+  }
 
+  // ...
 }
-
 ```
 
 # Trophies
@@ -424,4 +423,5 @@ contract TestProperties {
 A list of security vulnerabilities that were found using the properties can be found on the [trophies page](Trophies.md#properties-trophies).
 
 # How to contribute to this repo?
-Contributions are welcome! You can read more about the contribution guidelines and directory structure in the [CONTRIBUTING.md](CONTRIBUTING.md) file. 
+
+Contributions are welcome! You can read more about the contribution guidelines and directory structure in the [CONTRIBUTING.md](CONTRIBUTING.md) file.

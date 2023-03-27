@@ -33,7 +33,11 @@ contract CryticERC4626VaultProxy is CryticERC4626PropertyBase {
         vault.deposit(assets, receiver);
     }
 
-    function withdraw(uint256 assets, uint256 ownerId, uint256 receiverId) public {
+    function withdraw(
+        uint256 assets,
+        uint256 ownerId,
+        uint256 receiverId
+    ) public {
         address receiver = restrictAddressToThirdParties(receiverId);
         address owner = restrictAddressToThirdParties(ownerId);
         vault.withdraw(assets, receiver, owner);
@@ -44,7 +48,11 @@ contract CryticERC4626VaultProxy is CryticERC4626PropertyBase {
         vault.mint(shares, receiver);
     }
 
-    function redeem(uint256 shares, uint256 ownerId, uint256 receiverId) public {
+    function redeem(
+        uint256 shares,
+        uint256 ownerId,
+        uint256 receiverId
+    ) public {
         address receiver = restrictAddressToThirdParties(receiverId);
         address owner = restrictAddressToThirdParties(ownerId);
         vault.redeem(shares, receiver, owner);

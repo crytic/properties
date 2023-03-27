@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 import "../util/ERC20TestBase.sol";
 
 abstract contract CryticERC20MintableProperties is CryticERC20Base {
-
     constructor() {
         isMintableOrBurnable = true;
     }
@@ -20,7 +19,15 @@ abstract contract CryticERC20MintableProperties is CryticERC20Base {
         uint256 supply = totalSupply();
 
         this.mint(target, amount);
-        assertEq(balanceOf(target), balance_receiver+amount, "Mint failed to update target balance");
-        assertEq(totalSupply(), supply+amount, "Mint failed to update total supply");
+        assertEq(
+            balanceOf(target),
+            balance_receiver + amount,
+            "Mint failed to update target balance"
+        );
+        assertEq(
+            totalSupply(),
+            supply + amount,
+            "Mint failed to update total supply"
+        );
     }
 }

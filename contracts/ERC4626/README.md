@@ -1,4 +1,3 @@
-
 # ERC4626 Echidna Property Tests
 
 - [ERC4626 Echidna Property Tests](#erc4626-echidna-property-tests)
@@ -19,10 +18,12 @@
 ## Consuming
 
 ### Initial setup
+
 To use these properties to test a given vault implementation, see the readme in the project root.
 
 ### Adding internal test methods to a vault
-Some properties of the ERC4626 spec cannot be tested externally because testing them requires interactions between the test suite & functionality that is not defined in the spec. 
+
+Some properties of the ERC4626 spec cannot be tested externally because testing them requires interactions between the test suite & functionality that is not defined in the spec.
 
 To compensate for this limitation, a vault under test may optionally implement a set of methods that allow such properties to be tested. See [IERC4626Internal](util/IERC4626Internal.sol) for the list of methods.
 
@@ -51,32 +52,38 @@ Running tests(used to validate the properties are working correctly):
 
 `echidna-test ./contracts/ERC4626/test/rounding/BadConvertToAssetsRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
+
 - verify_previewRedeemRoundingDirection
 - verify_redeemRoundingDirection
 - verify_convertToAssetsRoundingDirection
 
 `echidna-test ./contracts/ERC4626/test/rounding/BadConvertToSharesRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
+
 - verify_convertToSharesRoundingDirection
 - verify_previewDepositRoundingDirection
 - verify_depositRoundingDirection
 
 `echidna-test ./contracts/ERC4626/test/rounding/BadPreviewMintRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
+
 - verify_previewMintRoundingDirection
 - verify_mintRoundingDirection
 
 `echidna-test ./contracts/ERC4626/test/rounding/BadPreviewWithdrawRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
+
 - verify_previewWithdrawRoundingDirection
 - verify_withdrawRoundingDirection
 
 `echidna-test ./contracts/ERC4626/test/security/BadShareInflation.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
+
 - verify_sharePriceInflationAttack
 
 `echidna-test ./contracts/ERC4626/test/usingApproval/BadAllowanceUpdate.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
+
 - verify_redeemViaApprovalProxy
 - verify_withdrawViaApprovalProxy
 - verify_redeemRequiresTokenApproval
@@ -91,6 +98,7 @@ Run property tests against vanilla solmate:
 ## Properties Tested
 
 ### MustNotRevertProps
+
 - `convertToAssets()` must not revert for reasonable values
 - `convertToShares()` must not revert for reasonable values
 - `asset()` must not revert
@@ -101,6 +109,7 @@ Run property tests against vanilla solmate:
 - `maxWithdraw()` must not revert
 
 ### FunctionalAccountingProps
+
 - `deposit()` must deduct assets from the owner
 - `deposit()` must credit shares to the receiver
 - `deposit()` must mint greater than or equal to the number of shares predicted by `previewDeposit()`
@@ -115,14 +124,16 @@ Run property tests against vanilla solmate:
 - `redeem()` must credit greater than or equal to the number of assets predicted by `previewRedeem()`
 
 ### RedeemUsingApprovalProps
+
 - `withdraw()` must allow proxies to withdraw tokens on behalf of the owner using share token approvals
 - `redeem()` must allow proxies to redeem shares on behalf of the owner using share token approvals
-- Third party `withdraw()` calls must update the msg.sender's allowance 
-- Third party `redeem()` calls must update the msg.sender's allowance 
-- Third parties must not be able to `withdraw()` tokens on an owner's behalf without a token approval 
-- Third parties must not be able to `redeem()` shares on an owner's behalf without a token approval 
-  
+- Third party `withdraw()` calls must update the msg.sender's allowance
+- Third party `redeem()` calls must update the msg.sender's allowance
+- Third parties must not be able to `withdraw()` tokens on an owner's behalf without a token approval
+- Third parties must not be able to `redeem()` shares on an owner's behalf without a token approval
+
 ### SenderIndependentProps
+
 - `maxDeposit()` must assume the receiver/sender has infinite assets
 - `maxMint()` must assume the receiver/sender has infinite assets
 - `previewMint()` must not account for msg.sender asset balance
@@ -131,6 +142,7 @@ Run property tests against vanilla solmate:
 - `previewRedeem()` must not account for msg.sender share balance
 
 ### RoundingProps
+
 - Shares may never be minted for free using:
   - `previewDeposit()`
   - `previewMint()`
@@ -138,19 +150,21 @@ Run property tests against vanilla solmate:
 - Tokens may never be withdrawn for free using:
   - `previewWithdraw()`
   - `previewRedeem()`
-  - `convertToAssets()` 
+  - `convertToAssets()`
 - Shares may never be minted for free using:
   - `deposit()`
-  - `mint()` 
+  - `mint()`
 - Tokens may never be withdrawn for free using:
   - `withdraw()`
   - `redeem()`
 
 ### SecurityProps
-- `decimals()` should be larger than or equal to `asset.decimals()` 
-- Accounting system must not be vulnerable to share price inflation attacks 
+
+- `decimals()` should be larger than or equal to `asset.decimals()`
+- Accounting system must not be vulnerable to share price inflation attacks
 
 ## Properties to consider adding
+
 - deposit/mint must increase totalSupply/totalAssets
 - withdraw/redeem must decrease totalSupply/totalAssets
 - `previewDeposit()` must not account for vault specific/user/global limits
@@ -159,5 +173,6 @@ Run property tests against vanilla solmate:
 - `previewRedeem()` must not account for vault specific/user/global limits
 
 ## Properties that may not be testable
+
 - Note that any unfavorable discrepancy between convertToShares and previewDeposit SHOULD be considered slippage in share price or some other type of condition, meaning the depositor will lose assets by depositing.
 - Whether a given method is inclusive of withdraw/deposit fees

@@ -4,10 +4,10 @@ import "../../util/PropertiesConstants.sol";
 import "./ExampleToken.sol";
 
 contract TokenMock is ExampleToken, PropertiesConstants {
-
     bool public isMintableOrBurnable;
     uint256 public initialSupply;
-    constructor (bool _isMintableOrBurnable) {
+
+    constructor(bool _isMintableOrBurnable) {
         _mint(USER1, INITIAL_BALANCE);
         _mint(USER2, INITIAL_BALANCE);
         _mint(USER3, INITIAL_BALANCE);
@@ -16,5 +16,4 @@ contract TokenMock is ExampleToken, PropertiesConstants {
         initialSupply = totalSupply();
         isMintableOrBurnable = _isMintableOrBurnable;
     }
-
 }

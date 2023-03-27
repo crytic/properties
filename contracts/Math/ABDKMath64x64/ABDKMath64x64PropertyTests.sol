@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 import "./abdk-libraries-solidity/ABDKMath64x64.sol";
 
 contract CryticABDKMath64x64Properties {
-
     /* ================================================================
        64x64 fixed-point constants used for testing specific values.
        This assumes that ABDK library's fromInt(x) works as expected.
@@ -17,7 +16,8 @@ contract CryticABDKMath64x64Properties {
     int128 internal THOUSAND_FP = ABDKMath64x64.fromInt(1000);
     int128 internal MINUS_SIXTY_FOUR_FP = ABDKMath64x64.fromInt(-64);
     int128 internal EPSILON = 1;
-    int128 internal ONE_TENTH_FP = ABDKMath64x64.div(ABDKMath64x64.fromInt(1), ABDKMath64x64.fromInt(10));
+    int128 internal ONE_TENTH_FP =
+        ABDKMath64x64.div(ABDKMath64x64.fromInt(1), ABDKMath64x64.fromInt(10));
 
     /* ================================================================
        Constants used for precision loss calculations
@@ -50,28 +50,40 @@ contract CryticABDKMath64x64Properties {
 
     // These functions allows to compare a and b for equality, discarding
     // the last precision_bits bits.
-    // An absolute value function is implemented inline in order to not use 
+    // An absolute value function is implemented inline in order to not use
     // the implementation from the library under test.
-    function equal_within_precision(int128 a, int128 b, uint256 precision_bits) public pure returns(bool) {
+    function equal_within_precision(
+        int128 a,
+        int128 b,
+        uint256 precision_bits
+    ) public pure returns (bool) {
         int128 max = (a > b) ? a : b;
         int128 min = (a > b) ? b : a;
         int128 r = (max - min) >> precision_bits;
-        
+
         return (r == 0);
     }
 
-    function equal_within_precision_u(uint256 a, uint256 b, uint256 precision_bits) public pure returns(bool) {
+    function equal_within_precision_u(
+        uint256 a,
+        uint256 b,
+        uint256 precision_bits
+    ) public pure returns (bool) {
         uint256 max = (a > b) ? a : b;
         uint256 min = (a > b) ? b : a;
         uint256 r = (max - min) >> precision_bits;
-        
+
         return (r == 0);
     }
 
     // This function determines if the relative error between a and b is less
     // than error_percent % (expressed as a 64x64 value)
     // Uses functions from the library under test!
-    function equal_within_tolerance(int128 a, int128 b, int128 error_percent) public pure returns(bool) {
+    function equal_within_tolerance(
+        int128 a,
+        int128 b,
+        int128 error_percent
+    ) public pure returns (bool) {
         int128 tol_value = abs(mul(a, div(error_percent, fromUInt(100))));
 
         return (abs(sub(b, a)) <= tol_value);
@@ -79,19 +91,25 @@ contract CryticABDKMath64x64Properties {
 
     // Check that there are remaining significant digits after a multiplication
     // Uses functions from the library under test!
-    function significant_digits_lost_in_mult(int128 a, int128 b) public pure returns (bool) {
+    function significant_digits_lost_in_mult(
+        int128 a,
+        int128 b
+    ) public pure returns (bool) {
         int128 x = a >= 0 ? a : -a;
         int128 y = b >= 0 ? b : -b;
 
         int128 lx = toInt(log_2(x));
         int128 ly = toInt(log_2(y));
 
-        return(lx + ly - 1 <= -64);
+        return (lx + ly - 1 <= -64);
     }
 
     // Return how many significant bits will remain after multiplying a and b
     // Uses functions from the library under test!
-    function significant_bits_after_mult(int128 a, int128 b) public pure returns (uint256) {
+    function significant_bits_after_mult(
+        int128 a,
+        int128 b
+    ) public pure returns (uint256) {
         int128 x = a >= 0 ? a : -a;
         int128 y = b >= 0 ? b : -b;
 
@@ -100,37 +118,48 @@ contract CryticABDKMath64x64Properties {
         int256 prec = lx + ly - 1;
 
         if (prec < -64) return 0;
-        else return(64 + uint256(prec));
+        else return (64 + uint256(prec));
     }
 
     // Return the i most significant bits from |n|. If n has less than i significant bits, return |n|
     // Uses functions from the library under test!
-    function most_significant_bits(int128 n, uint256 i) public pure returns (uint256) {
+    function most_significant_bits(
+        int128 n,
+        uint256 i
+    ) public pure returns (uint256) {
         // Create a mask consisting of i bits set to 1
-        uint256 mask = (2**i) - 1;
+        uint256 mask = (2 ** i) - 1;
 
         // Get the position of the MSB set to 1 of n
         uint256 pos = uint64(toInt(log_2(n)) + 64 + 1);
 
         // Get the positive value of n
-        uint256 value = (n>0) ? uint128(n) : uint128(-n);
+        uint256 value = (n > 0) ? uint128(n) : uint128(-n);
 
         // Shift the mask to match the rightmost 1-set bit
-        if(pos > i) { mask <<= (pos - i); }
+        if (pos > i) {
+            mask <<= (pos - i);
+        }
 
         return (value & mask);
     }
 
-    // Returns true if the n most significant bits of a and b are almost equal 
+    // Returns true if the n most significant bits of a and b are almost equal
     // Uses functions from the library under test!
-    function equal_most_significant_bits_within_precision(int128 a, int128 b, uint256 bits) public pure returns (bool) {
+    function equal_most_significant_bits_within_precision(
+        int128 a,
+        int128 b,
+        uint256 bits
+    ) public pure returns (bool) {
         // Get the number of bits in a and b
         // Since log(x) returns in the interval [-64, 63), add 64 to be in the interval [0, 127)
         uint256 a_bits = uint256(int256(toInt(log_2(a)) + 64));
         uint256 b_bits = uint256(int256(toInt(log_2(b)) + 64));
 
         // a and b lengths may differ in 1 bit, so the shift should take into account the longest
-        uint256 shift_bits = (a_bits > b_bits) ? (a_bits - bits) : (b_bits - bits);
+        uint256 shift_bits = (a_bits > b_bits)
+            ? (a_bits - bits)
+            : (b_bits - bits);
 
         // Get the _bits_ most significant bits of a and b
         uint256 a_msb = most_significant_bits(a, bits) >> shift_bits;
@@ -229,12 +258,9 @@ contract CryticABDKMath64x64Properties {
         return ABDKMath64x64.exp(x);
     }
 
-
     /* ================================================================
        Start of tests
        ================================================================ */
-
-
 
     /* ================================================================
 
@@ -288,7 +314,6 @@ contract CryticABDKMath64x64Properties {
             assert(x_y < x);
         }
     }
-
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -352,8 +377,6 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-
-
     /* ================================================================
 
                         TESTS FOR FUNCTION sub()
@@ -381,7 +404,7 @@ contract CryticABDKMath64x64Properties {
     function sub_test_non_commutative(int128 x, int128 y) public pure {
         int128 x_y = sub(x, y);
         int128 y_x = sub(y, x);
-        
+
         assert(x_y == neg(y_x));
     }
 
@@ -402,7 +425,7 @@ contract CryticABDKMath64x64Properties {
 
         int128 x_minus_y_plus_y = add(x_minus_y, y);
         int128 x_plus_y_minus_y = sub(x_plus_y, y);
-        
+
         assert(x_minus_y_plus_y == x_plus_y_minus_y);
         assert(x_minus_y_plus_y == x);
     }
@@ -450,7 +473,7 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-    // Subtracting minus one from the maximum value should revert, 
+    // Subtracting minus one from the maximum value should revert,
     // as it is out of range
     function sub_test_maximum_value_minus_neg_one() public view {
         try this.sub(MAX_64x64, MINUS_ONE_FP) {
@@ -481,8 +504,6 @@ contract CryticABDKMath64x64Properties {
             // Expected behaviour, reverts
         }
     }
-
-
 
     /* ================================================================
 
@@ -516,8 +537,12 @@ contract CryticABDKMath64x64Properties {
         // Failure if all significant digits are lost
         require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
         require(significant_bits_after_mult(y, z) > REQUIRED_SIGNIFICANT_BITS);
-        require(significant_bits_after_mult(x_y, z) > REQUIRED_SIGNIFICANT_BITS);
-        require(significant_bits_after_mult(x, y_z) > REQUIRED_SIGNIFICANT_BITS);
+        require(
+            significant_bits_after_mult(x_y, z) > REQUIRED_SIGNIFICANT_BITS
+        );
+        require(
+            significant_bits_after_mult(x, y_z) > REQUIRED_SIGNIFICANT_BITS
+        );
 
         assert(equal_within_tolerance(xy_z, x_yz, ONE_TENTH_FP));
     }
@@ -534,9 +559,17 @@ contract CryticABDKMath64x64Properties {
         // Failure if all significant digits are lost
         require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
         require(significant_bits_after_mult(x, z) > REQUIRED_SIGNIFICANT_BITS);
-        require(significant_bits_after_mult(x, y_plus_z) > REQUIRED_SIGNIFICANT_BITS);
+        require(
+            significant_bits_after_mult(x, y_plus_z) > REQUIRED_SIGNIFICANT_BITS
+        );
 
-        assert(equal_within_tolerance(add(x_times_y, x_times_z), x_times_y_plus_z, ONE_TENTH_FP));
+        assert(
+            equal_within_tolerance(
+                add(x_times_y, x_times_z),
+                x_times_y_plus_z,
+                ONE_TENTH_FP
+            )
+        );
     }
 
     // Test for identity operation
@@ -572,7 +605,6 @@ contract CryticABDKMath64x64Properties {
             }
         }
     }
-    
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -618,8 +650,6 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-
-
     /* ================================================================
 
                         TESTS FOR FUNCTION div()
@@ -649,7 +679,6 @@ contract CryticABDKMath64x64Properties {
             // The only allowed case to revert is if x == 0
             assert(x == ZERO_FP);
         }
-
     }
 
     // Test for negative divisor
@@ -673,7 +702,7 @@ contract CryticABDKMath64x64Properties {
         assert(ZERO_FP == div_0);
     }
 
-    // Test that the absolute value of the result increases or 
+    // Test that the absolute value of the result increases or
     // decreases depending on the denominator's absolute value
     function div_test_values(int128 x, int128 y) public view {
         require(y != ZERO_FP);
@@ -738,8 +767,6 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-
-
     /* ================================================================
 
                         TESTS FOR FUNCTION neg()
@@ -767,7 +794,6 @@ contract CryticABDKMath64x64Properties {
 
         assert(add(x, neg_x) == ZERO_FP);
     }
-
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -802,8 +828,6 @@ contract CryticABDKMath64x64Properties {
             assert(false);
         }
     }
-
-
 
     /* ================================================================
 
@@ -886,9 +910,7 @@ contract CryticABDKMath64x64Properties {
             // If it doesn't revert, the value must be MAX_64x64
             abs_max = this.abs(MAX_64x64);
             assert(abs_max == MAX_64x64);
-        } catch {
-
-        }
+        } catch {}
     }
 
     // Test the minimum value
@@ -899,12 +921,8 @@ contract CryticABDKMath64x64Properties {
             // If it doesn't revert, the value must be the negative of MIN_64x64
             abs_min = this.abs(MIN_64x64);
             assert(abs_min == neg(MIN_64x64));
-        } catch {
-
-        }
+        } catch {}
     }
-
-
 
     /* ================================================================
 
@@ -912,14 +930,13 @@ contract CryticABDKMath64x64Properties {
 
         ================================================================ */
 
-
     /* ================================================================
        Tests for mathematical properties.
        These should make sure that the implemented function complies
        with math rules and expected behaviour.
        ================================================================ */
 
-    // Test that the inverse of the inverse is close enough to the 
+    // Test that the inverse of the inverse is close enough to the
     // original number
     function inv_test_double_inverse(int128 x) public view {
         require(x != ZERO_FP);
@@ -944,14 +961,21 @@ contract CryticABDKMath64x64Properties {
 
     // Test the anticommutativity of the division
     // x / y == 1 / (y / x)
-    function inv_test_division_noncommutativity(int128 x, int128 y) public view {
+    function inv_test_division_noncommutativity(
+        int128 x,
+        int128 y
+    ) public view {
         require(x != ZERO_FP && y != ZERO_FP);
 
         int128 x_y = div(x, y);
         int128 y_x = div(y, x);
 
-        require(significant_bits_after_mult(x, inv(y)) > REQUIRED_SIGNIFICANT_BITS);
-        require(significant_bits_after_mult(y, inv(x)) > REQUIRED_SIGNIFICANT_BITS);
+        require(
+            significant_bits_after_mult(x, inv(y)) > REQUIRED_SIGNIFICANT_BITS
+        );
+        require(
+            significant_bits_after_mult(y, inv(x)) > REQUIRED_SIGNIFICANT_BITS
+        );
         assert(equal_within_tolerance(x_y, inv(y_x), ONE_TENTH_FP));
     }
 
@@ -963,12 +987,15 @@ contract CryticABDKMath64x64Properties {
         int128 inv_x = inv(x);
         int128 inv_y = inv(y);
         int128 inv_x_times_inv_y = mul(inv_x, inv_y);
-        
+
         int128 x_y = mul(x, y);
         int128 inv_x_y = inv(x_y);
 
         require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
-        require(significant_bits_after_mult(inv_x, inv_y) > REQUIRED_SIGNIFICANT_BITS);
+        require(
+            significant_bits_after_mult(inv_x, inv_y) >
+                REQUIRED_SIGNIFICANT_BITS
+        );
 
         // The maximum loss of precision is given by the formula:
         // 2 * | log_2(x) - log_2(y) | + 1
@@ -985,13 +1012,15 @@ contract CryticABDKMath64x64Properties {
         int128 inv_x = inv(x);
         int128 identity = mul(inv_x, x);
 
-        require(significant_bits_after_mult(x, inv_x) > REQUIRED_SIGNIFICANT_BITS);
+        require(
+            significant_bits_after_mult(x, inv_x) > REQUIRED_SIGNIFICANT_BITS
+        );
 
         // They should agree with a tolerance of one tenth of a percent
         assert(equal_within_tolerance(identity, ONE_FP, ONE_TENTH_FP));
     }
 
-    // Test that the absolute value of the result is in range zero-one 
+    // Test that the absolute value of the result is in range zero-one
     // if x is greater than one, else, the absolute value of the result
     // must be greater than one
     function inv_test_values(int128 x) public view {
@@ -999,7 +1028,7 @@ contract CryticABDKMath64x64Properties {
 
         int128 abs_inv_x = abs(inv(x));
 
-        if(abs(x) >= ONE_FP) {
+        if (abs(x) >= ONE_FP) {
             assert(abs_inv_x <= ONE_FP);
         } else {
             assert(abs_inv_x > ONE_FP);
@@ -1012,7 +1041,7 @@ contract CryticABDKMath64x64Properties {
 
         int128 inv_x = inv(x);
 
-        if(x > ZERO_FP) {
+        if (x > ZERO_FP) {
             assert(inv_x > ZERO_FP);
         } else {
             assert(inv_x < ZERO_FP);
@@ -1030,9 +1059,7 @@ contract CryticABDKMath64x64Properties {
         try this.inv(ZERO_FP) {
             // Unexpected, the function must revert
             assert(false);
-        } catch {
-
-        }
+        } catch {}
     }
 
     // Test the maximum value case, should not revert, and be close to zero
@@ -1061,14 +1088,11 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-
-
     /* ================================================================
 
                         TESTS FOR FUNCTION avg()
 
         ================================================================ */
-
 
     /* ================================================================
         Tests for arithmetic properties.
@@ -1081,7 +1105,7 @@ contract CryticABDKMath64x64Properties {
     function avg_test_values_in_range(int128 x, int128 y) public pure {
         int128 avg_xy = avg(x, y);
 
-        if(x >= y) {
+        if (x >= y) {
             assert(avg_xy >= y && avg_xy <= x);
         } else {
             assert(avg_xy >= x && avg_xy <= y);
@@ -1101,10 +1125,9 @@ contract CryticABDKMath64x64Properties {
     function avg_test_operand_order(int128 x, int128 y) public pure {
         int128 avg_xy = avg(x, y);
         int128 avg_yx = avg(y, x);
-        
+
         assert(avg_xy == avg_yx);
     }
-
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -1114,40 +1137,33 @@ contract CryticABDKMath64x64Properties {
 
     // Test for the maximum value
     function avg_test_maximum() public view {
-        int128 result; 
+        int128 result;
 
         // This may revert due to overflow depending on implementation
         // If it doesn't revert, the result must be MAX_64x64
         try this.avg(MAX_64x64, MAX_64x64) {
             result = this.avg(MAX_64x64, MAX_64x64);
             assert(result == MAX_64x64);
-        } catch {
-
-        }
+        } catch {}
     }
 
     // Test for the minimum value
     function avg_test_minimum() public view {
-        int128 result; 
+        int128 result;
 
         // This may revert due to overflow depending on implementation
         // If it doesn't revert, the result must be MIN_64x64
         try this.avg(MIN_64x64, MIN_64x64) {
             result = this.avg(MIN_64x64, MIN_64x64);
             assert(result == MIN_64x64);
-        } catch {
-            
-        }
+        } catch {}
     }
-
-
 
     /* ================================================================
 
                         TESTS FOR FUNCTION gavg()
 
         ================================================================ */
-
 
     /* ================================================================
        Tests for arithmetic properties.
@@ -1160,10 +1176,10 @@ contract CryticABDKMath64x64Properties {
     function gavg_test_values_in_range(int128 x, int128 y) public view {
         int128 gavg_xy = gavg(x, y);
 
-        if(x == ZERO_FP || y == ZERO_FP) {
+        if (x == ZERO_FP || y == ZERO_FP) {
             assert(gavg_xy == ZERO_FP);
         } else {
-            if(abs(x) >= abs(y)) {
+            if (abs(x) >= abs(y)) {
                 assert(gavg_xy >= abs(y) && gavg_xy <= abs(x));
             } else {
                 assert(gavg_xy >= abs(x) && gavg_xy <= abs(y));
@@ -1184,10 +1200,9 @@ contract CryticABDKMath64x64Properties {
     function gavg_test_operand_order(int128 x, int128 y) public pure {
         int128 gavg_xy = gavg(x, y);
         int128 gavg_yx = gavg(y, x);
-        
+
         assert(gavg_xy == gavg_yx);
     }
-
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -1197,40 +1212,33 @@ contract CryticABDKMath64x64Properties {
 
     // Test for the maximum value
     function gavg_test_maximum() public view {
-        int128 result; 
+        int128 result;
 
         // This may revert due to overflow depending on implementation
         // If it doesn't revert, the result must be MAX_64x64
         try this.gavg(MAX_64x64, MAX_64x64) {
             result = this.gavg(MAX_64x64, MAX_64x64);
             assert(result == MAX_64x64);
-        } catch {
-
-        }
+        } catch {}
     }
 
     // Test for the minimum value
     function gavg_test_minimum() public view {
-        int128 result; 
+        int128 result;
 
         // This may revert due to overflow depending on implementation
         // If it doesn't revert, the result must be MIN_64x64
         try this.gavg(MIN_64x64, MIN_64x64) {
             result = this.gavg(MIN_64x64, MIN_64x64);
             assert(result == MIN_64x64);
-        } catch {
-            
-        }
+        } catch {}
     }
-
-
 
     /* ================================================================
 
                         TESTS FOR FUNCTION pow()
 
         ================================================================ */
-
 
     /* ================================================================
        Tests for arithmetic properties.
@@ -1274,7 +1282,11 @@ contract CryticABDKMath64x64Properties {
 
     // Test for product of powers of the same base
     // x ** a * x ** b == x ** (a + b)
-    function pow_test_product_same_base(int128 x, uint256 a, uint256 b) public view {
+    function pow_test_product_same_base(
+        int128 x,
+        uint256 a,
+        uint256 b
+    ) public view {
         require(x != ZERO_FP);
 
         int128 x_a = pow(x, a);
@@ -1286,7 +1298,11 @@ contract CryticABDKMath64x64Properties {
 
     // Test for power of an exponentiation
     // (x ** a) ** b == x ** (a * b)
-    function pow_test_power_of_an_exponentiation(int128 x, uint256 a, uint256 b) public view {
+    function pow_test_power_of_an_exponentiation(
+        int128 x,
+        uint256 a,
+        uint256 b
+    ) public view {
         require(x != ZERO_FP);
 
         int128 x_a = pow(x, a);
@@ -1298,9 +1314,13 @@ contract CryticABDKMath64x64Properties {
 
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function pow_test_product_same_base(int128 x, int128 y, uint256 a) public view {
+    function pow_test_product_same_base(
+        int128 x,
+        int128 y,
+        uint256 a
+    ) public view {
         require(x != ZERO_FP && y != ZERO_FP);
-        require(a > 2**32); // to avoid massive loss of precision
+        require(a > 2 ** 32); // to avoid massive loss of precision
 
         int128 x_y = mul(x, y);
         int128 xy_a = pow(x_y, a);
@@ -1311,18 +1331,18 @@ contract CryticABDKMath64x64Properties {
         assert(equal_within_precision(mul(x_a, y_a), xy_a, 2));
     }
 
-    // Test for result being greater than or lower than the argument, depending on 
+    // Test for result being greater than or lower than the argument, depending on
     // its absolute value and the value of the exponent
     function pow_test_values(int128 x, uint256 a) public view {
         require(x != ZERO_FP);
 
         int128 x_a = pow(x, a);
 
-        if(abs(x) >= ONE_FP) {
+        if (abs(x) >= ONE_FP) {
             assert(abs(x_a) >= ONE_FP);
         }
 
-        if(abs(x) <= ONE_FP) {
+        if (abs(x) <= ONE_FP) {
             assert(abs(x_a) <= ONE_FP);
         }
     }
@@ -1339,7 +1359,7 @@ contract CryticABDKMath64x64Properties {
         require(x_a != ZERO_FP);
 
         // If the exponent is even
-        if(a % 2 == 0) {
+        if (a % 2 == 0) {
             assert(x_a == abs(x_a));
         } else {
             // x_a preserves x sign
@@ -1350,7 +1370,6 @@ contract CryticABDKMath64x64Properties {
             }
         }
     }
-
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -1372,14 +1391,12 @@ contract CryticABDKMath64x64Properties {
 
     // Test for abs(base) < 1 and high exponent
     function pow_test_high_exponent(int128 x, uint256 a) public view {
-        require(abs(x) < ONE_FP && a > 2**64);
+        require(abs(x) < ONE_FP && a > 2 ** 64);
 
         int128 result = pow(x, a);
 
         assert(result == ZERO_FP);
     }
-
-
 
     /* ================================================================
 
@@ -1402,7 +1419,13 @@ contract CryticABDKMath64x64Properties {
         int128 sqrt_x_squared = mul(sqrt_x, sqrt_x);
 
         // Precision loss is at most half the bits of the operand
-        assert(equal_within_precision(sqrt_x_squared, x,  (toUInt(log_2(x)) >> 1) + 2));
+        assert(
+            equal_within_precision(
+                sqrt_x_squared,
+                x,
+                (toUInt(log_2(x)) >> 1) + 2
+            )
+        );
     }
 
     // Test for the inverse operation
@@ -1414,7 +1437,13 @@ contract CryticABDKMath64x64Properties {
         int128 sqrt_x_squared = pow(sqrt_x, 2);
 
         // Precision loss is at most half the bits of the operand
-        assert(equal_within_precision(sqrt_x_squared, x, (toUInt(log_2(x)) >> 1) + 2));
+        assert(
+            equal_within_precision(
+                sqrt_x_squared,
+                x,
+                (toUInt(log_2(x)) >> 1) + 2
+            )
+        );
     }
 
     // Test for distributive property respect to the multiplication
@@ -1429,7 +1458,10 @@ contract CryticABDKMath64x64Properties {
 
         // Ensure we have enough significant digits for the result to be meaningful
         require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
-        require(significant_bits_after_mult(sqrt_x, sqrt_y) > REQUIRED_SIGNIFICANT_BITS);
+        require(
+            significant_bits_after_mult(sqrt_x, sqrt_y) >
+                REQUIRED_SIGNIFICANT_BITS
+        );
 
         // Allow an error of up to one tenth of a percent
         assert(equal_within_tolerance(sqrt_x_sqrt_y, sqrt_xy, ONE_TENTH_FP));
@@ -1449,7 +1481,7 @@ contract CryticABDKMath64x64Properties {
     // Test for maximum value
     function sqrt_test_maximum() public view {
         try this.sqrt(MAX_64x64) {
-            // Expected behaviour, MAX_64x64 is positive, and operation 
+            // Expected behaviour, MAX_64x64 is positive, and operation
             // should not revert as the result is in range
         } catch {
             // Unexpected, should not revert
@@ -1479,8 +1511,6 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-
-
     /* ================================================================
 
                         TESTS FOR FUNCTION log2()
@@ -1507,7 +1537,7 @@ contract CryticABDKMath64x64Properties {
         require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
 
         // The maximum loss of precision is given by the formula:
-        // | log_2(x) + log_2(y) | 
+        // | log_2(x) + log_2(y) |
         uint256 loss = toUInt(abs(log_2(x) + log_2(y)));
 
         assert(equal_within_precision(log2_x_log2_y, log2_xy, loss));
@@ -1523,7 +1553,6 @@ contract CryticABDKMath64x64Properties {
 
         assert(y_log2_x == toUInt(log2_x_y));
     }
-
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -1567,8 +1596,6 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-
-
     /* ================================================================
 
                         TESTS FOR FUNCTION ln()
@@ -1596,7 +1623,7 @@ contract CryticABDKMath64x64Properties {
         require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
 
         // The maximum loss of precision is given by the formula:
-        // | log_2(x) + log_2(y) | 
+        // | log_2(x) + log_2(y) |
         uint256 loss = toUInt(abs(log_2(x) + log_2(y)));
 
         assert(equal_within_precision(ln_x_ln_y, ln_xy, loss));
@@ -1612,7 +1639,6 @@ contract CryticABDKMath64x64Properties {
 
         assert(y_ln_x == toUInt(ln_x_y));
     }
-
 
     /* ================================================================
        Tests for overflow and edge cases.
@@ -1656,8 +1682,6 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-
-
     /* ================================================================
 
                         TESTS FOR FUNCTION exp2()
@@ -1683,11 +1707,11 @@ contract CryticABDKMath64x64Properties {
     // If y = log_2(x) then exp_2(y) == x
     function exp2_test_inverse(int128 x) public view {
         int128 log2_x = log_2(x);
-        int128 exp2_x = exp_2(log2_x);        
+        int128 exp2_x = exp_2(log2_x);
 
         uint256 bits = 50;
 
-        if(log2_x < ZERO_FP) {
+        if (log2_x < ZERO_FP) {
             bits = uint256(int256(bits) + int256(log2_x));
         }
 
@@ -1719,7 +1743,7 @@ contract CryticABDKMath64x64Properties {
         assert(exp_zero == ONE_FP);
     }
 
-    // Test for maximum value. This should overflow as it won't fit 
+    // Test for maximum value. This should overflow as it won't fit
     // in the data type
     function exp2_test_maximum() public view {
         try this.exp_2(MAX_64x64) {
@@ -1729,7 +1753,7 @@ contract CryticABDKMath64x64Properties {
             // Expected revert
         }
     }
-    
+
     // Test for minimum value. This should return zero since
     // 2 ** -x == 1 / 2 ** x that tends to zero as x increases
     function exp2_test_minimum() public view {
@@ -1744,8 +1768,6 @@ contract CryticABDKMath64x64Properties {
             assert(false);
         }
     }
-
-
 
     /* ================================================================
 
@@ -1768,7 +1790,7 @@ contract CryticABDKMath64x64Properties {
 
         uint256 bits = 48;
 
-        if(log2_x < ZERO_FP) {
+        if (log2_x < ZERO_FP) {
             bits = uint256(int256(bits) + int256(log2_x));
         }
 
@@ -1800,7 +1822,7 @@ contract CryticABDKMath64x64Properties {
         assert(exp_zero == ONE_FP);
     }
 
-    // Test for maximum value. This should overflow as it won't fit 
+    // Test for maximum value. This should overflow as it won't fit
     // in the data type
     function exp_test_maximum() public view {
         try this.exp(MAX_64x64) {
@@ -1810,7 +1832,7 @@ contract CryticABDKMath64x64Properties {
             // Expected revert
         }
     }
-    
+
     // Test for minimum value. This should return zero since
     // e ** -x == 1 / e ** x that tends to zero as x increases
     function exp_test_minimum() public view {
@@ -1825,5 +1847,4 @@ contract CryticABDKMath64x64Properties {
             assert(false);
         }
     }
-
 }

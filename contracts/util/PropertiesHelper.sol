@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 abstract contract PropertiesAsserts {
-    event LogUint256(string,uint256);
+    event LogUint256(string, uint256);
     event LogAddress(string, address);
     event LogString(string);
 
@@ -14,7 +14,7 @@ abstract contract PropertiesAsserts {
     event AssertLtFail(string);
 
     function assertWithMsg(bool b, string memory reason) internal {
-        if(!b){
+        if (!b) {
             emit AssertFail(reason);
             assert(false);
         }
@@ -22,10 +22,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice asserts that a is equal to b. Violations are logged using reason.
     function assertEq(uint256 a, uint256 b, string memory reason) internal {
-        if(a != b){
+        if (a != b) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"!=",bStr,", reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "!=",
+                bStr,
+                ", reason: ",
+                reason
+            );
             emit AssertEqFail(string(assertMsg));
             assert(false);
         }
@@ -33,10 +40,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of assertEq
     function assertEq(int256 a, int256 b, string memory reason) internal {
-        if(a != b){
+        if (a != b) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"!=",bStr,", reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "!=",
+                bStr,
+                ", reason: ",
+                reason
+            );
             emit AssertEqFail(string(assertMsg));
             assert(false);
         }
@@ -44,10 +58,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice asserts that a is not equal to b. Violations are logged using reason.
     function assertNeq(uint256 a, uint256 b, string memory reason) internal {
-        if(a == b){
+        if (a == b) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"==",bStr,", reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "==",
+                bStr,
+                ", reason: ",
+                reason
+            );
             emit AssertNeqFail(string(assertMsg));
             assert(false);
         }
@@ -55,10 +76,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of assertNeq
     function assertNeq(int256 a, int256 b, string memory reason) internal {
-        if(a == b){
+        if (a == b) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"==",bStr,", reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "==",
+                bStr,
+                ", reason: ",
+                reason
+            );
             emit AssertNeqFail(string(assertMsg));
             assert(false);
         }
@@ -66,10 +94,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice asserts that a is greater than or equal to b. Violations are logged using reason.
     function assertGte(uint256 a, uint256 b, string memory reason) internal {
-        if(!(a >= b)) {
+        if (!(a >= b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"<",bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "<",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertGteFail(string(assertMsg));
             assert(false);
         }
@@ -77,10 +112,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of assertGte
     function assertGte(int256 a, int256 b, string memory reason) internal {
-        if(!(a >= b)) {
+        if (!(a >= b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"<",bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "<",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertGteFail(string(assertMsg));
             assert(false);
         }
@@ -88,10 +130,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice asserts that a is greater than b. Violations are logged using reason.
     function assertGt(uint256 a, uint256 b, string memory reason) internal {
-        if(!(a > b)) {
+        if (!(a > b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"<=", bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "<=",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertGtFail(string(assertMsg));
             assert(false);
         }
@@ -99,10 +148,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of assertGt
     function assertGt(int256 a, int256 b, string memory reason) internal {
-        if(!(a > b)) {
+        if (!(a > b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,"<=", bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                "<=",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertGtFail(string(assertMsg));
             assert(false);
         }
@@ -110,10 +166,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice asserts that a is less than or equal to b. Violations are logged using reason.
     function assertLte(uint256 a, uint256 b, string memory reason) internal {
-        if(!(a <= b)) {
+        if (!(a <= b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,">", bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                ">",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertLteFail(string(assertMsg));
             assert(false);
         }
@@ -121,10 +184,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of assertLte
     function assertLte(int256 a, int256 b, string memory reason) internal {
-        if(!(a <= b)) {
+        if (!(a <= b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,">", bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                ">",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertLteFail(string(assertMsg));
             assert(false);
         }
@@ -132,10 +202,17 @@ abstract contract PropertiesAsserts {
 
     /// @notice asserts that a is less than b. Violations are logged using reason.
     function assertLt(uint256 a, uint256 b, string memory reason) internal {
-        if(!(a < b)) {
+        if (!(a < b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,">=",bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                ">=",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertLtFail(string(assertMsg));
             assert(false);
         }
@@ -143,22 +220,38 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of assertLt
     function assertLt(int256 a, int256 b, string memory reason) internal {
-        if(!(a < b)) {
+        if (!(a < b)) {
             string memory aStr = PropertiesLibString.toString(a);
             string memory bStr = PropertiesLibString.toString(b);
-            bytes memory assertMsg = abi.encodePacked("Invalid: ", aStr,">=",bStr," failed, reason: ", reason);
+            bytes memory assertMsg = abi.encodePacked(
+                "Invalid: ",
+                aStr,
+                ">=",
+                bStr,
+                " failed, reason: ",
+                reason
+            );
             emit AssertLtFail(string(assertMsg));
             assert(false);
         }
     }
 
     /// @notice Clamps value to be between low and high, both inclusive
-    function clampBetween(uint256 value, uint256 low, uint256 high) internal returns (uint256) {
-        if(value < low || value > high) {
+    function clampBetween(
+        uint256 value,
+        uint256 low,
+        uint256 high
+    ) internal returns (uint256) {
+        if (value < low || value > high) {
             uint ans = low + (value % (high - low + 1));
             string memory valueStr = PropertiesLibString.toString(value);
             string memory ansStr = PropertiesLibString.toString(ans);
-            bytes memory message = abi.encodePacked("Clamping value ", valueStr, " to ", ansStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                valueStr,
+                " to ",
+                ansStr
+            );
             emit LogString(string(message));
             return ans;
         }
@@ -166,15 +259,24 @@ abstract contract PropertiesAsserts {
     }
 
     /// @notice int256 version of clampBetween
-    function clampBetween(int256 value, int256 low, int256 high) internal returns (int256) {
-        if(value < low || value > high) {
+    function clampBetween(
+        int256 value,
+        int256 low,
+        int256 high
+    ) internal returns (int256) {
+        if (value < low || value > high) {
             int range = high - low + 1;
             int clamped = (value - low) % (range);
             if (clamped < 0) clamped += range;
             int ans = low + clamped;
             string memory valueStr = PropertiesLibString.toString(value);
             string memory ansStr = PropertiesLibString.toString(ans);
-            bytes memory message = abi.encodePacked("Clamping value ", valueStr, " to ", ansStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                valueStr,
+                " to ",
+                ansStr
+            );
             emit LogString(string(message));
             return ans;
         }
@@ -182,13 +284,22 @@ abstract contract PropertiesAsserts {
     }
 
     /// @notice clamps a to be less than b
-    function clampLt(uint256 a, uint256 b) internal returns (uint256){
-        if ( !(a < b)) {
-            assertNeq(b, 0, "clampLt cannot clamp value a to be less than zero. Check your inputs/assumptions.");
+    function clampLt(uint256 a, uint256 b) internal returns (uint256) {
+        if (!(a < b)) {
+            assertNeq(
+                b,
+                0,
+                "clampLt cannot clamp value a to be less than zero. Check your inputs/assumptions."
+            );
             uint256 value = a % b;
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         }
@@ -196,12 +307,17 @@ abstract contract PropertiesAsserts {
     }
 
     /// @notice int256 version of clampLt
-    function clampLt(int256 a, int256 b) internal returns (int256){
-        if ( !(a < b)) {
-            int256 value = b-1;
+    function clampLt(int256 a, int256 b) internal returns (int256) {
+        if (!(a < b)) {
+            int256 value = b - 1;
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         }
@@ -210,11 +326,16 @@ abstract contract PropertiesAsserts {
 
     /// @notice clamps a to be less than or equal to b
     function clampLte(uint256 a, uint256 b) internal returns (uint256) {
-        if(!(a <= b)) {
-            uint256 value = a % (b+1);
+        if (!(a <= b)) {
+            uint256 value = a % (b + 1);
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         }
@@ -223,11 +344,16 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of clampLte
     function clampLte(int256 a, int256 b) internal returns (int256) {
-        if(!(a <= b)) {
+        if (!(a <= b)) {
             int256 value = b;
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         }
@@ -236,12 +362,21 @@ abstract contract PropertiesAsserts {
 
     /// @notice clamps a to be greater than b
     function clampGt(uint256 a, uint256 b) internal returns (uint256) {
-        if(!(a > b)){
-            assertNeq(b, type(uint256).max, "clampGt cannot clamp value a to be larger than uint256.max. Check your inputs/assumptions.");
-            uint256 value = b+1;
+        if (!(a > b)) {
+            assertNeq(
+                b,
+                type(uint256).max,
+                "clampGt cannot clamp value a to be larger than uint256.max. Check your inputs/assumptions."
+            );
+            uint256 value = b + 1;
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         } else {
@@ -251,11 +386,16 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of clampGt
     function clampGt(int256 a, int256 b) internal returns (int256) {
-        if(!(a > b)){
-            int256 value = b+1;
+        if (!(a > b)) {
+            int256 value = b + 1;
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         } else {
@@ -265,11 +405,16 @@ abstract contract PropertiesAsserts {
 
     /// @notice clamps a to be greater than or equal to b
     function clampGte(uint256 a, uint256 b) internal returns (uint256) {
-        if(!(a > b)){
+        if (!(a > b)) {
             uint256 value = b;
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         }
@@ -278,11 +423,16 @@ abstract contract PropertiesAsserts {
 
     /// @notice int256 version of clampGte
     function clampGte(int256 a, int256 b) internal returns (int256) {
-        if(!(a > b)){
+        if (!(a > b)) {
             int256 value = b;
             string memory aStr = PropertiesLibString.toString(a);
             string memory valueStr = PropertiesLibString.toString(value);
-            bytes memory message = abi.encodePacked("Clamping value ", aStr, " to ", valueStr);
+            bytes memory message = abi.encodePacked(
+                "Clamping value ",
+                aStr,
+                " to ",
+                valueStr
+            );
             emit LogString(string(message));
             return value;
         }
@@ -295,12 +445,11 @@ abstract contract PropertiesAsserts {
 /// @author Modified from Solady (https://github.com/Vectorized/solady/blob/main/src/utils/LibString.sol)
 /// @dev Name of the library is modified to prevent collisions with contract-under-test uses of LibString
 library PropertiesLibString {
-
     function toString(int256 value) internal pure returns (string memory str) {
         uint256 absValue = value >= 0 ? uint256(value) : uint256(-value);
         str = toString(absValue);
 
-        if(value < 0) {
+        if (value < 0) {
             str = string(abi.encodePacked("-", str));
         }
     }
@@ -354,14 +503,16 @@ library PropertiesLibString {
         }
     }
 
-    function toString(address value) internal pure returns (string memory str){
+    function toString(address value) internal pure returns (string memory str) {
         bytes memory s = new bytes(40);
         for (uint i = 0; i < 20; i++) {
-            bytes1 b = bytes1(uint8(uint(uint160(value)) / (2**(8*(19 - i)))));
+            bytes1 b = bytes1(
+                uint8(uint(uint160(value)) / (2 ** (8 * (19 - i))))
+            );
             bytes1 hi = bytes1(uint8(b) / 16);
             bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
-            s[2*i] = char(hi);
-            s[2*i+1] = char(lo);            
+            s[2 * i] = char(hi);
+            s[2 * i + 1] = char(lo);
         }
         return string(s);
     }
