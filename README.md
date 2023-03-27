@@ -14,6 +14,7 @@
     - [Clamping](#clamping)
 - [HEVM cheat codes support](#hevm-cheat-codes-support)
   - [Usage example](#usage-example)
+- [Trophies](#trophies)
 - [How to contribute to this repo?](#how-to-contribute-to-this-repo)
 
 
@@ -417,6 +418,10 @@ contract TestProperties {
 }
 
 ```
+
+# Trophies
+
+A list of security vulnerabilities that were found using the properties can be found on the [trophies page](Trophies.md#properties-trophies).
 
 # How to contribute to this repo?
 Contributions are welcome! You can read more about the contribution guidelines and directory structure in the [CONTRIBUTING.md](CONTRIBUTING.md) file. 
