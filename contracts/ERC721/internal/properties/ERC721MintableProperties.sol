@@ -2,12 +2,8 @@ pragma solidity ^0.8.13;
 
 import "../util/ERC721TestBase.sol";
 
-abstract contract CryticERC721MintableProperties is CryticERC721Base {
+abstract contract CryticERC721MintableProperties is CryticERC721TestBase {
     using Address for address;
-
-    constructor() {
-        isMintableOrBurnable = true;
-    }
 
     ////////////////////////////////////////
     // Properties

@@ -1,15 +1,11 @@
 pragma solidity ^0.8.13;
 
-import "../util/ERC721ExternalTestBase.sol";
+import "../util/ERC721TestBase.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
 
-abstract contract CryticERC721BurnableProperties is CryticERC721ExternalTestBase, ERC721Burnable {
+abstract contract CryticERC721BurnableProperties is CryticERC721TestBase, ERC721Burnable {
     using Address for address;
-
-    constructor() {
-        isMintableOrBurnable = true;
-    }
 
     ////////////////////////////////////////
     // Properties
@@ -81,7 +77,8 @@ abstract contract CryticERC721BurnableProperties is CryticERC721ExternalTestBase
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
-        override(ERC721, CryticERC721Base)
+        virtual
+        override(ERC721, CryticERC721TestBase)
     {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
@@ -89,7 +86,8 @@ abstract contract CryticERC721BurnableProperties is CryticERC721ExternalTestBase
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, CryticERC721Base)
+        virtual
+        override(ERC721, CryticERC721TestBase)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

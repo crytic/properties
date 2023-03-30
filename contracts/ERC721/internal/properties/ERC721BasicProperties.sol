@@ -2,11 +2,8 @@ pragma solidity ^0.8.13;
 
 import "../util/ERC721TestBase.sol";
 
-abstract contract CryticERC721BasicProperties is CryticERC721Base {
+abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
     using Address for address;
-
-    constructor() {
-    }
 
     ////////////////////////////////////////
     // Properties
@@ -134,9 +131,10 @@ abstract contract CryticERC721BasicProperties is CryticERC721Base {
         address approved = getApproved(tokenId);
         require(approved == address(this) || isApproved);
         require(!target.isContract());
-
+        require(ownerOf(tokenId) == msg.sender);
+        
         safeTransferFrom(msg.sender, target, tokenId);
-        assertWithMsg(false, "safeTransferFrom does not revert if receiver does not implement ERC721.onERC721Received");
+        assertWithMsg(ownerOf(tokenId) == msg.sender, "safeTransferFrom does not revert if receiver does not implement ERC721.onERC721Received");
     }
 
     // todo test_ERC721_setApprovalForAllWorksAsExpected

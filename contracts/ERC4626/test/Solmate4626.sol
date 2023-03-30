@@ -29,6 +29,6 @@ contract TestHarness is CryticERC4626PropertyTests{
     constructor () {
         TestERC20Token _asset = new TestERC20Token("Test Token", "TT", 18);
         ERC4626 _vault = new Solmate4626(ERC20(address(_asset)));
-        initialize(address(_vault), address(_asset));
+        initialize(address(_vault), address(_asset), false);
     }
 }

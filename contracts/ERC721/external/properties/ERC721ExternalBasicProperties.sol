@@ -75,6 +75,7 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
         assertWithMsg(token.ownerOf(tokenId) == target, "Token owner not updated");
     }
 
+    // transfer from zero address should revert
     function test_ERC721_external_transferFromZeroAddress(address target, uint256 tokenId) public virtual {
         require(target != address(this));
         require(target != msg.sender);
@@ -122,18 +123,15 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
     }
 
     // safeTransferFrom reverts if receiver does not implement the callback
-    function test_ERC721_external_safeTransferFromRevertsOnNoncontractReceiver(address target) public virtual {
+    function test_ERC721_external_safeTransferFromRevertsOnNoncontractReceiver() public virtual {
         uint256 selfBalance = token.balanceOf(msg.sender);
         require(selfBalance > 0); 
-        require(target != address(this));
-        require(target != msg.sender);
         uint tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
         bool isApproved = token.isApprovedForAll(msg.sender, address(this));
         address approved = token.getApproved(tokenId);
         require(approved == address(this) || isApproved);
-        require(!target.isContract());
 
-        token.safeTransferFrom(msg.sender, target, tokenId);
+        token.safeTransferFrom(msg.sender, address(mockUnsafeReceiver), tokenId);
         assertWithMsg(false, "safeTransferFrom does not revert if receiver does not implement ERC721.onERC721Received");
     }
 
