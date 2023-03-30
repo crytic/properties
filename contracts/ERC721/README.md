@@ -41,9 +41,10 @@ Before doing any development, run `forge install` to get dependencies sorted out
 Running tests(used to validate the properties are working correctly):
 
 - Internal:
-`echidna-test ./contracts/ERC721/internal/test/standard/ERC721NonCompliant.sol --contract ERC721NonCompliant --config ./contracts/ERC721/internal/test/echidna.config.yaml`
+`echidna-test ./contracts/ERC721/internal/test/standard/ERC721ShouldRevert.sol --contract TestHarness --config ./contracts/ERC721/internal/test/echidna.config.yaml`
 - External:
 `echidna-test ./contracts/ERC721/external/test/standard/ERC721ShouldRevert.sol --contract TestHarness --config ./contracts/ERC721/external/test/echidna.config.yaml`
+
 Should cause these properties to fail:
 - test_ERC721_external_ownerOfInvalidTokenMustRevert
 - test_ERC721_external_balanceOfZeroAddressMustRevert

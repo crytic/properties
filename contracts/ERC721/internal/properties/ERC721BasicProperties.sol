@@ -30,17 +30,20 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
 
     // transferFrom a token that the caller is not approved for should revert
     function test_ERC721_transferFromNotApproved(address target) public virtual {
-        uint256 selfBalance = balanceOf(msg.sender);
+        uint256 selfBalance = balanceOf(target);
         require(selfBalance > 0);        
         require(target != address(this));
         require(target != msg.sender);
-        uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        bool isApproved = isApprovedForAll(msg.sender, address(this));
+        uint tokenId = tokenOfOwnerByIndex(target, 0);
+        bool isApproved = isApprovedForAll(target, address(this));
         address approved = getApproved(tokenId);
         require(approved != address(this) && !isApproved);
+        require(ownerOf(tokenId) == target);
 
-        transferFrom(msg.sender, target, tokenId);
+        transferFrom(target, msg.sender, tokenId);
+        assertWithMsg(ownerOf(tokenId) == target, "Target");
         assertWithMsg(ownerOf(tokenId) == msg.sender, "Transferred a token without being approved.");
+        
     }
 
     // transferFrom should reset approval for that token
@@ -130,10 +133,9 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         bool isApproved = isApprovedForAll(msg.sender, address(this));
         address approved = getApproved(tokenId);
         require(approved == address(this) || isApproved);
-        require(!target.isContract());
         require(ownerOf(tokenId) == msg.sender);
         
-        safeTransferFrom(msg.sender, target, tokenId);
+        safeTransferFrom(msg.sender, address(unsafeReceiver), tokenId);
         assertWithMsg(ownerOf(tokenId) == msg.sender, "safeTransferFrom does not revert if receiver does not implement ERC721.onERC721Received");
     }
 
