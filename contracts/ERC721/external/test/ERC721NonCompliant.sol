@@ -7,9 +7,12 @@ contract ERC721NonCompliant is ERC721, ERC721Enumerable {
     
     uint256 public counter;
     uint256 public maxSupply;
+    bool public isMintableOrBurnable;
+
 
     constructor() ERC721("OZERC721","OZ") {
         maxSupply = 100;
+        isMintableOrBurnable = true;
     }
 
     function balanceOf(address owner) public view virtual override(ERC721, IERC721) returns (uint256) {
@@ -21,6 +24,18 @@ contract ERC721NonCompliant is ERC721, ERC721Enumerable {
         address owner = _ownerOf(tokenId);
         //require(owner != address(0), "ERC721: invalid token ID");
         return owner;
+    }
+
+    function _customMint(address to, uint256 amount) public virtual {
+        maxSupply += amount;
+
+        for (uint256 i; i < amount; i++) {
+            _mint(to, counter++);
+        }
+    }
+
+    function _customMaxSupply() public virtual view returns (uint256) {
+        return maxSupply;
     }
     
     // The following functions are overrides required by Solidity.
@@ -40,15 +55,5 @@ contract ERC721NonCompliant is ERC721, ERC721Enumerable {
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
-    }
-
-    function _customMint(uint256 amount) public virtual {
-        for (uint256 i; i < amount; i++) {
-            _mint(msg.sender, counter++);
-        }
-    }
-
-    function _customMaxSupply() public virtual view returns (uint256) {
-        return maxSupply;
     }
 }

@@ -26,6 +26,7 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
     // Approving an invalid token should throw
     function test_ERC721_external_approvingInvalidTokenMustRevert() public virtual {
         token.approve(address(0), type(uint256).max);
+        assertWithMsg(false, "Breakpoint");
         assertWithMsg(false, "Approving an invalid token should have reverted");
     }
 

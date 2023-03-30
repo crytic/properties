@@ -7,9 +7,24 @@ contract ERC721Compliant is ERC721, ERC721Enumerable {
     
     uint256 public counter;
     uint256 public maxSupply;
+    bool public isMintableOrBurnable;
 
     constructor() ERC721("OZERC721","OZ") {
         maxSupply = 100;
+        isMintableOrBurnable = true;
+    }
+
+
+    function _customMint(address to, uint256 amount) public virtual {
+        maxSupply += amount;
+        for (uint256 i; i < amount; i++) {
+            _mint(to, counter++);
+        }
+
+    }
+
+    function _customMaxSupply() public virtual view returns (uint256) {
+        return maxSupply;
     }
     
     // The following functions are overrides required by Solidity.

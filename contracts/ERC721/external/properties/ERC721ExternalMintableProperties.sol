@@ -13,28 +13,28 @@ abstract contract CryticERC721ExternalMintableProperties is CryticERC721External
     // mint increases the total supply
     function test_ERC721_external_mintIncreasesSupply(uint256 amount) public virtual {
         require(token.isMintableOrBurnable());
-        uint256 selfBalance = token.balanceOf(msg.sender);
+        require(amount > 0);
+        uint256 selfBalance = token.balanceOf(address(this));
         uint256 oldTotalSupply = token.totalSupply();
-        _customMint(amount);
-        
+        token._customMint(address(this), amount);
+
         assertEq(oldTotalSupply + amount, token.totalSupply(), "Total supply was not correctly increased");
-        assertEq(selfBalance + amount, token.balanceOf(msg.sender), "Receiver supply was not correctly increased");
+        assertEq(selfBalance + amount, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
     }
 
     // mint creates a fresh token
     function test_ERC721_external_mintCreatesFreshToken(uint256 amount) public virtual {
         require(token.isMintableOrBurnable());
-        uint256 selfBalance = token.balanceOf(msg.sender);
+        require(amount > 0);
+        uint256 selfBalance = token.balanceOf(address(this));
         uint256 endIndex = selfBalance + amount;
-        _customMint(amount);
+        token._customMint(address(this), amount);
 
         for(uint256 i = selfBalance; i < endIndex; i++) {
-            uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, i);
-            assertWithMsg(token.ownerOf(tokenId) == msg.sender, "Token ID was not minted to receiver");
+            uint256 tokenId = token.tokenOfOwnerByIndex(address(this), i);
+            assertWithMsg(token.ownerOf(tokenId) == address(this), "Token ID was not minted to receiver");
         }
-        assertEq(selfBalance + amount, token.balanceOf(msg.sender), "Receiver supply was not correctly increased");
-    }
 
-    // Wrappers
-    function _customMint(uint256 amount) internal virtual;
+        assertEq(selfBalance + amount, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
+    }
 }

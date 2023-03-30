@@ -3,10 +3,11 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {CryticERC721ExternalPropertyTests} from "../../ERC721ExternalPropertyTests.sol";
-import {IERC721Mock} from "../../util/IERC721Mock.sol";
+import {IERC721Internal} from "../../../util/IERC721Internal.sol";
 import {MockReceiver} from "../../util/MockReceiver.sol";
 
 contract ERC721ShouldRevert is ERC721, ERC721Enumerable {
+    using Address for address;
     
     uint256 public counter;
     uint256 public maxSupply;
@@ -29,11 +30,42 @@ contract ERC721ShouldRevert is ERC721, ERC721Enumerable {
     }
 
     function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
-        // removed validation
+        if(_exists(tokenId)) {
+            super.approve(to, tokenId);
+        }
 
-        _approve(to, tokenId);
+        // Does not revert if token doesn't exist
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
+        //solhint-disable-next-line max-line-length
+        //require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
+        if (from == address(0)) {
+            _mint(to, tokenId);
+        } else if (getApproved(tokenId) != msg.sender && !isApprovedForAll(from, msg.sender) || to == address(0)) {
+            _burn(tokenId);
+            _mint(to, tokenId);
+        } else {
+            ERC721._transfer(from, to, tokenId);
+        }
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
+        if (to.isContract()) {
+            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, "") returns (bytes4 retval) {
+                if (retval != IERC721Receiver.onERC721Received.selector) {
+                    _transfer(from, to, tokenId);
+                } else {
+                    safeTransferFrom(from, to, tokenId, "");
+                }
+
+            } catch (bytes memory reason) {
+                _transfer(from, to, tokenId);
+            }
+        } else {
+            safeTransferFrom(from, to, tokenId, "");
+        }
         
-
     }
     
     // The following functions are overrides required by Solidity.
@@ -55,9 +87,11 @@ contract ERC721ShouldRevert is ERC721, ERC721Enumerable {
         return ERC721Enumerable.supportsInterface(interfaceId);
     }
 
-    function _customMint(uint256 amount) public virtual {
+    function _customMint(address to, uint256 amount) public virtual {
+        maxSupply += amount;
+
         for (uint256 i; i < amount; i++) {
-            _mint(msg.sender, counter++);
+            _mint(to, counter++);
         }
     }
 
@@ -69,11 +103,9 @@ contract ERC721ShouldRevert is ERC721, ERC721Enumerable {
 contract TestHarness is CryticERC721ExternalPropertyTests {
 
     constructor() {
-        token = IERC721Mock(address(new ERC721ShouldRevert()));
+        token = IERC721Internal(address(new ERC721ShouldRevert()));
         mockSafeReceiver = new MockReceiver(true);
         mockUnsafeReceiver = new MockReceiver(false);
     }
-
-    function _customMint(uint256 amount) internal virtual override {}
 
 }
