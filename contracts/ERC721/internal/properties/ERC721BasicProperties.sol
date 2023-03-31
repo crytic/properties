@@ -1,6 +1,7 @@
 pragma solidity ^0.8.13;
 
 import "../util/ERC721TestBase.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
     using Address for address;

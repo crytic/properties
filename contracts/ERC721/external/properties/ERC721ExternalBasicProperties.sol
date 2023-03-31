@@ -5,9 +5,6 @@ import "../util/ERC721ExternalTestBase.sol";
 abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTestBase {
     using Address for address;
 
-    constructor() {
-    }
-
     ////////////////////////////////////////
     // Properties
 
@@ -26,7 +23,6 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
     // Approving an invalid token should throw
     function test_ERC721_external_approvingInvalidTokenMustRevert() public virtual {
         token.approve(address(0), type(uint256).max);
-        assertWithMsg(false, "Breakpoint");
         assertWithMsg(false, "Approving an invalid token should have reverted");
     }
 
@@ -93,7 +89,7 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
 
         token.transferFrom(msg.sender, address(0), tokenId);
 
-        assertWithMsg(token.ownerOf(tokenId) == address(0), "Transfer to zero address should have reverted");
+        assertWithMsg(false, "Transfer to zero address should have reverted");
     }
 
     // Transfers to self should not break accounting

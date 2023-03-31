@@ -2,16 +2,15 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import {CryticERC721InternalPropertyTests} from "../../ERC721InternalPropertyTests.sol";
+import {CryticERC721BurnableProperties} from "../../properties/ERC721BurnableProperties.sol";
 import {MockReceiver} from "../../util/MockReceiver.sol";
 
-contract ERC721ShouldRevertInternal is CryticERC721InternalPropertyTests {
+contract ERC721BurnableTestsInternal is CryticERC721BurnableProperties {
     using Address for address;
     
     uint256 public counter;
-    uint256 public maxSupply;
 
-    constructor() ERC721("ERC721ShouldRevert","ERC721ShouldRevert") {
+    constructor() ERC721("ERC721BasicTestsInternal","ERC721BasicTestsInternal") {
         maxSupply = 100;
         isMintableOrBurnable = true;
         hasMaxSupply = false;
@@ -19,7 +18,7 @@ contract ERC721ShouldRevertInternal is CryticERC721InternalPropertyTests {
         unsafeReceiver = new MockReceiver(false);
     }
 
-    function mint(uint256 amount) public {
+    function burn(uint256 amount) public virtual override {
         //require(totalSupply() + amount <= maxSupply);
         for (uint256 i; i < amount; i++) {
             _mint(msg.sender, counter++);
@@ -50,12 +49,8 @@ contract ERC721ShouldRevertInternal is CryticERC721InternalPropertyTests {
         //require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
         if (from == address(0)) {
             _mint(to, tokenId);
-        } else if (getApproved(tokenId) != msg.sender && !isApprovedForAll(from, msg.sender) || to == address(0)) {
-            _burn(tokenId);
-            _mint(to, tokenId);
-        } else {
-            ERC721._transfer(from, to, tokenId);
         }
+        _approve(address(this), tokenId);
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
@@ -80,7 +75,7 @@ contract ERC721ShouldRevertInternal is CryticERC721InternalPropertyTests {
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
         virtual
-        override(CryticERC721InternalPropertyTests)
+        override
     {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
@@ -89,21 +84,13 @@ contract ERC721ShouldRevertInternal is CryticERC721InternalPropertyTests {
         public
         view
         virtual
-        override(CryticERC721InternalPropertyTests)
+        override
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
     }
-
-    function _customMint(uint256 amount) internal virtual override {
-        mint(amount);
-    }
-
-    function _customMaxSupply() internal virtual override view returns (uint256) {
-        return maxSupply;
-    }
 }
 
-contract TestHarness is ERC721ShouldRevertInternal {
+contract TestHarness is ERC721BurnableTestsInternal {
     constructor() {}
 }

@@ -26,14 +26,25 @@ abstract contract CryticERC721BurnableProperties is CryticERC721TestBase, ERC721
     }
 
     // A burned token should not be transferrable
-    function test_ERC721_burnRevertOnTransfer(address target) public virtual {
+    function test_ERC721_burnRevertOnTransferFromPreviousOwner(address target) public virtual {
         require(isMintableOrBurnable);
         uint256 selfBalance = balanceOf(msg.sender);
         require(selfBalance > 0);
 
         uint256 tokenId = tokenOfOwnerByIndex(msg.sender, 0);
         burn(tokenId);
-        safeTransferFrom(msg.sender, target, tokenId);
+        transferFrom(msg.sender, target, tokenId);
+        assertWithMsg(false, "Transferring a burned token didn't revert");
+    }
+
+    function test_ERC721_burnRevertOnTransferFromZeroAddress(address target) public virtual {
+        require(isMintableOrBurnable);
+        uint256 selfBalance = balanceOf(msg.sender);
+        require(selfBalance > 0);
+
+        uint256 tokenId = tokenOfOwnerByIndex(msg.sender, 0);
+        burn(tokenId);
+        transferFrom(address(0), target, tokenId);
         assertWithMsg(false, "Transferring a burned token didn't revert");
     }
 

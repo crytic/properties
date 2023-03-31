@@ -4,20 +4,17 @@ import "../util/ERC721ExternalTestBase.sol";
 
 abstract contract CryticERC721ExternalBurnableProperties is CryticERC721ExternalTestBase {
     using Address for address;
-
-    constructor() {
-    }
-
     ////////////////////////////////////////
     // Properties
 
     // The burn function should destroy tokens and reduce the total supply
-    function test_ERC721_external_burnReducesTotalSupply(uint256 tokenId) public virtual {
+    function test_ERC721_external_burnReducesTotalSupply() public virtual {
         require(token.isMintableOrBurnable());
         uint256 selfBalance = token.balanceOf(msg.sender);
         require(selfBalance > 0);
 
         uint256 oldTotalSupply = token.totalSupply();
+
         for(uint256 i; i < selfBalance; i++) {
             uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
             token.burn(tokenId);

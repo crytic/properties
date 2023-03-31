@@ -4,10 +4,7 @@ import "../util/ERC721ExternalTestBase.sol";
 
 abstract contract CryticERC721ExternalMintableProperties is CryticERC721ExternalTestBase {
     using Address for address;
-
-    constructor() {
-    }
-
+    mapping (uint256 => bool) usedId;
     ////////////////////////////////////////
     // Properties
     // mint increases the total supply
@@ -33,6 +30,8 @@ abstract contract CryticERC721ExternalMintableProperties is CryticERC721External
         for(uint256 i = selfBalance; i < endIndex; i++) {
             uint256 tokenId = token.tokenOfOwnerByIndex(address(this), i);
             assertWithMsg(token.ownerOf(tokenId) == address(this), "Token ID was not minted to receiver");
+            assertWithMsg(!usedId[tokenId], "Token ID minted is not new");
+            usedId[tokenId] = true;
         }
 
         assertEq(selfBalance + amount, token.balanceOf(address(this)), "Receiver supply was not correctly increased");

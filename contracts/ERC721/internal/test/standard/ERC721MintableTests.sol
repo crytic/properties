@@ -2,20 +2,27 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import {CryticERC721ExternalPropertyTests} from "../../ERC721ExternalPropertyTests.sol";
-import {IERC721Internal} from "../../../util/IERC721Internal.sol";
+import {CryticERC721MintableProperties} from "../../properties/ERC721MintableProperties.sol";
 import {MockReceiver} from "../../util/MockReceiver.sol";
 
-contract ERC721ShouldRevert is ERC721, ERC721Enumerable {
+contract ERC721MintableTestsInternal is CryticERC721MintableProperties {
     using Address for address;
     
     uint256 public counter;
-    uint256 public maxSupply;
-    bool public isMintableOrBurnable;
 
-    constructor() ERC721("OZERC721","OZ") {
+    constructor() ERC721("ERC721BasicTestsInternal","ERC721BasicTestsInternal") {
         maxSupply = 100;
         isMintableOrBurnable = true;
+        hasMaxSupply = false;
+        safeReceiver = new MockReceiver(true);
+        unsafeReceiver = new MockReceiver(false);
+    }
+
+    function mint(uint256 amount) public {
+        //require(totalSupply() + amount <= maxSupply);
+        /* for (uint256 i; i < amount; i++) {
+            _mint(msg.sender, counter++);
+        } */
     }
 
     function balanceOf(address owner) public view virtual override(ERC721, IERC721) returns (uint256) {
@@ -42,12 +49,8 @@ contract ERC721ShouldRevert is ERC721, ERC721Enumerable {
         //require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
         if (from == address(0)) {
             _mint(to, tokenId);
-        } else if (getApproved(tokenId) != msg.sender && !isApprovedForAll(from, msg.sender) || to == address(0)) {
-            _burn(tokenId);
-            _mint(to, tokenId);
-        } else {
-            ERC721._transfer(from, to, tokenId);
         }
+        _approve(address(this), tokenId);
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
@@ -72,40 +75,30 @@ contract ERC721ShouldRevert is ERC721, ERC721Enumerable {
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
         virtual
-        override(ERC721, ERC721Enumerable)
+        override
     {
-        ERC721Enumerable._beforeTokenTransfer(from, to, tokenId, batchSize);
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual
-        override(ERC721, ERC721Enumerable)
+        override
         returns (bool)
     {
-        return ERC721Enumerable.supportsInterface(interfaceId);
+        return super.supportsInterface(interfaceId);
     }
 
-    function _customMint(address to, uint256 amount) public virtual {
-        maxSupply += amount;
-
-        for (uint256 i; i < amount; i++) {
-            _mint(to, counter++);
-        }
+    function _customMint(uint256 amount) internal virtual override {
+        mint(amount);
     }
 
-    function _customMaxSupply() public virtual view returns (uint256) {
+    function _customMaxSupply() internal virtual override view returns (uint256) {
         return maxSupply;
     }
 }
 
-contract TestHarness is CryticERC721ExternalPropertyTests {
-
-    constructor() {
-        token = IERC721Internal(address(new ERC721ShouldRevert()));
-        mockSafeReceiver = new MockReceiver(true);
-        mockUnsafeReceiver = new MockReceiver(false);
-    }
-
+contract TestHarness is ERC721MintableTestsInternal {
+    constructor() {}
 }

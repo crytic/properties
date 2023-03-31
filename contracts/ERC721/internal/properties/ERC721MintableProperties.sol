@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 import "../util/ERC721TestBase.sol";
 
 abstract contract CryticERC721MintableProperties is CryticERC721TestBase {
-    using Address for address;
+
 
     ////////////////////////////////////////
     // Properties
@@ -25,11 +25,12 @@ abstract contract CryticERC721MintableProperties is CryticERC721TestBase {
         uint256 endIndex = selfBalance + amount;
         _customMint(amount);
 
+        assertEq(selfBalance + amount, balanceOf(msg.sender), "Receiver supply was not correctly increased");
+
         for(uint256 i = selfBalance; i < endIndex; i++) {
             uint256 tokenId = tokenOfOwnerByIndex(msg.sender, i);
             assertWithMsg(ownerOf(tokenId) == msg.sender, "Token ID was not minted to receiver");
         }
-        assertEq(selfBalance + amount, balanceOf(msg.sender), "Receiver supply was not correctly increased");
     }
 
     // the total supply should never be larger than the max supply
