@@ -9,14 +9,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract ExampleToken is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, Ownable {
     constructor() ERC721("Example token", "EXT") {}
 
-    function pause() public onlyOwner {
-        _pause();
-    }
-
-    function unpause() public onlyOwner {
-        _unpause();
-    }
-
     function mint(address to, uint256 tokenId) public virtual {
         _mint(to, tokenId);
     }

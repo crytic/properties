@@ -4,6 +4,7 @@
 - [Properties](#properties)
   - [Testing the properties with fuzzing](#testing-the-properties-with-fuzzing)
     - [ERC20 tests](#erc20-tests)
+    - [ERC721 Tests](#erc721-tests)
     - [ERC4626 Tests](#erc4626-tests)
     - [ABDKMath64x64 tests](#abdkmath64x64-tests)
   - [Additional resources](#additional-resources)
@@ -23,6 +24,7 @@
 This repository contains 168 code properties for:
 
 - [ERC20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) token: mintable, burnable, pausable and transferable invariants ([25 properties](PROPERTIES.md#erc20)).
+- [ERC721](https://ethereum.org/en/developers/docs/standards/tokens/erc-721/) token: mintable, burnable, and transferable invariants ([19 properties](PROPERTIES.md#erc721)).
 - [ERC4626](https://ethereum.org/en/developers/docs/standards/tokens/erc-4626/) vaults: strict specification and additional security invariants ([37 properties](PROPERTIES.md#erc4626)).
 - [ABDKMath64x64](https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.md) fixed-point library invariants ([106 properties](PROPERTIES.md#abdkmath64x64)).
 
@@ -55,7 +57,7 @@ To test an ERC20 token, follow these steps:
 You can see the output for a [compliant token](#example-output-for-a-compliant-token), and [non compliant token](#example-output-for-a-non-compliant-token).
 
 #### Integration
-Decide if you want to do internal or external testing. Both approaches have advantanges and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html). 
+Decide if you want to do internal or external testing. Both approaches have advantages and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html). 
 
 For internal testing, create a new Solidity file containing the `CryticERC20InternalHarness` contract. `USER1`, `USER2` and `USER3` constants are initialized by default in `PropertiesConstants` contract to be the addresses from where echidna sends transactions, and `INITIAL_BALANCE` is by default `1000e18`:
 ```Solidity
@@ -180,12 +182,134 @@ Event sequence: Panic(1), AssertEqFail("Equal assertion failed. Message: Failed 
 ...
 ```
 
-### ERC4626 Tests
+### ERC721 tests
 
-To test an ERC4626 token, follow these steps:
+To test an ERC721 token, follow these steps:
 1. [Integration](#integration-1)
 2. [Configuration](#configuration-1)
 3. [Run](#run-1)
+
+You can see the output for a [compliant token](#example-output-for-a-compliant-token-1), and [non compliant token](#example-output-for-a-non-compliant-token-1).
+
+#### Integration
+Decide if you want to do internal or external testing. Both approaches have advantages and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html). 
+
+For internal testing, create a new Solidity file containing the `CryticERC721InternalHarness` contract. `USER1`, `USER2` and `USER3` constants are initialized by default in `PropertiesConstants` contract to be the addresses from where echidna sends transactions.
+```Solidity
+pragma solidity ^0.8.0;
+import "@crytic/properties/contracts/ERC721/internal/properties/ERC721BasicProperties.sol";
+import "./MyToken.sol";
+contract CryticERC721InternalHarness is MyToken, CryticERC721BasicProperties {
+
+    constructor() {
+    }
+}
+```
+
+For external testing, create two contracts: the `CryticERC721ExternalHarness` and the `TokenMock` as shown below.
+In the `CryticERC721ExternalHarness` contract you can specify which properties to test, via inheritance. In the `TokenMock` contract, you will need to modify the `isMintableOrBurnable` variable if your contract is able to mint or burn tokens.
+
+```Solidity
+pragma solidity ^0.8.0;
+import "./MyToken.sol";
+import {ITokenMock} from "@crytic/properties/contracts/ERC721/external/util/ITokenMock.sol";
+import {CryticERC721ExternalBasicProperties} from "@crytic/properties/contracts/ERC721/external/properties/ERC721ExternalBasicProperties.sol";
+import {PropertiesConstants} from "@crytic/properties/contracts/util/PropertiesConstants.sol";
+
+
+contract CryticERC721ExternalHarness is CryticERC721ExternalBasicProperties {   
+    constructor() {
+        // Deploy ERC721
+        token = ITokenMock(address(new CryticTokenMock()));
+    }
+}
+
+contract CryticTokenMock is MyToken, PropertiesConstants {
+
+    bool public isMintableOrBurnable;
+
+    constructor () {
+        isMintableOrBurnable = true;
+    }
+}
+```
+
+#### Configuration
+Create the following Echidna config file
+
+```yaml
+corpusDir: "tests/crytic/erc721/echidna-corpus-internal"
+testMode: assertion
+testLimit: 100000
+deployer: "0x10000"
+sender: ["0x10000", "0x20000", "0x30000"]
+```
+
+If you're using external testing, you will also need to specify:
+
+```yaml
+multi-abi: true
+```
+
+To perform more than one test, save the files with a descriptive path, to identify what test each file or corpus belongs to. For these examples, we use `tests/crytic/erc721/echidna-internal.yaml` and `tests/crytic/erc721/echidna-external.yaml` for the Echidna tests for ERC721. We recommended to modify the `corpusDir` for external tests accordingly.
+
+The above configuration will start Echidna in assertion mode. Contract will be deployed from address `0x10000`, and transactions will be sent from the owner and two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once Echidna finishes the fuzzing campaign, corpus and coverage results will be available in the `tests/crytic/erc721/echidna-corpus-internal` directory. 
+
+
+#### Run
+Run Echidna: 
+- For internal testing: `echidna-test . --contract CryticERC721InternalHarness --config tests/crytic/erc721/echidna-internal.yaml` 
+- For external testing: `echidna-test . --contract CryticERC721ExternalHarness --config tests/crytic/erc721/echidna-external.yaml` 
+  
+Finally, inspect the coverage report in `tests/crytic/erc721/echidna-corpus-internal` or `tests/crytic/erc721/echidna-corpus-external` when it finishes.
+
+#### Example: Output for a compliant token
+
+If the token under test is compliant and no properties will fail during fuzzing, the Echidna output should be similar to the screen below:
+```
+$ echidna-test . --contract CryticERC721InternalHarness --config tests/echidna.config.yaml 
+Loaded total of 23 transactions from corpus/coverage
+Analyzing contract: contracts/ERC721/CryticERC721InternalHarness.sol:CryticERC721InternalHarness
+name():  passed! 🎉
+test_ERC721_external_transferFromNotApproved():  passed! 🎉
+approve(address,uint256):  passed! 🎉
+test_ERC721_external_transferFromUpdatesOwner():  passed! 🎉
+totalSupply():  passed! 🎉
+...
+```
+
+#### Example: Output for a non-compliant token
+
+For this example, the ExampleToken's balanceOf function was modified so it does not check that `owner` is the zero address:
+```
+function balanceOf(address owner) public view virtual override returns (uint256) {
+    return _balances[owner];
+}
+```
+
+In this case, the Echidna output should be similar to the screen below, notice that all functions that rely on `balanceOf()` to work correctly will have their assertions broken, and will report the situation.
+```
+$ echidna-test . --contract CryticERC721ExternalHarness --config tests/echidna.config.yaml
+Loaded total of 25 transactions from corpus/coverage
+Analyzing contract: contracts/ERC721/CryticERC721ExternalHarness.sol:CryticERC721ExternalHarness
+name():  passed! 🎉
+test_ERC721_external_transferFromUpdatesOwner():  passed! 🎉
+approve(address,uint256):  passed! 🎉
+...
+test_ERC721_external_balanceOfZeroAddressMustRevert(): failed!💥  
+  Call sequence:
+    test_ERC721_external_balanceOfZeroAddressMustRevert()
+
+Event sequence: Panic(1), AssertFail("address(0) balance query should have reverted") from: ERC721PropertyTests@0x00a329c0648769A73afAc7F9381E08FB43dBEA72
+...
+```
+
+### ERC4626 Tests
+
+To test an ERC4626 token, follow these steps:
+1. [Integration](#integration-2)
+2. [Configuration](#configuration-2)
+3. [Run](#run-2)
 
 
 #### Integration
@@ -255,8 +379,8 @@ A 64.64-bit fixed-point number is a data type that consists of a sign bit, a 63-
 ABDKMath64x64 library implements [19 arithmetic operations](https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.md#simple-arithmetic "19 arithmetic operations") using fixed-point numbers and [6 conversion functions](https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.md#conversions "6 conversion functions") between integer types and fixed-point types.
 
 We provide a number of tests related with fundamental mathematical properties of the floating point numbers. To include these tests into your repository, follow these steps:
-1. [Integration](#integration-2)
-2. [Run](#run-2)
+1. [Integration](#integration-3)
+2. [Run](#run-3)
 
 #### Integration
 

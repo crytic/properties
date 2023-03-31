@@ -67,6 +67,43 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
 | ERC20-ALLOWANCE-001 | [test_ERC20_setAndIncreaseAllowance](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20IncreaseAllowanceProperties.sol#L17) | Allowance should be updated correctly when `increaseAllowance` is called.  |
 | ERC20-ALLOWANCE-002 | [test_ERC20_setAndDecreaseAllowance](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20IncreaseAllowanceProperties.sol#L28) | Allowance should be updated correctly when `decreaseAllowance` is called.   |
 
+# ERC721
+
+### Basic properties for standard functions
+
+| ID |  Name | Invariant tested |
+|---|---|---|
+| ERC721-BASE-001 | [test_ERC20_balanceOfZeroAddressMustRevert](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L13) | Calling `balanceOf` for the zero address should revert. |
+| ERC721-BASE-002 | [test_ERC721_ownerOfInvalidTokenMustRevert](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L19) | Calling ownerOf for an invalid token should revert. |
+| ERC721-BASE-003 | [test_ERC721_approvingInvalidTokenMustRevert](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L26) | `approve()` should revert on invalid token. |
+| ERC721-BASE-004 | [test_ERC721_transferFromNotApproved](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L33) | `transferFrom()` should revert if caller is not operator. |
+| ERC721-BASE-005 | [test_ERC721_transferFromResetApproval](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L51) | `transferFrom()` should reset approvals. |
+| ERC721-BASE-006 | [test_ERC721_transferFromUpdatesOwner](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L67) | `transferFrom()` should update the token owner. |
+| ERC721-BASE-007 | [test_ERC721_transferFromZeroAddress](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L81) | `transferFrom()` should revert if `from` is the zero address. |
+| ERC721-BASE-008 | [test_ERC721_transferToZeroAddress](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L90) | `transferFrom()` should revert if `to` is the zero address. |
+| ERC721-BASE-009 | [test_ERC721_transferFromSelf](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L101) | `transferFrom()` to self should not break accounting. |
+| ERC721-BASE-010 | [test_ERC721_transferFromSelfResetsApproval](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L115) | `transferFrom()` to self should reset approvals.  |
+| ERC721-BASE-011 | [test_ERC721_safeTransferFromRevertsOnNoncontractReceiver](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L128) | `safeTransferFrom()` should revert if receiver is a contract that does not implement `onERC721Received()`  |
+
+### Tests for burnable tokens
+
+| ID |  Name | Invariant tested |
+|---|---|---|
+| ERC721-BURNABLE-001 | [test_ERC721_burnReducesTotalSupply](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BurnableProperties.sol#L14) | User balance and total supply should be updated correctly when `burn` is called.   |
+| ERC721-BURNABLE-002 | [test_ERC721_burnRevertOnTransferFromPreviousOwner](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BurnableProperties.sol#L29) | A token that has been burned cannot be transferred.   |
+| ERC721-BURNABLE-003 | [test_ERC721_burnRevertOnTransferFromZeroAddress](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BurnableProperties.sol#L40) | A token that has been burned cannot be transferred.   |
+| ERC721-BURNABLE-004 | [test_ERC721_burnRevertOnApprove](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BurnableProperties.sol#L51) | A burned token should have its approvals reset.   |
+| ERC721-BURNABLE-005 | [test_ERC721_burnRevertOnGetApproved](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BurnableProperties.sol#L62) | `getApproved()` should revert if the token is burned.   |
+| ERC721-BURNABLE-006 | [test_ERC721_burnRevertOnOwnerOf](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BurnableProperties.sol#L73) | `ownerOf()` should revert if the token has been burned.  |
+
+### Tests for mintable tokens
+
+| ID |  Name | Invariant tested |
+|---|---|---|
+| ERC721-MINTABLE-001 | [test_ERC721_mintIncreasesSupply](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721MintableProperties.sol#L11) | User balance and total supply should be updated correctly after minting.  |
+| ERC721-MINTABLE-002 | [test_ERC721_mintCreatesFreshToken](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721MintableProperties.sol#L22) | User balance and total supply should be updated correctly after minting.  |
+
+
 ## ERC4626
 
 | ID |  Name | Invariant tested |

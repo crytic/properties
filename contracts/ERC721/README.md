@@ -41,13 +41,13 @@ Should cause these properties to fail:
 - test_ERC721_transferFromUpdatesOwner 
 - test_ERC721_transferFromSelf 
 - test_ERC721_transferFromSelfResetsApproval 
-- test_ERC721_external_ownerOfInvalidTokenMustRevert
-- test_ERC721_external_balanceOfZeroAddressMustRevert
-- test_ERC721_external_approvingInvalidTokenMustRevert
-- test_ERC721_external_transferFromNotApproved
-- test_ERC721_external_transferFromZeroAddress
-- test_ERC721_external_transferToZeroAddress 
-- test_ERC721_external_safeTransferFromRevertsOnNoncontractReceiver
+- test_ERC721_ownerOfInvalidTokenMustRevert
+- test_ERC721_balanceOfZeroAddressMustRevert
+- test_ERC721_approvingInvalidTokenMustRevert
+- test_ERC721_transferFromNotApproved
+- test_ERC721_transferFromZeroAddress
+- test_ERC721_transferToZeroAddress 
+- test_ERC721_safeTransferFromRevertsOnNoncontractReceiver
 
 ### Mintable properties
 
