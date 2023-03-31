@@ -14,44 +14,44 @@ import {CryticERC4626Rounding} from "../../properties/RoundingProps.sol";
 import {CryticERC4626VaultProxy} from "../../properties/VaultProxy.sol";
 
 contract BadConvertToAssetsRounding is ERC4626 {
-  using FixedPointMathLib for uint256;
+    using FixedPointMathLib for uint256;
 
-  uint256 private _totalAssets;
-  
-  constructor(ERC20 _asset) ERC4626(_asset,"Test Vault", _asset.symbol()) {
-  }
+    uint256 private _totalAssets;
 
-  function totalAssets() public view virtual override returns (uint256) {
-    return _totalAssets;
-  }
+    constructor(ERC20 _asset) ERC4626(_asset, "Test Vault", _asset.symbol()) {}
 
-  function beforeWithdraw(uint256 assets, uint256) internal override {
-    _totalAssets = _totalAssets - assets;
-  }
+    function totalAssets() public view virtual override returns (uint256) {
+        return _totalAssets;
+    }
 
-  function afterDeposit(uint256 assets, uint256) internal override {
-    _totalAssets = _totalAssets + assets;
-  }
+    function beforeWithdraw(uint256 assets, uint256) internal override {
+        _totalAssets = _totalAssets - assets;
+    }
 
-  function convertToAssets(uint256 shares) public view override returns (uint256) {
-      uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
-      return supply == 0 ? shares : shares.mulDivUp(totalAssets(), supply);
-  }
+    function afterDeposit(uint256 assets, uint256) internal override {
+        _totalAssets = _totalAssets + assets;
+    }
 
-  function recognizeProfit(uint256 profit) public {
-    TestERC20Token(address(asset)).mint(address(this), profit);
-    _totalAssets += profit;
-  }
+    function convertToAssets(
+        uint256 shares
+    ) public view override returns (uint256) {
+        uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
+        return supply == 0 ? shares : shares.mulDivUp(totalAssets(), supply);
+    }
 
-  function recognizeLoss(uint256 loss) public {
-    TestERC20Token(address(asset)).burn(address(this), loss);
-    _totalAssets -= loss;
-  }
+    function recognizeProfit(uint256 profit) public {
+        TestERC20Token(address(asset)).mint(address(this), profit);
+        _totalAssets += profit;
+    }
 
+    function recognizeLoss(uint256 loss) public {
+        TestERC20Token(address(asset)).burn(address(this), loss);
+        _totalAssets -= loss;
+    }
 }
 
-contract TestHarness is CryticERC4626Rounding{
-    constructor () {
+contract TestHarness is CryticERC4626Rounding {
+    constructor() {
         TestERC20Token _asset = new TestERC20Token("Test Token", "TT", 18);
         ERC4626 _vault = new BadConvertToAssetsRounding(ERC20(address(_asset)));
         initialize(address(_vault), address(_asset), true);

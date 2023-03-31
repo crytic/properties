@@ -11,11 +11,13 @@ import {CryticERC4626VaultProxy} from "./properties/VaultProxy.sol";
 import {CryticERC4626SecurityProps} from "./properties/SecurityProps.sol";
 
 /// @notice Aggregator contract for various 4626 property tests. Inherit from this & echidna will test all properties at the same time.
-contract CryticERC4626PropertyTests is 
-    CryticERC4626RedeemUsingApproval, 
-    CryticERC4626MustNotRevert, 
+contract CryticERC4626PropertyTests is
+    CryticERC4626RedeemUsingApproval,
+    CryticERC4626MustNotRevert,
     CryticERC4626SenderIndependent,
     CryticERC4626FunctionalAccounting,
-    CryticERC4626Rounding, 
-    CryticERC4626SecurityProps{
+    CryticERC4626Rounding,
+    CryticERC4626SecurityProps
+{
+
 }

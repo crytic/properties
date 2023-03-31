@@ -3,10 +3,10 @@ name: Test examples
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
     branches:
-    - '*'
+      - "*"
 
 env:
   FOUNDRY_PROFILE: ci
@@ -16,100 +16,100 @@ jobs:
     name: Test Foundry examples
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-    - name: Install Foundry
-      uses: foundry-rs/foundry-toolchain@v1
-      with:
-        version: nightly
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
-    - name: Compile ERC20 Foundry example
-      working-directory: tests/ERC20/foundry
-      run: forge build --build-info
+      - name: Compile ERC20 Foundry example
+        working-directory: tests/ERC20/foundry
+        run: forge build --build-info
 
-    - name: Run Echidna against ERC20 Internal Foundry example
-      uses: crytic/echidna-action@v2
-      with:
-        echidna-workdir: ./tests/ERC20/foundry
-        files: .
-        config: ./echidna-config.yaml
-        crytic-args: --ignore-compile
-        contract: CryticERC20InternalHarness
+      - name: Run Echidna against ERC20 Internal Foundry example
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC20/foundry
+          files: .
+          config: ./echidna-config.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC20InternalHarness
 
-    - name: Run Echidna against ERC20 External Foundry example
-      uses: crytic/echidna-action@v2
-      with:
-        echidna-workdir: ./tests/ERC20/foundry
-        files: .
-        config: ./echidna-config-ext.yaml
-        crytic-args: --ignore-compile
-        contract: CryticERC20ExternalHarness
-        
-    - name: Compile ERC4646 Foundry example
-      working-directory: tests/ERC4626/foundry
-      run: forge build --build-info
+      - name: Run Echidna against ERC20 External Foundry example
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC20/foundry
+          files: .
+          config: ./echidna-config-ext.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC20ExternalHarness
 
-    - name: Run Echidna against ERC4626 Foundry example
-      uses: crytic/echidna-action@v2
-      with:
-        echidna-workdir: ./tests/ERC4626/foundry
-        files: .
-        config: ./echidna.yaml
-        crytic-args: --ignore-compile
-        contract: CryticERC4626InternalHarness
+      - name: Compile ERC4646 Foundry example
+        working-directory: tests/ERC4626/foundry
+        run: forge build --build-info
+
+      - name: Run Echidna against ERC4626 Foundry example
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC4626/foundry
+          files: .
+          config: ./echidna.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC4626InternalHarness
 
   hardhat:
     name: Test Hardhat examples
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-    - name: Set up Nodejs
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
+      - name: Set up Nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-    - name: Install dependencies and compile ERC20 example
-      working-directory: tests/ERC20/hardhat
-      run: |
-        npm ci
-        npx hardhat compile --force
+      - name: Install dependencies and compile ERC20 example
+        working-directory: tests/ERC20/hardhat
+        run: |
+          npm ci
+          npx hardhat compile --force
 
-    - name: Run Echidna for Internal tests
-      uses: crytic/echidna-action@v2
-      with:
-        echidna-workdir: ./tests/ERC20/hardhat
-        files: .
-        config: ./tests/echidna-config.yaml
-        crytic-args: --ignore-compile
-        contract: CryticERC20InternalHarness
-      
-    - name: Run Echidna for External tests
-      uses: crytic/echidna-action@v2
-      with:
-        echidna-workdir: ./tests/ERC20/hardhat
-        files: .
-        config: ./tests/echidna-config-ext.yaml
-        crytic-args: --ignore-compile
-        contract: CryticERC20ExternalHarness
+      - name: Run Echidna for Internal tests
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC20/hardhat
+          files: .
+          config: ./tests/echidna-config.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC20InternalHarness
 
-    - name: Install dependencies and compile ERC4626 example
-      working-directory: tests/ERC4626/hardhat
-      run: |
-        npm ci
-        npx hardhat compile --force
+      - name: Run Echidna for External tests
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC20/hardhat
+          files: .
+          config: ./tests/echidna-config-ext.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC20ExternalHarness
 
-    - name: Run Echidna
-      uses: crytic/echidna-action@v2
-      with:
-        echidna-workdir: ./tests/ERC4626/hardhat
-        files: .
-        config: tests/echidna-config.yaml
-        crytic-args: --ignore-compile
-        contract: CryticERC4626Harness
+      - name: Install dependencies and compile ERC4626 example
+        working-directory: tests/ERC4626/hardhat
+        run: |
+          npm ci
+          npx hardhat compile --force
+
+      - name: Run Echidna
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC4626/hardhat
+          files: .
+          config: tests/echidna-config.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC4626Harness

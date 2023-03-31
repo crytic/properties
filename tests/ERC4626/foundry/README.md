@@ -1,12 +1,13 @@
 # Crytic Properties Example (Foundry)
 
-Sample repository for a [crytic/properties](https://github.com/crytic/properties) + foundry integration. 
+Sample repository for a [crytic/properties](https://github.com/crytic/properties) + foundry integration.
 
 crytic/properties is a suite of Echidna properties/tests for common interfaces & libraries that can be added to your project to find unique bugs that cannot be easily found with foundry tests.
 
-These properties are designed to be verified using Echidna, and _do not_ use Foundry's built in fuzzer. Running 'forge test' will not execute them. 
+These properties are designed to be verified using Echidna, and _do not_ use Foundry's built in fuzzer. Running 'forge test' will not execute them.
 
 Learn more:
+
 - [crytic/properties](https://github.com/crytic/properties)
 - [Echidna Fuzzer](https://github.com/crytic/echidna)
 - [Echidna tutorials](https://secure-contracts.com/program-analysis/echidna/index.html)

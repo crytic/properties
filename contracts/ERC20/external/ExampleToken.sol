@@ -20,12 +20,11 @@ contract ExampleToken is ERC20, ERC20Burnable, Pausable, Ownable {
         _mint(to, amount);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount)
-        internal
-        virtual
-        whenNotPaused
-        override
-    {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override whenNotPaused {
         super._beforeTokenTransfer(from, to, amount);
     }
 }
@@ -41,7 +40,10 @@ contract ExampleTokenNonCompliant is ERC20, ERC20Burnable, Pausable, Ownable {
         _unpause();
     }
 
-    function approve(address, uint256) public virtual override(ERC20) returns (bool) {
+    function approve(
+        address,
+        uint256
+    ) public virtual override(ERC20) returns (bool) {
         // do nothing
         return true;
     }
@@ -50,12 +52,11 @@ contract ExampleTokenNonCompliant is ERC20, ERC20Burnable, Pausable, Ownable {
         _mint(to, amount);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount)
-        internal
-        virtual
-        whenNotPaused
-        override
-    {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override whenNotPaused {
         super._beforeTokenTransfer(from, to, amount);
     }
 }

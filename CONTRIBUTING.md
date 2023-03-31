@@ -28,6 +28,7 @@ Some pull request guidelines:
 ## Directory Structure
 
 Below is a rough outline of the directory structure:
+
 ```text
 .
 ├── contracts                                   # Parent folder for contracts
@@ -48,7 +49,7 @@ Below is a rough outline of the directory structure:
 │   ├── Math                                    # Properties for mathematical libraries
 │   │   └── ABDKMath64x64
 │   ├── util                                    # Helpers for new or existing properties
-│   └── ... 
+│   └── ...
 ├── lib                                         # External libraries needed for the repository
 └── tests                                       # Tests for properties
     ├── ERC20
@@ -63,6 +64,26 @@ Below is a rough outline of the directory structure:
 ```
 
 Please follow this structure in your collaborations.
+
+## Linting and formatting
+
+To install the formatters and linters, run:
+
+```bash
+npm install
+```
+
+The formatter is run with:
+
+```bash
+npm run format
+```
+
+The linter is run with:
+
+```bash
+npm run lint
+```
 
 ## Running tests on your computer
 

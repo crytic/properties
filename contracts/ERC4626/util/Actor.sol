@@ -21,14 +21,28 @@ contract Actor is PropertiesAsserts {
         token = TestERC20Token(address(_vault.asset()));
     }
 
-    function accountForOpenedPosition(uint256 _tokensDeposited, uint256 _sharesMinted) internal {
+    function accountForOpenedPosition(
+        uint256 _tokensDeposited,
+        uint256 _sharesMinted
+    ) internal {
         tokensDeposited += _tokensDeposited;
         sharesMinted += _sharesMinted;
     }
 
-    function accountForClosedPosition(uint256 _tokensReceived, uint256 _sharesBurned) internal {
-        assertLte(_sharesBurned, sharesMinted,  "Actor has burned more shares than they ever minted. Implies a rounding or accounting error");
-        assertLte(_tokensReceived, tokensDeposited,  "Actor has withdrawn more tokens than they ever deposited. Implies a rounding or accounting error");
+    function accountForClosedPosition(
+        uint256 _tokensReceived,
+        uint256 _sharesBurned
+    ) internal {
+        assertLte(
+            _sharesBurned,
+            sharesMinted,
+            "Actor has burned more shares than they ever minted. Implies a rounding or accounting error"
+        );
+        assertLte(
+            _tokensReceived,
+            tokensDeposited,
+            "Actor has withdrawn more tokens than they ever deposited. Implies a rounding or accounting error"
+        );
         tokensDeposited -= _tokensReceived;
         sharesMinted -= _sharesBurned;
     }
@@ -41,40 +55,60 @@ contract Actor is PropertiesAsserts {
         token.approve(address(vault), type(uint256).max);
     }
 
-    function depositFunds(uint256 assets) public returns (uint256 _sharesMinted) {
+    function depositFunds(
+        uint256 assets
+    ) public returns (uint256 _sharesMinted) {
         _sharesMinted = vault.deposit(assets, address(this));
         accountForOpenedPosition(assets, _sharesMinted);
     }
 
-    function mintShares(uint256 shares) public returns (uint256 _tokensDeposited) {
+    function mintShares(
+        uint256 shares
+    ) public returns (uint256 _tokensDeposited) {
         _tokensDeposited = vault.mint(shares, address(this));
         accountForOpenedPosition(_tokensDeposited, shares);
     }
 
-    function withdrawTokens(uint256 assets) public returns (uint256 _sharesBurned) {
+    function withdrawTokens(
+        uint256 assets
+    ) public returns (uint256 _sharesBurned) {
         _sharesBurned = vault.withdraw(assets, address(this), address(this));
         accountForClosedPosition(assets, _sharesBurned);
     }
 
-    function redeemShares(uint256 shares) public returns (uint256 _tokensWithdrawn) {
+    function redeemShares(
+        uint256 shares
+    ) public returns (uint256 _tokensWithdrawn) {
         _tokensWithdrawn = vault.redeem(shares, address(this), address(this));
         accountForClosedPosition(_tokensWithdrawn, shares);
     }
 
-    function depositFundsOnBehalf(uint256 assets, address receiver) public returns (uint256 _sharesMinted) {
+    function depositFundsOnBehalf(
+        uint256 assets,
+        address receiver
+    ) public returns (uint256 _sharesMinted) {
         _sharesMinted = vault.deposit(assets, receiver);
     }
 
-    function mintSharesOnBehalf(uint256 shares, address receiver) public returns (uint256 _tokensDeposited) {
+    function mintSharesOnBehalf(
+        uint256 shares,
+        address receiver
+    ) public returns (uint256 _tokensDeposited) {
         _tokensDeposited = vault.mint(shares, receiver);
     }
 
-    function withdrawTokensOnBehalf(uint256 assets, address receiver) public returns (uint256 _sharesBurned) {
+    function withdrawTokensOnBehalf(
+        uint256 assets,
+        address receiver
+    ) public returns (uint256 _sharesBurned) {
         _sharesBurned = vault.withdraw(assets, receiver, address(this));
         accountForClosedPosition(assets, _sharesBurned);
     }
 
-    function redeemSharesOnBehalf(uint256 shares, address receiver) public returns (uint256 _tokensWithdrawn) {
+    function redeemSharesOnBehalf(
+        uint256 shares,
+        address receiver
+    ) public returns (uint256 _tokensWithdrawn) {
         _tokensWithdrawn = vault.redeem(shares, receiver, address(this));
         accountForClosedPosition(_tokensWithdrawn, shares);
     }

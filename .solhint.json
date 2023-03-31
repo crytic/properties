@@ -3,7 +3,7 @@
   "rules": {
     "compiler-version": ["off"],
     "func-name-mixedcase": ["off"],
-    "func-visibility": ["warn",{ "ignoreConstructors":true }],
+    "func-visibility": ["warn", { "ignoreConstructors": true }],
     "no-empty-blocks": ["off"],
     "var-name-mixedcase": ["off"]
   }

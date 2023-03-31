@@ -14,12 +14,11 @@ contract BadAllowanceUpdate is ERC4626 {
     using SafeTransferLib for ERC20;
 
     uint256 private _totalAssets;
-  
-    constructor(ERC20 _asset) ERC4626(_asset, "Test Vault", _asset.symbol()) {
-    }
+
+    constructor(ERC20 _asset) ERC4626(_asset, "Test Vault", _asset.symbol()) {}
 
     function totalAssets() public view virtual override returns (uint256) {
-       return _totalAssets;
+        return _totalAssets;
     }
 
     function beforeWithdraw(uint256 assets, uint256) internal override {
@@ -35,13 +34,13 @@ contract BadAllowanceUpdate is ERC4626 {
         address receiver,
         address owner
     ) public override returns (uint256 shares) {
-            shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
+        shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
 
-            if (msg.sender != owner) {
-                uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
+        if (msg.sender != owner) {
+            uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
 
-                // if (allowed != type(uint256).max) allowance[owner][msg.sender] = allowed - shares;
-            }
+            // if (allowed != type(uint256).max) allowance[owner][msg.sender] = allowed - shares;
+        }
 
         beforeWithdraw(assets, shares);
 
@@ -76,8 +75,8 @@ contract BadAllowanceUpdate is ERC4626 {
     }
 }
 
-contract TestHarness is CryticERC4626RedeemUsingApproval{
-    constructor () {
+contract TestHarness is CryticERC4626RedeemUsingApproval {
+    constructor() {
         TestERC20Token _asset = new TestERC20Token("Test Token", "TT", 18);
         ERC4626 _vault = new BadAllowanceUpdate(ERC20(address(_asset)));
         initialize(address(_vault), address(_asset), false);

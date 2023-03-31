@@ -2,7 +2,10 @@ pragma solidity ^0.8.0;
 import "properties/ERC20/internal/properties/ERC20BasicProperties.sol";
 import "../src/ExampleToken.sol";
 
-contract CryticERC20InternalHarness is ExampleToken, CryticERC20BasicProperties {
+contract CryticERC20InternalHarness is
+    ExampleToken,
+    CryticERC20BasicProperties
+{
     constructor() {
         // Setup balances for USER1, USER2 and USER3:
         _mint(USER1, INITIAL_BALANCE);

@@ -20,7 +20,11 @@ contract CryticERC4626PropertyBase is PropertiesAsserts {
     // feature flags
     bool supportsInternalTestingIface;
 
-    function initialize(address _vault, address _asset, bool _supportsInternalTestingIface) internal {
+    function initialize(
+        address _vault,
+        address _asset,
+        bool _supportsInternalTestingIface
+    ) internal {
         vault = IERC4626(_vault);
         asset = TestERC20Token(_asset);
         alice = new Actor(vault);
@@ -39,40 +43,50 @@ contract CryticERC4626PropertyBase is PropertiesAsserts {
     /// @param target A address to target
     /// @param name A name for the target address (alice, bob, vault, etc.)
     /// @param annotation An additional piece of metadata for debugging ie: "before deposit", "after mint", etc.
-    function measureAddressHoldings(address target, string memory name, string memory annotation) internal
-        returns (uint256 assetBalance, uint256 shareBalance) {
-
+    function measureAddressHoldings(
+        address target,
+        string memory name,
+        string memory annotation
+    ) internal returns (uint256 assetBalance, uint256 shareBalance) {
         assetBalance = asset.balanceOf(target);
         shareBalance = vault.balanceOf(target);
-        
-        string memory assetMsg = string(abi.encodePacked("asset.balanceOf(", name, ") (", annotation, ")"));
+
+        string memory assetMsg = string(
+            abi.encodePacked("asset.balanceOf(", name, ") (", annotation, ")")
+        );
         emit LogUint256(assetMsg, assetBalance);
-        string memory shareMsg = string(abi.encodePacked("vault.balanceOf(", name, ") (", annotation, ")"));
+        string memory shareMsg = string(
+            abi.encodePacked("vault.balanceOf(", name, ") (", annotation, ")")
+        );
         emit LogUint256(shareMsg, shareBalance);
     }
 
     /// @notice Prevents `party` from resolving to addresses which have special accounting rules.
-    function restrictAddressToThirdParties(uint256 partyIndex) internal view returns (address) {
+    function restrictAddressToThirdParties(
+        uint256 partyIndex
+    ) internal view returns (address) {
         // set up 3 static third parties
         partyIndex = partyIndex % 3;
-        if(partyIndex == 0){
+        if (partyIndex == 0) {
             return address(this);
         }
-        if(partyIndex == 1){
+        if (partyIndex == 1) {
             return 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
         }
         return 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB;
     }
 
-
     /// @notice Performs all the checks required to ensure a successful vault deposit. This includes funding the owner account and clamping token amounts as needed.
     ///         It is assumed that successful calls to requireValidDepositAmount imply that vault.deposit() will not revert. This implied property might not hold for certain
     ///         vault implementations, and should be modified if exceptions are discovered.
-    function requireValidDepositAmount(address owner, address receiver, uint256 tokens) internal returns (uint256) {
+    function requireValidDepositAmount(
+        address owner,
+        address receiver,
+        uint256 tokens
+    ) internal returns (uint256) {
         tokens = clampLte(tokens, vault.maxDeposit(receiver));
         tokens = clampGt(tokens, 0);
         prepareAddressForDeposit(owner, tokens);
-
 
         // The following logic is intended to revert when an unreasonably large deposit is being made.
         uint256 sharesMinted = vault.convertToShares(tokens);
@@ -89,14 +103,18 @@ contract CryticERC4626PropertyBase is PropertiesAsserts {
     /// @notice Performs all the checks required to ensure a successful vault mint. This includes funding the owner account and clamping token amounts as needed.
     ///         It is assumed that successful calls to requireValidDepositAmount imply that vault.mint() will not revert. This implied property might not hold for certain
     ///         vault implementations, and should be modified if exceptions are discovered.
-    function requireValidMintAmount(address owner, address receiver, uint256 shares) internal returns (uint256) {
+    function requireValidMintAmount(
+        address owner,
+        address receiver,
+        uint256 shares
+    ) internal returns (uint256) {
         shares = clampLte(shares, vault.maxMint(receiver));
         uint256 tokensDeposited = vault.previewMint(shares);
         prepareAddressForDeposit(owner, tokensDeposited);
 
         // The following logic is intended to revert when an unreasonably large mint is being made.
         uint256 currentShares = vault.balanceOf(receiver);
-        vault.previewRedeem(currentShares + shares );
+        vault.previewRedeem(currentShares + shares);
         emit LogUint256("Shares to use in mint:", shares);
 
         // configure with setting?
@@ -107,7 +125,10 @@ contract CryticERC4626PropertyBase is PropertiesAsserts {
     /// @notice Performs all the checks required to ensure a successful vault redeem. This includes funding the owner account and clamping token amounts as needed.
     ///         It is assumed that successful calls to requireValidDepositAmount imply that vault.redeem() will not revert. This implied property might not hold for certain
     ///         vault implementations, and should be modified if exceptions are discovered.
-    function requireValidRedeemAmount(address owner, uint256 shares) internal returns (uint256) {
+    function requireValidRedeemAmount(
+        address owner,
+        uint256 shares
+    ) internal returns (uint256) {
         // should this be a configured setting?
         require(shares > 0);
 
@@ -131,10 +152,13 @@ contract CryticERC4626PropertyBase is PropertiesAsserts {
     /// @notice Performs all the checks required to ensure a successful vault withdraw. This includes funding the owner account and clamping token amounts as needed.
     ///         It is assumed that successful calls to requireValidDepositAmount imply that vault.withdraw() will not revert. This implied property might not hold for certain
     ///         vault implementations, and should be modified if exceptions are discovered.
-    function requireValidWithdrawAmount(address owner, uint256 tokens) internal returns (uint256) {
+    function requireValidWithdrawAmount(
+        address owner,
+        uint256 tokens
+    ) internal returns (uint256) {
         uint256 maxWithdraw = vault.maxWithdraw(owner);
         require(maxWithdraw > 0);
-        
+
         uint256 ownerBalance = vault.balanceOf(owner);
         require(ownerBalance > 0);
 
