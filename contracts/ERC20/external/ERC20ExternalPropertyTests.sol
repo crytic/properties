@@ -8,12 +8,16 @@ import {CryticERC20ExternalMintableProperties} from "./properties/ERC20ExternalM
 import {CryticERC20ExternalPausableProperties} from "./properties/ERC20ExternalPausableProperties.sol";
 import {CryticERC20ExternalIncreaseAllowanceProperties} from "./properties/ERC20ExternalIncreaseAllowanceProperties.sol";
 
-contract CryticERC20ExternalPropertyTests is CryticERC20ExternalBasicProperties, CryticERC20ExternalIncreaseAllowanceProperties, CryticERC20ExternalBurnableProperties, CryticERC20ExternalMintableProperties, CryticERC20ExternalPausableProperties {
-        
+contract CryticERC20ExternalPropertyTests is
+    CryticERC20ExternalBasicProperties,
+    CryticERC20ExternalIncreaseAllowanceProperties,
+    CryticERC20ExternalBurnableProperties,
+    CryticERC20ExternalMintableProperties,
+    CryticERC20ExternalPausableProperties
+{
     constructor() {
         // Deploy ERC20, mint initial balance to users (deployer is address(this))
         // If the token is mintable or burnable, the argument must be true. False otherwise.
         token = ITokenMock(address(new TokenMock(true)));
     }
-
 }

@@ -9,11 +9,19 @@ contract RedemptionProxy {
         vault = _vault;
     }
 
-    function redeemOnBehalf(uint256 shares, address receiver, address owner) public returns (uint256 tokensWithdrawn) {
-        tokensWithdrawn = vault.redeem(shares, receiver, owner );
+    function redeemOnBehalf(
+        uint256 shares,
+        address receiver,
+        address owner
+    ) public returns (uint256 tokensWithdrawn) {
+        tokensWithdrawn = vault.redeem(shares, receiver, owner);
     }
 
-    function withdrawOnBehalf(uint256 tokens, address receiver, address owner) public returns (uint256 sharesRedeemed) {
-        sharesRedeemed = vault.withdraw(tokens, receiver, owner );
+    function withdrawOnBehalf(
+        uint256 tokens,
+        address receiver,
+        address owner
+    ) public returns (uint256 sharesRedeemed) {
+        sharesRedeemed = vault.withdraw(tokens, receiver, owner);
     }
 }

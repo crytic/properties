@@ -1,54 +1,47 @@
---- 
+---
 description: "File a bug report"
-labels: 
+labels:
   - bug-candidate
 name: "Bug Report"
 title: "[Bug-Candidate]: "
-body: 
-  - 
-    attributes: 
+body:
+  - attributes:
       value: |
-          Before submitting, please check the issues tab to avoid duplicates.
-          Thanks for taking the time to fill out this bug report!
+        Before submitting, please check the issues tab to avoid duplicates.
+        Thanks for taking the time to fill out this bug report!
     type: markdown
-  - 
-    attributes: 
+  - attributes:
       label: "Describe the issue:"
     id: what-happened
     type: textarea
-    validations: 
+    validations:
       required: true
-  - 
-    attributes: 
+  - attributes:
       label: "Steps to reproduce the issue:"
       description: "Please be as detailed as you can. It's easier for us to fix the bug if we can reproduce it."
       placeholder: "First, clone the `crytic/properties` repository..."
     id: reproduce
     type: textarea
-    validations: 
+    validations:
       required: true
-  - 
-    attributes: 
+  - attributes:
       label: "If additional code is needed for reproducing, please copy it here, or drop us a link to the repository:"
       description: "It can be a github repo, code snippet, or empty if no additional code is needed."
       placeholder: "`contract A {}`\n"
     id: additional-code
     type: textarea
-  - 
-    attributes: 
+  - attributes:
       label: "Echidna version:"
       description: "Run `echidna-test --version`"
     id: version
     type: textarea
-    validations: 
+    validations:
       required: true
-  - 
-    attributes: 
+  - attributes:
       label: "Additional information:"
       description: |
-          Please add any additional information you might consider important, or copy and paste any relevant log output. 
-          This will be automatically formatted into code, so no need for backticks or other formatting.
-      render: shell      
+        Please add any additional information you might consider important, or copy and paste any relevant log output. 
+        This will be automatically formatted into code, so no need for backticks or other formatting.
+      render: shell
     id: additional-information
     type: textarea
-
