@@ -88,26 +88,26 @@ Should cause these properties to fail:
 ## Properties Tested
 
 ### Basic properties
-- test_ERC721_transferFromResetApproval 
-- test_ERC721_transferFromUpdatesOwner 
-- test_ERC721_transferFromSelf 
-- test_ERC721_transferFromSelfResetsApproval 
-- test_ERC721_external_ownerOfInvalidTokenMustRevert
-- test_ERC721_external_balanceOfZeroAddressMustRevert
-- test_ERC721_external_approvingInvalidTokenMustRevert
-- test_ERC721_external_transferFromNotApproved
-- test_ERC721_external_transferFromZeroAddress
-- test_ERC721_external_transferToZeroAddress 
-- test_ERC721_external_safeTransferFromRevertsOnNoncontractReceiver
+- `transferFrom()` should reset approvals
+- `transferFrom()` should update the token owner
+- `transferFrom()` to self should not break accounting
+- `transferFrom()` to self should reset approvals
+- `ownerOf()` should revert on invalid token
+- `balanceOf()` should revert on address zero
+- `approve()` should revert on invalid token
+- `transferFrom()` should revert if caller is not operator
+- `transferFrom()` should revert if `from` is the zero address
+- `transferFrom()` should revert if `to` is the zero address
+- `safeTransferFrom()` should revert if receiver is a contract that does not implement `onERC721Received()`
 
 ### Mintable properties
-- test_ERC721_mintIncreasesSupply
-- test_ERC721_mintCreatesFreshToken
+- `mint()` should increase the total supply
+- `mint()` should correctly assign ownership/account balance and revert if the `tokenId` already exists
 
 ### Burnable properties
-- test_ERC721_burnReducesTotalSupply
-- test_ERC721_burnRevertOnTransferFromPreviousOwner
-- test_ERC721_burnRevertOnApprove
-- test_ERC721_burnRevertOnOwnerOf
-- test_ERC721_burnRevertOnTransferFromZeroAddress
-- test_ERC721_burnRevertOnGetApproved
+- `burn()` should reduce the total supply
+- `burn()` should clear approvals
+- cannot `approve()` a burned token
+- `ownerOf()` should revert if the token has been burned
+- cannot transfer a burned token
+- `getApproved()` should revert if the token is burned
