@@ -12,6 +12,10 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
     - [Tests for mintable tokens](#tests-for-mintable-tokens)
     - [Tests for pausable tokens](#tests-for-pausable-tokens)
     - [Tests for tokens implementing `increaseAllowance` and `decreaseAllowance`](#tests-for-tokens-implementing-increaseallowance-and-decreaseallowance)
+  - [ERC721](#erc721)
+    - [Basic properties for standard functions](#basic-properties-for-standard-functions-1)
+    - [Tests for burnable tokens](#tests-for-burnable-tokens-1)
+    - [Tests for mintable tokens](#tests-for-mintable-tokens-1)
   - [ERC4626](#erc4626)
   - [ABDKMath64x64](#abdkmath64x64)
 
