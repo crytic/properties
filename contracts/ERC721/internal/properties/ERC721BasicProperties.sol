@@ -36,9 +36,7 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != address(this));
         require(target != msg.sender);
         uint tokenId = tokenOfOwnerByIndex(target, 0);
-        bool isApproved = isApprovedForAll(target, address(this));
-        address approved = getApproved(tokenId);
-        require(approved != address(this) && !isApproved);
+        _approve(address(0), tokenId);
         require(ownerOf(tokenId) == target);
 
         transferFrom(target, msg.sender, tokenId);
@@ -54,12 +52,9 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != address(this));
         require(target != msg.sender);
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        bool isApproved = isApprovedForAll(msg.sender, address(this));
-        address approved = getApproved(tokenId);
-        require(approved == address(this) || isApproved);
         transferFrom(msg.sender, target, tokenId);
 
-        approved = getApproved(tokenId);
+        address approved = getApproved(tokenId);
         assertWithMsg(approved == address(0), "Approval was not reset");
     }
 
@@ -70,9 +65,6 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != address(this));
         require(target != msg.sender);
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        bool isApproved = isApprovedForAll(msg.sender, address(this));
-        address approved = getApproved(tokenId);
-        require(approved == address(this) || isApproved);
         transferFrom(msg.sender, target, tokenId);
 
         assertWithMsg(ownerOf(tokenId) == target, "Token owner not updated");
@@ -102,9 +94,6 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         uint256 selfBalance = balanceOf(msg.sender);
         require(selfBalance > 0); 
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        bool isApproved = isApprovedForAll(msg.sender, address(this));
-        address approved = getApproved(tokenId);
-        require(approved == address(this) || isApproved);
 
         transferFrom(msg.sender, msg.sender, tokenId);
         assertWithMsg(ownerOf(tokenId) == msg.sender, "Self transfer changes owner");
@@ -116,9 +105,6 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         uint256 selfBalance = balanceOf(msg.sender);
         require(selfBalance > 0); 
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        bool isApproved = isApprovedForAll(msg.sender, address(this));
-        address approved = getApproved(tokenId);
-        require(approved == address(this) || isApproved);
 
         transferFrom(msg.sender, msg.sender, tokenId);
         assertWithMsg(getApproved(tokenId) == address(0), "Self transfer does not reset approvals");
@@ -131,9 +117,6 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != address(this));
         require(target != msg.sender);
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        bool isApproved = isApprovedForAll(msg.sender, address(this));
-        address approved = getApproved(tokenId);
-        require(approved == address(this) || isApproved);
         require(ownerOf(tokenId) == msg.sender);
         
         safeTransferFrom(msg.sender, address(unsafeReceiver), tokenId);

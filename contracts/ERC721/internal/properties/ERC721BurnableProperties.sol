@@ -22,6 +22,7 @@ abstract contract CryticERC721BurnableProperties is CryticERC721TestBase, ERC721
             burn(tokenId);
         }
 
+        assertWithMsg(selfBalance <= oldTotalSupply, "Underflow - user balance larger than total supply");
         assertEq(oldTotalSupply - selfBalance, totalSupply(), "Incorrect supply update on burn");
     }
 
@@ -80,9 +81,6 @@ abstract contract CryticERC721BurnableProperties is CryticERC721TestBase, ERC721
         ownerOf(tokenId);
         assertWithMsg(false, "ownerOf didn't revert for burned token");
     }
-
-
-    // todo burned token cannot be minted again
 
     // The following functions are overrides required by Solidity.
 

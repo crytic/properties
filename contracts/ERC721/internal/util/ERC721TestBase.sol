@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "../../../util/PropertiesConstants.sol";
 import "../../../util/PropertiesHelper.sol";
 import {MockReceiver} from "./MockReceiver.sol";
+import "../../../util/Hevm.sol";
 
 abstract contract CryticERC721TestBase is ERC721, ERC721Enumerable, PropertiesAsserts, PropertiesConstants {
 

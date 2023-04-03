@@ -1,6 +1,7 @@
 pragma solidity ^0.8.13;
 
 import "../util/ERC721ExternalTestBase.sol";
+import "../../../util/Hevm.sol";
 
 abstract contract CryticERC721ExternalBurnableProperties is CryticERC721ExternalTestBase {
     using Address for address;
@@ -17,9 +18,11 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
 
         for(uint256 i; i < selfBalance; i++) {
             uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+            hevm.prank(msg.sender);
             token.burn(tokenId);
         }
-
+        // Check for underflow
+        assertWithMsg(selfBalance <= oldTotalSupply, "Underflow - user balance larger than total supply");
         assertEq(oldTotalSupply - selfBalance, token.totalSupply(), "Incorrect supply update on burn");
     }
 
@@ -30,7 +33,9 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         require(selfBalance > 0);
 
         uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+        hevm.prank(msg.sender);
         token.burn(tokenId);
+        hevm.prank(msg.sender);
         token.safeTransferFrom(msg.sender, target, tokenId);
         assertWithMsg(false, "Transferring a burned token didn't revert");
     }
@@ -41,7 +46,9 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         require(selfBalance > 0);
 
         uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+        hevm.prank(msg.sender);
         token.burn(tokenId);
+        hevm.prank(msg.sender);
         token.approve(address(this), tokenId);
         assertWithMsg(false, "Approving a burned token didn't revert");
     }
@@ -52,6 +59,7 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         require(selfBalance > 0);
 
         uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+        hevm.prank(msg.sender);
         token.burn(tokenId);
         token.getApproved(tokenId);
         assertWithMsg(false, "getApproved didn't revert for burned token");
@@ -63,6 +71,7 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         require(selfBalance > 0);
 
         uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+        hevm.prank(msg.sender);
         token.burn(tokenId);
         token.ownerOf(tokenId);
         assertWithMsg(false, "ownerOf didn't revert for burned token");
