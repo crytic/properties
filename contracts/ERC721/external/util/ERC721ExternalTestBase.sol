@@ -9,9 +9,9 @@ import {MockReceiver} from "./MockReceiver.sol";
 
 abstract contract CryticERC721ExternalTestBase is PropertiesAsserts, PropertiesConstants {
 
-    IERC721Internal token;
-    MockReceiver mockSafeReceiver;
-    MockReceiver mockUnsafeReceiver;
+    IERC721Internal public token;
+    MockReceiver public mockSafeReceiver;
+    MockReceiver public mockUnsafeReceiver;
 
     constructor() {
     }
