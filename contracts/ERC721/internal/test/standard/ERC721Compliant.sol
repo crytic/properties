@@ -9,7 +9,6 @@ import {MockReceiver} from "../../util/MockReceiver.sol";
 contract ERC721Compliant is CryticERC721InternalPropertyTests {
     
     uint256 public counter;
-    uint256 public maxSupply;
 
     constructor() ERC721("ERC721Compliant","Compliant") {
         isMintableOrBurnable = true;
