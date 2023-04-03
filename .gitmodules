@@ -5,7 +5,7 @@
 [submodule "lib/solmate"]
 	path = lib/solmate
 	url = https://github.com/transmissions11/solmate
-    tag = v6
+    	tag = v6
 [submodule "lib/ERC4626"]
 	path = lib/ERC4626
 	url = https://github.com/fubuloubu/ERC4626
