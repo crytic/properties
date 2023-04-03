@@ -2,12 +2,15 @@ pragma solidity ^0.8.0;
 import "./ExampleToken.sol";
 import {IERC721Internal} from "@crytic/properties/ERC721/util/IERC721Internal.sol";
 import {CryticERC721ExternalBasicProperties} from "@crytic/properties/ERC721/external/properties/ERC721xternalBasicProperties.sol";
+import {MockReceiver} from "properties/ERC721/external/util/MockReceiver.sol";
 
 contract CryticERC721ExternalHarness is CryticERC721ExternalBasicProperties {
         
     constructor() {
         // Deploy ERC721
         token = IERC721Internal(address(new ERC721Mock()));
+        mockSafeReceiver = new MockReceiver(true);
+        mockUnsafeReceiver = new MockReceiver(false);
     }
 
 }

@@ -5,16 +5,21 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 contract ExampleToken is ERC721, ERC721Enumerable, ERC721Burnable {
+    
+    uint256 public counter;
     constructor() ERC721("Example token", "EXT") {}
 
-    function mint(address to, uint256 tokenId) public virtual {
-        _mint(to, tokenId);
+    function mint(address to, uint256 amount) public {
+        for (uint256 i; i < amount; i++) {
+            _mint(to, counter++);
+        }
     }
 
     // Overrides
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
+        virtual
         override(ERC721, ERC721Enumerable)
     {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
@@ -23,6 +28,7 @@ contract ExampleToken is ERC721, ERC721Enumerable, ERC721Burnable {
     function supportsInterface(bytes4 interfaceId)
         public
         view
+        virtual
         override(ERC721, ERC721Enumerable)
         returns (bool)
     {
