@@ -77,7 +77,7 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
 
 | ID |  Name | Invariant tested |
 |---|---|---|
-| ERC721-BASE-001 | [test_ERC20_balanceOfZeroAddressMustRevert](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L13) | Calling `balanceOf` for the zero address should revert. |
+| ERC721-BASE-001 | [test_ERC721_balanceOfZeroAddressMustRevert](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L13) | Calling `balanceOf` for the zero address should revert. |
 | ERC721-BASE-002 | [test_ERC721_ownerOfInvalidTokenMustRevert](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L19) | Calling ownerOf for an invalid token should revert. |
 | ERC721-BASE-003 | [test_ERC721_approvingInvalidTokenMustRevert](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L26) | `approve()` should revert on invalid token. |
 | ERC721-BASE-004 | [test_ERC721_transferFromNotApproved](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721BasicProperties.sol#L33) | `transferFrom()` should revert if caller is not operator. |
