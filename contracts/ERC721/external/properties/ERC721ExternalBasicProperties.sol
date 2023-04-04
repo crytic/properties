@@ -39,7 +39,6 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
         require(approved != address(this) && !isApproved);
 
         token.transferFrom(msg.sender, target, tokenId);
-        assertWithMsg(token.ownerOf(tokenId) == msg.sender, "Transferred a token without being approved.");
         assertWithMsg(false, "transferFrom without approval did not revert");
     }
 
@@ -54,8 +53,6 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
 
         hevm.prank(msg.sender);
         token.approve(address(this), tokenId);
-
-
         token.transferFrom(msg.sender, target, tokenId);
         
         address approved = token.getApproved(tokenId);
@@ -69,19 +66,19 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
         require(target != address(this));
         require(target != msg.sender);
         uint tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
-        hevm.prank(msg.sender);
-        token.transferFrom(msg.sender, target, tokenId);
 
-        assertWithMsg(token.ownerOf(tokenId) == target, "Token owner not updated");
+        hevm.prank(msg.sender);
+        try token.transferFrom(msg.sender, target, tokenId) {
+            assertWithMsg(token.ownerOf(tokenId) == target, "Token owner not updated");
+        } catch {
+            assertWithMsg(false, "transferFrom unexpectedly reverted");
+        }
     }
 
     // transfer from zero address should revert
     function test_ERC721_external_transferFromZeroAddress(address target, uint256 tokenId) public virtual {
-        require(target != address(this));
-        require(target != msg.sender);
         token.transferFrom(address(0), target, tokenId);
 
-        assertWithMsg(token.ownerOf(tokenId) != target, "Transfered from zero address");
         assertWithMsg(false, "transferFrom does not revert when `from` is the zero-address");
     }
 
@@ -104,9 +101,13 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
         uint tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
         hevm.prank(msg.sender);
 
-        token.transferFrom(msg.sender, msg.sender, tokenId);
-        assertWithMsg(token.ownerOf(tokenId) == msg.sender, "Self transfer changes owner");
-        assertEq(token.balanceOf(msg.sender), selfBalance, "Self transfer breaks accounting");
+        try token.transferFrom(msg.sender, msg.sender, tokenId) {
+            assertWithMsg(token.ownerOf(tokenId) == msg.sender, "Self transfer changes owner");
+            assertEq(token.balanceOf(msg.sender), selfBalance, "Self transfer breaks accounting");
+        } catch {
+            assertWithMsg(false, "transferFrom unexpectedly reverted");
+        }
+
     }
 
     // Transfer to self reset approval

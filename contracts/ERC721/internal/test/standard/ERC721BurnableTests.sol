@@ -11,16 +11,18 @@ contract ERC721BurnableTestsInternal is CryticERC721BurnableProperties {
     uint256 public counter;
 
     constructor() ERC721("ERC721BasicTestsInternal","ERC721BasicTestsInternal") {
-        maxSupply = 100;
         isMintableOrBurnable = true;
-        hasMaxSupply = false;
         safeReceiver = new MockReceiver(true);
         unsafeReceiver = new MockReceiver(false);
     }
 
     function burn(uint256 tokenId) public virtual override {
         //require(totalSupply() + amount <= maxSupply);
-        _mint(msg.sender, counter++);
+        if (tokenId % 2 == 0) {
+            _mint(msg.sender, counter++);
+        } else {
+            _burn(tokenId);
+        }
     }
 
     function balanceOf(address owner) public view virtual override(ERC721, IERC721) returns (uint256) {

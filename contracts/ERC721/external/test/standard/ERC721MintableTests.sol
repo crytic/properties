@@ -5,7 +5,7 @@ import {ERC721IncorrectMintable} from "../../util/ERC721IncorrectMintable.sol";
 import {IERC721Internal} from "../../../util/IERC721Internal.sol";
 import {MockReceiver} from "../../util/MockReceiver.sol";
 
-contract TestHarness  is CryticERC721ExternalMintableProperties {
+contract TestHarness is CryticERC721ExternalMintableProperties {
     constructor() {
         token = IERC721Internal(address(new ERC721IncorrectMintable("ERC721BAD","ERC721BAD")));
         mockSafeReceiver = new MockReceiver(true);

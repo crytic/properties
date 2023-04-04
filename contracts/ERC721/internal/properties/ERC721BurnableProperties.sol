@@ -44,7 +44,7 @@ abstract contract CryticERC721BurnableProperties is CryticERC721TestBase, ERC721
         require(selfBalance > 0);
 
         uint256 tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        _burn(tokenId);
+        burn(tokenId);
         transferFrom(address(0), target, tokenId);
         assertWithMsg(false, "Transferring a burned token didn't revert");
     }

@@ -11,9 +11,7 @@ contract ERC721MintableTestsInternal is CryticERC721MintableProperties {
     uint256 public counter;
 
     constructor() ERC721("ERC721BasicTestsInternal","ERC721BasicTestsInternal") {
-        maxSupply = 10;
         isMintableOrBurnable = true;
-        hasMaxSupply = false;
         safeReceiver = new MockReceiver(true);
         unsafeReceiver = new MockReceiver(false);
     }
@@ -92,10 +90,6 @@ contract ERC721MintableTestsInternal is CryticERC721MintableProperties {
 
     function _customMint(address to) internal virtual override {
         mint(to);
-    }
-
-    function _customMaxSupply() internal virtual override view returns (uint256) {
-        return maxSupply;
     }
 }
 

@@ -4,7 +4,7 @@ import "../util/ERC721ExternalTestBase.sol";
 
 abstract contract CryticERC721ExternalMintableProperties is CryticERC721ExternalTestBase {
     using Address for address;
-    mapping (uint256 => bool) usedId;
+
     ////////////////////////////////////////
     // Properties
     // mint increases the total supply
@@ -12,23 +12,26 @@ abstract contract CryticERC721ExternalMintableProperties is CryticERC721External
         require(token.isMintableOrBurnable());
         uint256 selfBalance = token.balanceOf(address(this));
         uint256 oldTotalSupply = token.totalSupply();
-        token._customMint(address(this));
 
-        assertEq(oldTotalSupply + 1, token.totalSupply(), "Total supply was not correctly increased");
-        assertEq(selfBalance + 1, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
+        try token._customMint(address(this)) {
+            assertEq(oldTotalSupply + 1, token.totalSupply(), "Total supply was not correctly increased");
+            assertEq(selfBalance + 1, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
+        } catch {
+            assertWithMsg(false, "Minting unexpectedly reverted");
+        }
     }
 
     // mint creates a fresh token
     function test_ERC721_external_mintCreatesFreshToken() public virtual {
         require(token.isMintableOrBurnable());
         uint256 selfBalance = token.balanceOf(address(this));
-        token._customMint(address(this));
-
-        uint256 tokenId = token.tokenOfOwnerByIndex(address(this), selfBalance);
-        assertWithMsg(token.ownerOf(tokenId) == address(this), "Token ID was not minted to receiver");
-        assertWithMsg(!usedId[tokenId], "Token ID minted is not new");
-        usedId[tokenId] = true;
-
-        assertEq(selfBalance + 1, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
+        try token._customMint(address(this)) {
+            uint256 tokenId = token.tokenOfOwnerByIndex(address(this), selfBalance);
+            assertWithMsg(token.ownerOf(tokenId) == address(this), "Token ID was not minted to receiver");
+            assertWithMsg(!token.usedId(tokenId), "Token ID minted is not new");
+            assertEq(selfBalance + 1, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
+        } catch {
+            assertWithMsg(false, "Minting unexpectedly reverted");
+        }
     }
 }

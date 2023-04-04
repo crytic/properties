@@ -25,7 +25,6 @@ contract ERC721IncorrectBurnable is Context, ERC165, IERC721, IERC721Metadata {
     // Token symbol
     string private _symbol;
 
-    uint256 public maxSupply;
     uint256 public counter;
     bool public isMintableOrBurnable;
     address excluded = address(0x10000);
@@ -60,7 +59,6 @@ contract ERC721IncorrectBurnable is Context, ERC165, IERC721, IERC721Metadata {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        maxSupply = 100;
         isMintableOrBurnable = true;
     }
 
@@ -76,10 +74,6 @@ contract ERC721IncorrectBurnable is Context, ERC165, IERC721, IERC721Metadata {
 
     function _customMint(address to) external {
         mint(to);
-    }
-
-    function _customMaxSupply() external view returns (uint256) {
-        return maxSupply;
     }
 
     /**

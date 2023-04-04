@@ -2,26 +2,24 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {IERC721Internal} from "../../util/IERC721Internal.sol";
 
-contract ERC721Compliant is ERC721, ERC721Enumerable {
+contract ERC721Compliant is ERC721, ERC721Enumerable, IERC721Internal {
     
     uint256 public counter;
-    uint256 public maxSupply;
     bool public isMintableOrBurnable;
+    mapping(uint256 => bool) public usedId;
 
     constructor() ERC721("OZERC721","OZ") {
-        maxSupply = 100;
         isMintableOrBurnable = true;
     }
 
-
-    function _customMint(address to) public virtual {
-        maxSupply += 1;
-        _mint(to, counter++);
+    function burn(uint256 tokenId) public virtual {
+        _burn(tokenId);
     }
 
-    function _customMaxSupply() public virtual view returns (uint256) {
-        return maxSupply;
+    function _customMint(address to) public virtual {
+        _mint(to, counter++);
     }
     
     // The following functions are overrides required by Solidity.
@@ -37,7 +35,7 @@ contract ERC721Compliant is ERC721, ERC721Enumerable {
         public
         view
         virtual
-        override(ERC721, ERC721Enumerable)
+        override(ERC721, ERC721Enumerable, IERC165)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

@@ -25,10 +25,10 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     // Token symbol
     string private _symbol;
 
-    uint256 public maxSupply;
     uint256 public counter;
     bool public isMintableOrBurnable;
     address excluded = address(0x10000);
+    mapping (uint256 => bool) public usedId;
 
     // Mapping from token ID to owner address
     mapping(uint256 => address) private _owners;
@@ -60,20 +60,17 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        maxSupply = 100;
         isMintableOrBurnable = true;
     }
 
     function mint(address to) public {
-        _mint(to, counter++);
+        uint256 id = counter++;
+        usedId[id] = true;
+        _mint(to, id);
     }
 
     function _customMint(address to) external {
         mint(to);
-    }
-
-    function _customMaxSupply() external view returns (uint256) {
-        return maxSupply;
     }
 
     /**

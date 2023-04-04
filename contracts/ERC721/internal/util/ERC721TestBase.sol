@@ -11,8 +11,6 @@ abstract contract CryticERC721TestBase is ERC721, ERC721Enumerable, PropertiesAs
 
     // Is the contract allowed to change its total supply?
     bool isMintableOrBurnable;
-    bool hasMaxSupply;
-    uint256 maxSupply;
     MockReceiver safeReceiver;
     MockReceiver unsafeReceiver;
 

@@ -41,9 +41,7 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(ownerOf(tokenId) == target);
 
         transferFrom(target, msg.sender, tokenId);
-        assertWithMsg(ownerOf(tokenId) == target, "Target");
-        assertWithMsg(ownerOf(tokenId) == msg.sender, "Transferred a token without being approved.");
-        
+        assertWithMsg(false, "using transferFrom without being approved should have reverted");
     }
 
     // transferFrom should reset approval for that token
@@ -53,10 +51,14 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != address(this));
         require(target != msg.sender);
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        transferFrom(msg.sender, target, tokenId);
 
-        address approved = getApproved(tokenId);
-        assertWithMsg(approved == address(0), "Approval was not reset");
+        hevm.prank(msg.sender);
+        try IERC721(address(this)).transferFrom(msg.sender, target, tokenId) {
+            address approved = getApproved(tokenId);
+            assertWithMsg(approved == address(0), "Approval was not reset");
+        } catch {
+            assertWithMsg(false, "transferFrom unexpectedly reverted");
+        }
     }
 
     // transferFrom correctly updates owner
@@ -66,9 +68,13 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != address(this));
         require(target != msg.sender);
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        transferFrom(msg.sender, target, tokenId);
 
-        assertWithMsg(ownerOf(tokenId) == target, "Token owner not updated");
+        hevm.prank(msg.sender);
+        try IERC721(address(this)).transferFrom(msg.sender, target, tokenId) {
+            assertWithMsg(ownerOf(tokenId) == target, "Token owner not updated");
+        } catch {
+            assertWithMsg(false, "transferFrom unexpectedly reverted");
+        }
     }
 
     function test_ERC721_transferFromZeroAddress(address target, uint256 tokenId) public virtual {
@@ -76,7 +82,6 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != msg.sender);
         transferFrom(address(0), target, tokenId);
 
-        assertWithMsg(ownerOf(tokenId) != target, "Transfered from zero address minted the token");
         assertWithMsg(false, "Transfer from zero address did not revert");
     }
 
@@ -97,9 +102,13 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(selfBalance > 0); 
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
 
-        transferFrom(msg.sender, msg.sender, tokenId);
-        assertWithMsg(ownerOf(tokenId) == msg.sender, "Self transfer changes owner");
-        assertEq(balanceOf(msg.sender), selfBalance, "Self transfer breaks accounting");
+        hevm.prank(msg.sender);
+        try IERC721(address(this)).transferFrom(msg.sender, msg.sender, tokenId) {
+            assertWithMsg(ownerOf(tokenId) == msg.sender, "Self transfer changes owner");
+            assertEq(balanceOf(msg.sender), selfBalance, "Self transfer breaks accounting");
+        } catch {
+            assertWithMsg(false, "transferFrom unexpectedly reverted");
+        }
     }
 
     // Transfer to self reset approval
@@ -108,8 +117,12 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(selfBalance > 0); 
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
 
-        transferFrom(msg.sender, msg.sender, tokenId);
-        assertWithMsg(getApproved(tokenId) == address(0), "Self transfer does not reset approvals");
+        hevm.prank(msg.sender);
+        try IERC721(address(this)).transferFrom(msg.sender, msg.sender, tokenId) {
+            assertWithMsg(getApproved(tokenId) == address(0), "Self transfer does not reset approvals");
+        } catch {
+            assertWithMsg(false, "transferFrom unexpectedly reverted");
+        }
     }
 
     // safeTransferFrom reverts if receiver does not implement the callback
@@ -124,8 +137,4 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         safeTransferFrom(msg.sender, address(unsafeReceiver), tokenId);
         assertWithMsg(ownerOf(tokenId) == msg.sender, "safeTransferFrom does not revert if receiver does not implement ERC721.onERC721Received");
     }
-
-    // todo test_ERC721_setApprovalForAllWorksAsExpected
-    // todo safeTransferFrom checks
-
 }

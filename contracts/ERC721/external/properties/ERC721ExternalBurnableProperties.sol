@@ -36,7 +36,7 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         hevm.prank(msg.sender);
         token.burn(tokenId);
         hevm.prank(msg.sender);
-        token.safeTransferFrom(msg.sender, target, tokenId);
+        token.transferFrom(msg.sender, target, tokenId);
         assertWithMsg(false, "Transferring a burned token didn't revert");
     }
 
@@ -76,6 +76,4 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         token.ownerOf(tokenId);
         assertWithMsg(false, "ownerOf didn't revert for burned token");
     }
-
-    // todo burned token cannot be minted again
 }

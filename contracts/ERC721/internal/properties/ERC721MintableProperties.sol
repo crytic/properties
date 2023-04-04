@@ -33,5 +33,4 @@ abstract contract CryticERC721MintableProperties is CryticERC721TestBase {
 
     // Wrappers
     function _customMint(address to) internal virtual;
-    function _customMaxSupply() internal virtual view returns (uint256);
 }

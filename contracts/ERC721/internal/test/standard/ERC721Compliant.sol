@@ -12,7 +12,6 @@ contract ERC721Compliant is CryticERC721InternalPropertyTests {
 
     constructor() ERC721("ERC721Compliant","Compliant") {
         isMintableOrBurnable = true;
-        maxSupply = 100;
         safeReceiver = new MockReceiver(true);
         unsafeReceiver = new MockReceiver(false);
 
@@ -44,9 +43,5 @@ contract ERC721Compliant is CryticERC721InternalPropertyTests {
 
     function _customMint(address to) internal virtual override {
         mint(to);
-    }
-
-    function _customMaxSupply() internal virtual override view returns (uint256) {
-        return maxSupply;
     }
 }
