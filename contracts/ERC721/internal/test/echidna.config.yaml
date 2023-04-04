@@ -1,0 +1,7 @@
+coverage: true 
+corpusDir: "corpus"
+testMode: assertion
+testLimit: 100000
+cryticArgs:
+ - --solc-remaps
+ - ds-test/=lib/forge-std/lib/ds-test/src/ forge-std/=lib/forge-std/src/ solmate/=lib/solmate/ @openzeppelin/=lib/openzeppelin-contracts/
