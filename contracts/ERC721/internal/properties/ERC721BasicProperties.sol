@@ -135,6 +135,6 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(ownerOf(tokenId) == msg.sender);
         
         safeTransferFrom(msg.sender, address(unsafeReceiver), tokenId);
-        assertWithMsg(ownerOf(tokenId) == msg.sender, "safeTransferFrom does not revert if receiver does not implement ERC721.onERC721Received");
+        assertWithMsg(false, "safeTransferFrom does not revert if receiver does not implement ERC721.onERC721Received");
     }
 }
