@@ -40,6 +40,7 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
 
         token.transferFrom(msg.sender, target, tokenId);
         assertWithMsg(token.ownerOf(tokenId) == msg.sender, "Transferred a token without being approved.");
+        assertWithMsg(false, "transferFrom without approval did not revert");
     }
 
     // transferFrom should reset approval for that token
@@ -48,9 +49,12 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
         require(selfBalance > 0);  
         require(target != address(this));
         require(target != msg.sender);
+
         uint tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+
         hevm.prank(msg.sender);
         token.approve(address(this), tokenId);
+
 
         token.transferFrom(msg.sender, target, tokenId);
         
@@ -78,6 +82,7 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
         token.transferFrom(address(0), target, tokenId);
 
         assertWithMsg(token.ownerOf(tokenId) != target, "Transfered from zero address");
+        assertWithMsg(false, "transferFrom does not revert when `from` is the zero-address");
     }
 
     // Transfers to the zero address should revert

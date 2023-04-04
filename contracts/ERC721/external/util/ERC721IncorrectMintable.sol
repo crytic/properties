@@ -64,14 +64,12 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
         isMintableOrBurnable = true;
     }
 
-    function mint(address to, uint256 amount) public {
-        for(uint256 i; i < amount; i++) {
-            _mint(to, counter++);
-        }
+    function mint(address to) public {
+        _mint(to, counter++);
     }
 
-    function _customMint(address to, uint256 amount) external {
-        mint(to, amount);
+    function _customMint(address to) external {
+        mint(to);
     }
 
     function _customMaxSupply() external view returns (uint256) {

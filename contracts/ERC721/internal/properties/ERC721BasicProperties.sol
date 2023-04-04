@@ -37,6 +37,7 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != msg.sender);
         uint tokenId = tokenOfOwnerByIndex(target, 0);
         _approve(address(0), tokenId);
+        _setApprovalForAll(target, msg.sender, false);
         require(ownerOf(tokenId) == target);
 
         transferFrom(target, msg.sender, tokenId);
@@ -75,7 +76,8 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(target != msg.sender);
         transferFrom(address(0), target, tokenId);
 
-        assertWithMsg(ownerOf(tokenId) != target, "Transfered from zero address");
+        assertWithMsg(ownerOf(tokenId) != target, "Transfered from zero address minted the token");
+        assertWithMsg(false, "Transfer from zero address did not revert");
     }
 
     // Transfers to the zero address should revert
@@ -86,7 +88,7 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
 
         transferFrom(msg.sender, address(0), tokenId);
 
-        assertWithMsg(ownerOf(tokenId) == address(0), "Transfer to zero address should have reverted");
+        assertWithMsg(false, "Transfer to zero address should have reverted");
     }
 
     // Transfers to self should not break accounting

@@ -11,7 +11,7 @@ abstract contract CryticERC721BurnableProperties is CryticERC721TestBase, ERC721
     // Properties
 
     // The burn function should destroy tokens and reduce the total supply
-    function test_ERC721_burnReducesTotalSupply(uint256 tokenId) public virtual {
+    function test_ERC721_burnReducesTotalSupply() public virtual {
         require(isMintableOrBurnable);
         uint256 selfBalance = balanceOf(msg.sender);
         require(selfBalance > 0);
@@ -44,7 +44,7 @@ abstract contract CryticERC721BurnableProperties is CryticERC721TestBase, ERC721
         require(selfBalance > 0);
 
         uint256 tokenId = tokenOfOwnerByIndex(msg.sender, 0);
-        burn(tokenId);
+        _burn(tokenId);
         transferFrom(address(0), target, tokenId);
         assertWithMsg(false, "Transferring a burned token didn't revert");
     }

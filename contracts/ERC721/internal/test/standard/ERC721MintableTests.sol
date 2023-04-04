@@ -11,14 +11,14 @@ contract ERC721MintableTestsInternal is CryticERC721MintableProperties {
     uint256 public counter;
 
     constructor() ERC721("ERC721BasicTestsInternal","ERC721BasicTestsInternal") {
-        maxSupply = 100;
+        maxSupply = 10;
         isMintableOrBurnable = true;
         hasMaxSupply = false;
         safeReceiver = new MockReceiver(true);
         unsafeReceiver = new MockReceiver(false);
     }
 
-    function mint(uint256 amount) public {
+    function mint(address to) public {
         //require(totalSupply() + amount <= maxSupply);
         /* for (uint256 i; i < amount; i++) {
             _mint(msg.sender, counter++);
@@ -90,8 +90,8 @@ contract ERC721MintableTestsInternal is CryticERC721MintableProperties {
         return super.supportsInterface(interfaceId);
     }
 
-    function _customMint(uint256 amount) internal virtual override {
-        mint(amount);
+    function _customMint(address to) internal virtual override {
+        mint(to);
     }
 
     function _customMaxSupply() internal virtual override view returns (uint256) {

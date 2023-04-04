@@ -1,5 +1,5 @@
 coverage: true 
-multi-abi: true
+allContracts: true
 corpusDir: "corpus"
 testMode: assertion
 testLimit: 100000

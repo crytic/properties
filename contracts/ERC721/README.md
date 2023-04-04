@@ -77,11 +77,11 @@ Should cause these properties to fail:
 
 ### Vanilla OpenZeppelin ERC721
 
-- Internal:
-`echidna ./contracts/ERC721/internal/test/standard/ERC721Compliant.sol --contract ERC721Compliant --config ./contracts/ERC721/internal/test/echidna.config.yaml`
-
 - External:
 `echidna ./contracts/ERC721/external/test/standard/ERC721CompliantTests.sol --contract TestHarness --config ./contracts/ERC721/external/test/echidna.config.yaml`
+
+- Internal:
+`echidna ./contracts/ERC721/internal/test/standard/ERC721Compliant.sol --contract ERC721Compliant --config ./contracts/ERC721/internal/test/echidna.config.yaml`
 
 [EIP-721 Spec](https://eips.ethereum.org/EIPS/eip-721)
 

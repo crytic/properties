@@ -18,11 +18,9 @@ contract ERC721BurnableTestsInternal is CryticERC721BurnableProperties {
         unsafeReceiver = new MockReceiver(false);
     }
 
-    function burn(uint256 amount) public virtual override {
+    function burn(uint256 tokenId) public virtual override {
         //require(totalSupply() + amount <= maxSupply);
-        for (uint256 i; i < amount; i++) {
-            _mint(msg.sender, counter++);
-        }
+        _mint(msg.sender, counter++);
     }
 
     function balanceOf(address owner) public view virtual override(ERC721, IERC721) returns (uint256) {

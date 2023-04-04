@@ -18,11 +18,9 @@ contract ERC721Compliant is CryticERC721InternalPropertyTests {
 
     }
 
-    function mint(uint256 amount) public {
+    function mint(address to) public {
         //require(totalSupply() + amount <= maxSupply);
-        for (uint256 i; i < amount; i++) {
-            _mint(msg.sender, counter++);
-        }
+        _mint(to, counter++);
     }
     
     // The following functions are overrides required by Solidity.
@@ -44,8 +42,8 @@ contract ERC721Compliant is CryticERC721InternalPropertyTests {
         return super.supportsInterface(interfaceId);
     }
 
-    function _customMint(uint256 amount) internal virtual override {
-        mint(amount);
+    function _customMint(address to) internal virtual override {
+        mint(to);
     }
 
     function _customMaxSupply() internal virtual override view returns (uint256) {

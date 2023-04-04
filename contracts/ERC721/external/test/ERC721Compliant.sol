@@ -15,12 +15,9 @@ contract ERC721Compliant is ERC721, ERC721Enumerable {
     }
 
 
-    function _customMint(address to, uint256 amount) public virtual {
-        maxSupply += amount;
-        for (uint256 i; i < amount; i++) {
-            _mint(to, counter++);
-        }
-
+    function _customMint(address to) public virtual {
+        maxSupply += 1;
+        _mint(to, counter++);
     }
 
     function _customMaxSupply() public virtual view returns (uint256) {

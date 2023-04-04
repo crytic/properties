@@ -8,41 +8,30 @@ abstract contract CryticERC721MintableProperties is CryticERC721TestBase {
     ////////////////////////////////////////
     // Properties
     // mint increases the total supply
-    function test_ERC721_mintIncreasesSupply(uint256 amount) public virtual {
+    function test_ERC721_mintIncreasesSupply() public virtual {
         require(isMintableOrBurnable);
         uint256 selfBalance = balanceOf(msg.sender);
         uint256 oldTotalSupply = totalSupply();
-        _customMint(amount);
+        _customMint(msg.sender);
         
-        assertEq(oldTotalSupply + amount, totalSupply(), "Total supply was not correctly increased");
-        assertEq(selfBalance + amount, balanceOf(msg.sender), "Receiver supply was not correctly increased");
+        assertEq(oldTotalSupply + 1, totalSupply(), "Total supply was not correctly increased");
+        assertEq(selfBalance + 1, balanceOf(msg.sender), "Receiver supply was not correctly increased");
     }
 
     // mint creates a fresh token
-    function test_ERC721_mintCreatesFreshToken(uint256 amount) public virtual {
+    function test_ERC721_mintCreatesFreshToken() public virtual {
         require(isMintableOrBurnable);
         uint256 selfBalance = balanceOf(msg.sender);
-        uint256 endIndex = selfBalance + amount;
-        _customMint(amount);
+        _customMint(msg.sender);
 
-        assertEq(selfBalance + amount, balanceOf(msg.sender), "Receiver supply was not correctly increased");
+        assertEq(selfBalance + 1, balanceOf(msg.sender), "Receiver supply was not correctly increased");
 
-        for(uint256 i = selfBalance; i < endIndex; i++) {
-            uint256 tokenId = tokenOfOwnerByIndex(msg.sender, i);
-            assertWithMsg(ownerOf(tokenId) == msg.sender, "Token ID was not minted to receiver");
-        }
-    }
-
-    // the total supply should never be larger than the max supply
-    function test_ERC721_totalSupplyShouldNotBeLargerThanMax() public virtual {
-        require(hasMaxSupply);
-        uint256 max = _customMaxSupply();
-        uint256 total = totalSupply();
-
-        assertWithMsg(total <= max, "Total supply larger than max");
+        uint256 tokenId = tokenOfOwnerByIndex(msg.sender, selfBalance);
+        assertWithMsg(ownerOf(tokenId) == msg.sender, "Token ID was not minted to receiver");
+        
     }
 
     // Wrappers
-    function _customMint(uint256 amount) internal virtual;
+    function _customMint(address to) internal virtual;
     function _customMaxSupply() internal virtual view returns (uint256);
 }

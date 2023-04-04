@@ -18,11 +18,9 @@ contract ERC721BasicTestsInternal is CryticERC721BasicProperties {
         unsafeReceiver = new MockReceiver(false);
     }
 
-    function mint(uint256 amount) public {
+    function mint(address to) public {
         //require(totalSupply() + amount <= maxSupply);
-        for (uint256 i; i < amount; i++) {
-            _mint(msg.sender, counter++);
-        }
+        _mint(to, counter++);
     }
 
     function balanceOf(address owner) public view virtual override(ERC721, IERC721) returns (uint256) {
@@ -47,10 +45,10 @@ contract ERC721BasicTestsInternal is CryticERC721BasicProperties {
     function transferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
         //solhint-disable-next-line max-line-length
         //require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
-        if (from == address(0)) {
-            _mint(to, tokenId);
+        if (from == to) {
+            _mint(to, counter++);
         }
-        _approve(address(this), tokenId);
+        
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
@@ -90,8 +88,8 @@ contract ERC721BasicTestsInternal is CryticERC721BasicProperties {
         return super.supportsInterface(interfaceId);
     }
 
-    function _customMint(uint256 amount) internal virtual {
-        mint(amount);
+    function _customMint(address to) internal virtual {
+        mint(to);
     }
 
     function _customMaxSupply() internal virtual view returns (uint256) {
