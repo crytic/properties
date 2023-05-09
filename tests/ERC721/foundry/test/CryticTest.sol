@@ -6,19 +6,13 @@ contract CryticERC721InternalHarness is ExampleToken, CryticERC721BasicPropertie
     using Address for address;
 
     constructor() {
-        maxSupply = 100;
         isMintableOrBurnable = true;
-        hasMaxSupply = false;
         safeReceiver = new MockReceiver(true);
         unsafeReceiver = new MockReceiver(false);
     }
 
-    function _customMint(uint256 amount) internal virtual {
-        mint(msg.sender, amount);
-    }
-
-    function _customMaxSupply() internal virtual view returns (uint256) {
-        return maxSupply;
+    function _customMint(address to) internal virtual {
+        mint(to, 1);
     }
 
         // The following functions are overrides required by Solidity.
