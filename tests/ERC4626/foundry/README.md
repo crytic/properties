@@ -24,4 +24,4 @@ Contract under test is `Basic4626Impl`, which inherits from solmate's ERC4626 mi
 
 Test harness is `CryticERC4626InternalHarness`
 
-To run tests, use `echidna-test . --contract CryticERC4626InternalHarness --config ./echidna.yaml`
+To run tests, use `echidna . --contract CryticERC4626InternalHarness --config ./echidna.yaml`

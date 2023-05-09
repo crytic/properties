@@ -50,38 +50,38 @@ Before doing any development, run `forge install` to get dependencies sorted out
 
 Running tests(used to validate the properties are working correctly):
 
-`echidna-test ./contracts/ERC4626/test/rounding/BadConvertToAssetsRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
+`echidna ./contracts/ERC4626/test/rounding/BadConvertToAssetsRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
 
 - verify_previewRedeemRoundingDirection
 - verify_redeemRoundingDirection
 - verify_convertToAssetsRoundingDirection
 
-`echidna-test ./contracts/ERC4626/test/rounding/BadConvertToSharesRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
+`echidna ./contracts/ERC4626/test/rounding/BadConvertToSharesRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
 
 - verify_convertToSharesRoundingDirection
 - verify_previewDepositRoundingDirection
 - verify_depositRoundingDirection
 
-`echidna-test ./contracts/ERC4626/test/rounding/BadPreviewMintRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
+`echidna ./contracts/ERC4626/test/rounding/BadPreviewMintRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
 
 - verify_previewMintRoundingDirection
 - verify_mintRoundingDirection
 
-`echidna-test ./contracts/ERC4626/test/rounding/BadPreviewWithdrawRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
+`echidna ./contracts/ERC4626/test/rounding/BadPreviewWithdrawRounding.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
 
 - verify_previewWithdrawRoundingDirection
 - verify_withdrawRoundingDirection
 
-`echidna-test ./contracts/ERC4626/test/security/BadShareInflation.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
+`echidna ./contracts/ERC4626/test/security/BadShareInflation.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
 
 - verify_sharePriceInflationAttack
 
-`echidna-test ./contracts/ERC4626/test/usingApproval/BadAllowanceUpdate.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
+`echidna ./contracts/ERC4626/test/usingApproval/BadAllowanceUpdate.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 Should cause these properties to fail:
 
 - verify_redeemViaApprovalProxy
@@ -91,7 +91,7 @@ Should cause these properties to fail:
 
 Run property tests against vanilla solmate:
 
-`echidna-test ./contracts/ERC4626/test/Solmate4626.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
+`echidna ./contracts/ERC4626/test/Solmate4626.sol --contract TestHarness --config ./contracts/ERC4626/test/echidna.config.yaml`
 
 [EIP-4626 Spec](https://eips.ethereum.org/EIPS/eip-4626)
 

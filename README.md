@@ -131,7 +131,7 @@ sender: ["0x10000", "0x20000", "0x30000"]
 If you're using external testing, you will also need to specify:
 
 ```yaml
-multi-abi: true
+allContracts: true
 ```
 
 To perform more than one test, save the files with a descriptive path, to identify what test each file or corpus belongs to. For these examples, we use `tests/crytic/erc20/echidna-internal.yaml` and `tests/crytic/erc20/echidna-external.yaml` for the Echidna tests for ERC20. We recommended to modify the `corpusDir` for external tests accordingly.
@@ -142,8 +142,8 @@ The above configuration will start Echidna in assertion mode. Contract will be d
 
 Run Echidna:
 
-- For internal testing: `echidna-test . --contract CryticERC20InternalHarness --config tests/crytic/erc20/echidna-internal.yaml`
-- For external testing: `echidna-test . --contract CryticERC20ExternalHarness --config tests/crytic/erc20/echidna-external.yaml`
+- For internal testing: `echidna . --contract CryticERC20InternalHarness --config tests/crytic/erc20/echidna-internal.yaml`
+- For external testing: `echidna . --contract CryticERC20ExternalHarness --config tests/crytic/erc20/echidna-external.yaml`
 
 Finally, inspect the coverage report in `tests/crytic/erc20/echidna-corpus-internal` or `tests/crytic/erc20/echidna-corpus-external` when it finishes.
 
@@ -152,7 +152,7 @@ Finally, inspect the coverage report in `tests/crytic/erc20/echidna-corpus-inter
 If the token under test is compliant and no properties will fail during fuzzing, the Echidna output should be similar to the screen below:
 
 ```
-$ echidna-test . --contract CryticERC20InternalHarness --config tests/echidna.config.yaml
+$ echidna . --contract CryticERC20InternalHarness --config tests/echidna.config.yaml
 Loaded total of 23 transactions from corpus/coverage
 Analyzing contract: contracts/ERC20/CryticERC20InternalHarness.sol:CryticERC20InternalHarness
 name():  passed! 🎉
@@ -177,7 +177,7 @@ function approve(address spender, uint256 amount) public virtual override(ERC20)
 In this case, the Echidna output should be similar to the screen below, notice that all functions that rely on `approve()` to work correctly will have their assertions broken, and will report the situation.
 
 ```
-$ echidna-test . --contract CryticERC20ExternalHarness --config tests/echidna.config.yaml
+$ echidna . --contract CryticERC20ExternalHarness --config tests/echidna.config.yaml
 Loaded total of 25 transactions from corpus/coverage
 Analyzing contract: contracts/ERC20/CryticERC20ExternalHarness.sol:CryticERC20ExternalHarness
 name():  passed! 🎉
@@ -260,7 +260,7 @@ sender: ["0x10000", "0x20000", "0x30000"]
 If you're using external testing, you will also need to specify:
 
 ```yaml
-multi-abi: true
+allContracts: true
 ```
 
 To perform more than one test, save the files with a descriptive path, to identify what test each file or corpus belongs to. For these examples, we use `tests/crytic/erc721/echidna-internal.yaml` and `tests/crytic/erc721/echidna-external.yaml` for the Echidna tests for ERC721. We recommended to modify the `corpusDir` for external tests accordingly.
@@ -269,8 +269,8 @@ The above configuration will start Echidna in assertion mode. Contract will be d
 
 #### Run
 Run Echidna: 
-- For internal testing: `echidna-test . --contract CryticERC721InternalHarness --config tests/crytic/erc721/echidna-internal.yaml` 
-- For external testing: `echidna-test . --contract CryticERC721ExternalHarness --config tests/crytic/erc721/echidna-external.yaml` 
+- For internal testing: `echidna . --contract CryticERC721InternalHarness --config tests/crytic/erc721/echidna-internal.yaml` 
+- For external testing: `echidna . --contract CryticERC721ExternalHarness --config tests/crytic/erc721/echidna-external.yaml` 
   
 Finally, inspect the coverage report in `tests/crytic/erc721/echidna-corpus-internal` or `tests/crytic/erc721/echidna-corpus-external` when it finishes.
 
@@ -278,7 +278,7 @@ Finally, inspect the coverage report in `tests/crytic/erc721/echidna-corpus-inte
 
 If the token under test is compliant and no properties will fail during fuzzing, the Echidna output should be similar to the screen below:
 ```
-$ echidna-test . --contract CryticERC721InternalHarness --config tests/echidna.config.yaml 
+$ echidna . --contract CryticERC721InternalHarness --config tests/echidna.config.yaml 
 Loaded total of 23 transactions from corpus/coverage
 Analyzing contract: contracts/ERC721/CryticERC721InternalHarness.sol:CryticERC721InternalHarness
 name():  passed! 🎉
@@ -300,7 +300,7 @@ function balanceOf(address owner) public view virtual override returns (uint256)
 
 In this case, the Echidna output should be similar to the screen below, notice that all functions that rely on `balanceOf()` to work correctly will have their assertions broken, and will report the situation.
 ```
-$ echidna-test . --contract CryticERC721ExternalHarness --config tests/echidna.config.yaml
+$ echidna . --contract CryticERC721ExternalHarness --config tests/echidna.config.yaml
 Loaded total of 25 transactions from corpus/coverage
 Analyzing contract: contracts/ERC721/CryticERC721ExternalHarness.sol:CryticERC721ExternalHarness
 name():  passed! 🎉
@@ -377,7 +377,7 @@ sender: ["0x10000"]
 
 #### Run
 
-Run the test suite using `echidna-test . --contract CryticERC4626Harness --config tests/echidna.config.yaml` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
+Run the test suite using `echidna . --contract CryticERC4626Harness --config tests/echidna.config.yaml` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
 
 Example repositories are available for [Hardhat](tests/ERC4626/hardhat) and [Foundry](tests/ERC4626/foundry).
 
@@ -412,7 +412,7 @@ contract CryticABDKMath64x64Harness is CryticABDKMath64x64PropertyTests {
 
 #### Run
 
-Run the test suite using `echidna-test . --contract CryticABDKMath64x64Harness --seq-len 1 --test-mode assertion --corpus-dir tests/echidna-corpus` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
+Run the test suite using `echidna . --contract CryticABDKMath64x64Harness --seq-len 1 --test-mode assertion --corpus-dir tests/echidna-corpus` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
 
 ## Additional resources
 

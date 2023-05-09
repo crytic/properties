@@ -24,4 +24,4 @@ Contract under test is `Basic4626Impl`, which inherits from solmate's ERC4626 mi
 
 Test harness is `Echidna4626Harness`
 
-To run tests, use `npm run echidna4626` or `echidna-test . --contract Echidna4626Harness --config ./echidna.yaml`
+To run tests, use `npm run echidna4626` or `echidna . --contract Echidna4626Harness --config ./echidna.yaml`
