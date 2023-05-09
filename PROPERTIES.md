@@ -1,6 +1,6 @@
 # Introduction
 
-This file lists all the currently implemented Echidna property tests for ERC20, ERC4626 and ABDKMath64x64. For each property, there is a permalink to the file implementing it in the repository and a small description of the invariant tested.
+This file lists all the currently implemented Echidna property tests for ERC20, ERC721, ERC4626 and ABDKMath64x64. For each property, there is a permalink to the file implementing it in the repository and a small description of the invariant tested.
 
 ## Table of contents
 
