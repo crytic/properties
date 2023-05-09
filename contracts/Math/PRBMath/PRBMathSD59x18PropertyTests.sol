@@ -7,8 +7,8 @@ import {mul as helpersMul, div as helpersDiv, abs as helpersAbs, ln as helpersLn
 contract CryticPRBMath59x18Properties {
 
     /* ================================================================
-       64x64 fixed-point constants used for testing specific values.
-       This assumes that ABDK library's fromInt(x) works as expected.
+       59x18 fixed-point constants used for testing specific values.
+       This assumes that PRBMath library's convert(x) works as expected.
        ================================================================ */
     SD59x18 internal ZERO_FP = convert(0);
     SD59x18 internal ONE_FP = convert(1);
@@ -234,7 +234,7 @@ contract CryticPRBMath59x18Properties {
        ================================================================ */
 
     // The result of the addition must be between the maximum
-    // and minimum allowed values for 64x64
+    // and minimum allowed values for SD59x18
     function add_test_range(SD59x18 x, SD59x18 y) public view {
         try this.add(x, y) returns (SD59x18 result) {
             assert(result.lte(MAX_SD59x18) && result.gte(MIN_SD59x18));
@@ -511,7 +511,7 @@ contract CryticPRBMath59x18Properties {
        ================================================================ */
 
     // The result of the multiplication must be between the maximum
-    // and minimum allowed values for 64x64
+    // and minimum allowed values for SD59x18
     function mul_test_range(SD59x18 x, SD59x18 y) public view {
         try this.mul(x, y) returns(SD59x18 result) {
             assert(result.lte(MAX_SD59x18) && result.gte(MIN_SD59x18));
@@ -711,7 +711,7 @@ contract CryticPRBMath59x18Properties {
 
     // todo check what is used for SD59x18
     // Test for the maximum value case
-    // Since this is implementation-dependant, we will actually test with MAX_64x64-EPS
+    // Since this is implementation-dependant, we will actually test with MAX_SD59x18-EPS
     function neg_test_maximum() public view {
         try this.neg(sub(MAX_SD59x18, EPSILON)) {
             // Expected behaviour, does not revert
@@ -722,7 +722,7 @@ contract CryticPRBMath59x18Properties {
 
     // todo check what is used for SD59x18
     // Test for the minimum value case
-    // Since this is implementation-dependant, we will actually test with MIN_64x64+EPS
+    // Since this is implementation-dependant, we will actually test with MIN_SD59x18+EPS
     function neg_test_minimum() public view {
         try this.neg(add(MIN_SD59x18, EPSILON)) {
             // Expected behaviour, does not revert
@@ -1671,7 +1671,7 @@ contract CryticPRBMath59x18Properties {
     // Test for negative exponent
     // exp(-x) == inv( exp(x) )
     function exp_test_negative_exponent(SD59x18 x) public view {
-        require(x.lt(ZERO_FP) && x.neq(MIN_64x64));
+        require(x.lt(ZERO_FP) && x.neq(MIN_SD59x18));
 
         SD59x18 exp_x = exp(x);
         SD59x18 exp_minus_x = exp(neg(x));
