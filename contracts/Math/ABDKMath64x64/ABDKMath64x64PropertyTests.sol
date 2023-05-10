@@ -1314,7 +1314,7 @@ contract CryticABDKMath64x64Properties {
 
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function pow_test_product_same_base(
+    function pow_test_product_power(
         int128 x,
         int128 y,
         uint256 a

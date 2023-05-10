@@ -1,9 +1,11 @@
 pragma solidity ^0.8.19;
 
-import { SD59x18 } from "@prb/math/SD59x18.sol";
-import {add as helpersAdd, sub as helpersSub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb/math/sd59x18/Helpers.sol";
-import {convert} from "@prb/math/sd59x18/Conversions.sol";
-import {mul as helpersMul, div as helpersDiv, abs as helpersAbs, ln as helpersLn, exp as helpersExp, exp2 as helpersExp2, log2 as helpersLog2, sqrt as helpersSqrt, pow as helpersPow, avg as helpersAvg, inv as helpersInv} from "@prb/math/sd59x18/Math.sol";
+import { SD59x18 } from "@prb/math/src/SD59x18.sol";
+import {add as helpersAdd, sub as helpersSub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb/math/src/sd59x18/Helpers.sol";
+import {convert} from "@prb/math/src/sd59x18/Conversions.sol";
+import {msb} from "@prb/math/src/Common.sol";
+import {intoUint128, intoUint256} from "@prb/math/src/sd59x18/Casting.sol";
+import {mul as helpersMul, div as helpersDiv, abs as helpersAbs, ln as helpersLn, exp as helpersExp, exp2 as helpersExp2, log2 as helpersLog2, sqrt as helpersSqrt, pow as helpersPow, avg as helpersAvg, inv as helpersInv, log10 as helpersLog10, floor as helpersFloor} from "@prb/math/src/sd59x18/Math.sol";
 
 contract CryticPRBMath59x18Properties {
 
@@ -26,6 +28,34 @@ contract CryticPRBMath59x18Properties {
        Constants used for precision loss calculations
        ================================================================ */
     uint256 internal REQUIRED_SIGNIFICANT_BITS = 10;
+
+    /* ================================================================
+       Integer representations maximum values.
+       These constants are used for testing edge cases or limits for 
+       possible values.
+       ================================================================ */
+    /// @dev The unit number, which gives the decimal precision of SD59x18.
+    int256 constant uUNIT = 1e18;
+    SD59x18 constant UNIT = SD59x18.wrap(1e18);
+
+    /// @dev The minimum value an SD59x18 number can have.
+    int256 constant uMIN_SD59x18 = -57896044618658097711785492504343953926634992332820282019728_792003956564819968;
+    SD59x18 constant MIN_SD59x18 = SD59x18.wrap(uMIN_SD59x18);
+
+    /// @dev The maximum value an SD59x18 number can have.
+    int256 constant uMAX_SD59x18 = 57896044618658097711785492504343953926634992332820282019728_792003956564819967;
+    SD59x18 constant MAX_SD59x18 = SD59x18.wrap(uMAX_SD59x18);
+
+    /// @dev The maximum input permitted in {exp2}.
+    int256 constant uEXP2_MAX_INPUT = 192e18 - 1;
+    SD59x18 constant EXP2_MAX_INPUT = SD59x18.wrap(uEXP2_MAX_INPUT);
+
+    /// @dev The maximum input permitted in {exp}.
+    int256 constant uEXP_MAX_INPUT = 133_084258667509499440;
+    SD59x18 constant EXP_MAX_INPUT = SD59x18.wrap(uEXP_MAX_INPUT);
+
+    /// @dev Euler's number as an SD59x18 number.
+    SD59x18 constant E = SD59x18.wrap(2_718281828459045235);
 
     /* ================================================================
        Events used for debugging or showing information.
@@ -69,8 +99,8 @@ contract CryticPRBMath59x18Properties {
     // Check that there are remaining significant digits after a multiplication
     // Uses functions from the library under test!
     function significant_digits_lost_in_mult(SD59x18 a, SD59x18 b) public pure returns (bool) {
-        int256 la = convert(floor(log10(abs(a))));
-        int256 lb = convert(floor(log10(abs(b))));
+        int256 la = convert(floor(log_10(abs(a))));
+        int256 lb = convert(floor(log_10(abs(b))));
 
         return(la + lb < -18);
     }
@@ -78,32 +108,57 @@ contract CryticPRBMath59x18Properties {
     // Return how many significant bits will remain after multiplying a and b
     // Uses functions from the library under test!
     function significant_digits_after_mult(SD59x18 a, SD59x18 b) public pure returns (uint256) {
-        int256 la = convert(floor(log10(abs(a))));
-        int256 lb = convert(floor(log10(abs(b))));
+        int256 la = convert(floor(log_10(abs(a))));
+        int256 lb = convert(floor(log_10(abs(b))));
         int256 prec = la + lb;
 
         if (prec < -18) return 0;
-        else return(18 + prec);
+        else return(18 + uint256(prec));
     }
 
     // Returns true if the n most significant bits of a and b are almost equal 
     // Uses functions from the library under test!
-    function equal_most_significant_digits_within_precision(SD59x18 a, SD59x18 b, uint256 bits) public pure returns (bool) {
+    function equal_most_significant_digits_within_precision(SD59x18 a, SD59x18 b, uint256 bits) public view returns (bool) {
         // Get the number of bits in a and b
         // Since log(x) returns in the interval [-64, 63), add 64 to be in the interval [0, 127)
-        uint256 a_bits = uint256(int256(convert(log2(a)) + 64));
-        uint256 b_bits = uint256(int256(convert(log2(b)) + 64));
+        uint256 a_bits = uint256(int256(convert(log_2(a)) + 64));
+        uint256 b_bits = uint256(int256(convert(log_2(b)) + 64));
 
         // a and b lengths may differ in 1 bit, so the shift should take into account the longest
         uint256 shift_bits = (a_bits > b_bits) ? (a_bits - bits) : (b_bits - bits);
 
         // Get the _bits_ most significant bits of a and b
-        uint256 a_msb = msb(a, bits) >> shift_bits;
-        uint256 b_msb = msb(b, bits) >> shift_bits;
+        uint256 a_msb = most_significant_bits(a, bits) >> shift_bits;
+        uint256 b_msb = most_significant_bits(b, bits) >> shift_bits;
 
         // See if they are equal within 1 bit precision
         // This could be modified to get the precision as a parameter to the function
         return equal_within_precision_u(a_msb, b_msb, 1);
+    }
+
+    // Return the i most significant bits from |n|. If n has less than i significant bits, return |n|
+    // Uses functions from the library under test!
+    function most_significant_bits(
+        SD59x18 n,
+        uint256 i
+    ) public view returns (uint256) {
+        if (n.eq(MIN_SD59x18)) return 0;
+        
+        // Create a mask consisting of i bits set to 1
+        uint256 mask = (2 ** i) - 1;
+
+        // Get the positive value of n
+        uint256 value = (n.gt(ZERO_FP)) ? intoUint256(n) : intoUint256(neg(n));
+
+        // Get the position of the MSB set to 1 of n
+        uint256 pos = msb(value);
+
+        // Shift the mask to match the rightmost 1-set bit
+        if (pos > i) {
+            mask <<= (pos - i);
+        }
+
+        return (value & mask);
     }
 
     /* ================================================================
@@ -171,6 +226,14 @@ contract CryticPRBMath59x18Properties {
 
     function inv(SD59x18 x) public pure returns (SD59x18) {
         return helpersInv(x);
+    }
+
+    function log_10(SD59x18 x) public pure returns (SD59x18) {
+        return helpersLog10(x);
+    }
+
+    function floor(SD59x18 x) public pure returns (SD59x18) {
+        return helpersFloor(x);
     }
 
     /* ================================================================
@@ -704,7 +767,7 @@ contract CryticPRBMath59x18Properties {
     // Test for the zero-case
     // -0 == 0
     function neg_test_zero() public view {
-        int128 neg_x = neg(ZERO_FP);
+        SD59x18 neg_x = neg(ZERO_FP);
 
         assert(neg_x.eq(ZERO_FP));
     }
@@ -748,7 +811,7 @@ contract CryticPRBMath59x18Properties {
 
     // Test that the absolute value is always positive
     function abs_test_positive(SD59x18 x) public view {
-        int128 abs_x = abs(x);
+        SD59x18 abs_x = abs(x);
 
         assert(abs_x.gte(ZERO_FP));
     }
@@ -851,7 +914,7 @@ contract CryticPRBMath59x18Properties {
         SD59x18 double_inv_x = inv(inv(x));
 
         // The maximum loss of precision will be 2 * log2(x) bits rounded up
-        uint256 loss = 2 * SD59x18.intoUint256(log_2(x)) + 2;
+        uint256 loss = 2 * intoUint256(log_2(x)) + 2;
 
         assert(equal_within_precision(x, double_inv_x, loss));
     }
@@ -878,10 +941,10 @@ contract CryticPRBMath59x18Properties {
         SD59x18 y_x = div(y, x);
 
         require(
-            significant_bits_after_mult(x, inv(y)) > REQUIRED_SIGNIFICANT_BITS
+            significant_digits_after_mult(x, inv(y)) > REQUIRED_SIGNIFICANT_BITS
         );
         require(
-            significant_bits_after_mult(y, inv(x)) > REQUIRED_SIGNIFICANT_BITS
+            significant_digits_after_mult(y, inv(x)) > REQUIRED_SIGNIFICANT_BITS
         );
         assert(equal_within_tolerance(x_y, inv(y_x), ONE_TENTH_FP));
     }
@@ -898,14 +961,14 @@ contract CryticPRBMath59x18Properties {
         SD59x18 x_y = mul(x, y);
         SD59x18 inv_x_y = inv(x_y);
 
-        require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
+        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
         require(
-            significant_bits_after_mult(inv_x, inv_y) > REQUIRED_SIGNIFICANT_BITS
+            significant_digits_after_mult(inv_x, inv_y) > REQUIRED_SIGNIFICANT_BITS
         );
 
         // The maximum loss of precision is given by the formula:
         // 2 * | log_2(x) - log_2(y) | + 1
-        uint256 loss = 2 * SD59x18.intoUint256(abs(log_2(x) - log_2(y))) + 1;
+        uint256 loss = 2 * intoUint256(abs(log_2(x) - log_2(y))) + 1;
 
         assert(equal_within_precision(inv_x_y, inv_x_times_inv_y, loss));
     }
@@ -919,7 +982,7 @@ contract CryticPRBMath59x18Properties {
         SD59x18 identity = mul(inv_x, x);
 
         require(
-            significant_bits_after_mult(x, inv_x) > REQUIRED_SIGNIFICANT_BITS
+            significant_digits_after_mult(x, inv_x) > REQUIRED_SIGNIFICANT_BITS
         );
 
         // They should agree with a tolerance of one tenth of a percent
@@ -1110,7 +1173,7 @@ contract CryticPRBMath59x18Properties {
 
     // Test for exponent one
     // x ** 1 == x
-    function pow_test_one_exponent(SD59x18 x) public pure {
+    function pow_test_one_exponent(SD59x18 x) public view {
         SD59x18 x_pow_1 = pow(x, ONE_FP);
 
         assert(x_pow_1.eq(x));
@@ -1158,7 +1221,7 @@ contract CryticPRBMath59x18Properties {
 
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function pow_test_product_same_base(
+    function pow_test_product_power(
         SD59x18 x,
         SD59x18 y,
         SD59x18 a
@@ -1167,11 +1230,11 @@ contract CryticPRBMath59x18Properties {
         // todo this should probably be changed
         require(a.gt(convert(2 ** 32))); // to avoid massive loss of precision
 
-        int128 x_y = mul(x, y);
-        int128 xy_a = pow(x_y, a);
+        SD59x18 x_y = mul(x, y);
+        SD59x18 xy_a = pow(x_y, a);
 
-        int128 x_a = pow(x, a);
-        int128 y_a = pow(y, a);
+        SD59x18 x_a = pow(x, a);
+        SD59x18 y_a = pow(y, a);
 
         assert(equal_within_precision(mul(x_a, y_a), xy_a, 2));
     }
@@ -1239,7 +1302,7 @@ contract CryticPRBMath59x18Properties {
     function pow_test_high_exponent(SD59x18 x, SD59x18 a) public view {
         require(abs(x).lt(ONE_FP) && a.gt(convert(2 ** 64)));
 
-        int128 result = pow(x, a);
+        SD59x18 result = pow(x, a);
 
         assert(result.eq(ZERO_FP));
     }
@@ -1269,15 +1332,15 @@ contract CryticPRBMath59x18Properties {
     function sqrt_test_inverse_mul(SD59x18 x) public view {
         require(x.lte(ZERO_FP));
 
-        int128 sqrt_x = sqrt(x);
-        int128 sqrt_x_squared = mul(sqrt_x, sqrt_x);
+        SD59x18 sqrt_x = sqrt(x);
+        SD59x18 sqrt_x_squared = mul(sqrt_x, sqrt_x);
 
         // Precision loss is at most half the bits of the operand
         assert(
             equal_within_precision(
                 sqrt_x_squared,
                 x,
-                (SD59x18.intoUint256(log_2(x)) >> 1) + 2
+                (intoUint256(log_2(x)) >> 1) + 2
             )
         );
     }
@@ -1295,7 +1358,7 @@ contract CryticPRBMath59x18Properties {
             equal_within_precision(
                 sqrt_x_squared,
                 x,
-                (SD59x18.intoUint256(log_2(x)) >> 1) + 2
+                (intoUint256(log_2(x)) >> 1) + 2
             )
         );
     }
@@ -1311,9 +1374,9 @@ contract CryticPRBMath59x18Properties {
         SD59x18 sqrt_xy = sqrt(mul(x, y));
 
         // Ensure we have enough significant digits for the result to be meaningful
-        require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
+        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
         require(
-            significant_bits_after_mult(sqrt_x, sqrt_y) >
+            significant_digits_after_mult(sqrt_x, sqrt_y) >
                 REQUIRED_SIGNIFICANT_BITS
         );
 
@@ -1391,11 +1454,11 @@ contract CryticPRBMath59x18Properties {
         SD59x18 log2_xy = log_2(xy);
 
         // Ensure we have enough significant digits for the result to be meaningful
-        require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
+        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
 
         // The maximum loss of precision is given by the formula:
         // | log_2(x) + log_2(y) |
-        uint256 loss = SD59x18.intoUint256(abs(log_2(x) + log_2(y)));
+        uint256 loss = intoUint256(abs(log_2(x) + log_2(y)));
 
         assert(equal_within_precision(log2_x_log2_y, log2_xy, loss));
     }
@@ -1479,11 +1542,11 @@ contract CryticPRBMath59x18Properties {
         SD59x18 xy = mul(x, y);
         SD59x18 ln_xy = ln(xy);
 
-        require(significant_bits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
+        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_BITS);
 
         // The maximum loss of precision is given by the formula:
         // | log_2(x) + log_2(y) |
-        uint256 loss = SD59x18.intoUint256(abs(log_2(x) + log_2(y)));
+        uint256 loss = intoUint256(abs(log_2(x) + log_2(y)));
 
         assert(equal_within_precision(ln_x_ln_y, ln_xy, loss));
     }
@@ -1562,8 +1625,8 @@ contract CryticPRBMath59x18Properties {
 
     // Test for equality with pow(2, x) for integer x
     // pow(2, x) == exp_2(x)
-    function exp2_test_equivalence_pow(uint256 x) public view {
-        SD59x18 exp2_x = exp_2(convert(x));
+    function exp2_test_equivalence_pow(SD59x18 x) public view {
+        SD59x18 exp2_x = exp_2(x);
         SD59x18 pow_2_x = pow(TWO_FP, x);
 
         assert(exp2_x.eq(pow_2_x));
@@ -1579,10 +1642,10 @@ contract CryticPRBMath59x18Properties {
         uint256 bits = 50;
 
         if (log2_x.lt(ZERO_FP)) {
-            bits = SD59x18.intoUint256(convert(bits).add(convert(log2_x)));
+            bits = intoUint256(convert(int256(bits)).add(log2_x));
         }
 
-        assert(equal_most_significant_bits_within_precision(x, exp2_x, bits));
+        assert(equal_most_significant_digits_within_precision(x, exp2_x, bits));
     }
 
     // Test for negative exponent
@@ -1662,10 +1725,10 @@ contract CryticPRBMath59x18Properties {
         uint256 bits = 48;
 
         if (log2_x.lt(ZERO_FP)) {
-            bits = SD59x18.intoUint256(convert(bits).add(convert(log2_x)));
+            bits = intoUint256(convert(int256(bits)).add(log2_x));
         }
 
-        assert(equal_most_significant_bits_within_precision(x, exp_x, bits));
+        assert(equal_most_significant_digits_within_precision(x, exp_x, bits));
     }
 
     // Test for negative exponent
