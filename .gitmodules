@@ -18,9 +18,3 @@
 	path = lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
 	branch = v4.8.0
-[submodule "contracts/Math/PRBMath/prbmath-libraries-solidity"]
-	path = contracts/Math/PRBMath/prbmath-libraries-solidity
-	url = https://github.com/PaulRBerg/prb-math
-[submodule "prb-math"]
-	path = prb-math
-	url = https://github.com/PaulRBerg/prb-math
