@@ -1,7 +1,8 @@
 pragma solidity ^0.8.19;
 
 import { SD59x18 } from "@prb/math/SD59x18.sol";
-import {add as helpersAdd, sub as helpersSub} from "@prb/math/sd59x18/Helpers.sol";
+import {add as helpersAdd, sub as helpersSub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb/math/sd59x18/Helpers.sol";
+import {convert} from "@prb/math/sd59x18/Conversions.sol";
 import {mul as helpersMul, div as helpersDiv, abs as helpersAbs, ln as helpersLn, exp as helpersExp, exp2 as helpersExp2, log2 as helpersLog2, sqrt as helpersSqrt, pow as helpersPow, avg as helpersAvg, inv as helpersInv} from "@prb/math/sd59x18/Math.sol";
 
 contract CryticPRBMath59x18Properties {
@@ -39,8 +40,7 @@ contract CryticPRBMath59x18Properties {
 
     // These functions allows to compare a and b for equality, discarding
     // the last precision_bits bits.
-    // An absolute value function is implemented inline in order to not use 
-    // the implementation from the library under test.
+    // Uses functions from the library under test!
     function equal_within_precision(SD59x18 a, SD59x18 b, uint256 precision_bits) public pure returns(bool) {
         SD59x18 max = gt(a , b) ? a : b;
         SD59x18 min = gt(a , b) ? b : a;
@@ -149,7 +149,7 @@ contract CryticPRBMath59x18Properties {
         return helpersExp(x);
     }
 
-    function exp2(SD59x18 x) public pure returns (SD59x18) {
+    function exp_2(SD59x18 x) public pure returns (SD59x18) {
         return helpersExp2(x);
     }
 
