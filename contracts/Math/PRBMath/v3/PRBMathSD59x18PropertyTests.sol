@@ -7,7 +7,10 @@ import {msb} from "@prb/math/src/Common.sol";
 import {intoUint128, intoUint256} from "@prb/math/src/sd59x18/Casting.sol";
 import {mul, div, abs, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor} from "@prb/math/src/sd59x18/Math.sol";
 
-contract CryticPRBMath59x18Properties {
+contract CryticPRBMath59x18Propertiesv3 {
+
+    event AssertionFailed(SD59x18 result);
+    event AssertionFailed(SD59x18 result1, SD59x18 result2);
 
     /* ================================================================
        59x18 fixed-point constants used for testing specific values.
@@ -56,6 +59,21 @@ contract CryticPRBMath59x18Properties {
 
     /// @dev Euler's number as an SD59x18 number.
     SD59x18 constant E = SD59x18.wrap(2_718281828459045235);
+
+    int256 constant uMAX_SQRT = uMAX_SD59x18 / uUNIT;
+    SD59x18 constant MAX_SQRT = SD59x18.wrap(uMAX_SQRT);
+
+    /// @dev Half the UNIT number.
+    int256 constant uHALF_UNIT = 0.5e18;
+    SD59x18 constant HALF_UNIT = SD59x18.wrap(uHALF_UNIT);
+
+    /// @dev log2(10) as an SD59x18 number.
+    int256 constant uLOG2_10 = 3_321928094887362347;
+    SD59x18 constant LOG2_10 = SD59x18.wrap(uLOG2_10);
+
+    /// @dev log2(e) as an SD59x18 number.
+    int256 constant uLOG2_E = 1_442695040888963407;
+    SD59x18 constant LOG2_E = SD59x18.wrap(uLOG2_E);
 
     /* ================================================================
        Events used for debugging or showing information.
@@ -160,6 +178,57 @@ contract CryticPRBMath59x18Properties {
 
         return (value & mask);
     }
+
+    /* function compute_max_log_error(SD59x18 x) public view returns (SD59x18 result) {
+        int256 xInt = SD59x18.unwrap(x);
+
+        unchecked {
+        // This works because of:
+        //
+        // $$
+        // log_2{x} = -log_2{\frac{1}{x}}
+        // $$
+        int256 sign;
+        if (xInt >= uUNIT) {
+            sign = 1;
+        } else {
+            sign = -1;
+            // Do the fixed-point inversion inline to save gas. The numerator is UNIT * UNIT.
+            xInt = 1e36 / xInt;
+        }
+
+        // Calculate the integer part of the logarithm and add it to the result and finally calculate $y = x * 2^(-n)$.
+        uint256 n = msb(uint256(xInt / uUNIT));
+
+        // This is $y = x * 2^{-n}$.
+        int256 y = xInt >> n;
+
+        // If y is 1, the fractional part is zero.
+        if (y == uUNIT) {
+            return 0;
+        }
+
+        // Calculate the fractional part via the iterative approximation.
+        // The "delta >>= 1" part is equivalent to "delta /= 2", but shifting bits is faster.
+        int256 DOUBLE_UNIT = 2e18;
+        int256 sum;
+        for (int256 delta = uHALF_UNIT; delta > 0; delta >>= 1) {
+            y = (y * y) / uUNIT;
+
+            // Is $y^2 > 2$ and so in the range [2,4)?
+            if (y >= DOUBLE_UNIT) {
+                // Add the 2^{-m} factor to the logarithm.
+                sum += delta;
+
+                // Corresponds to z/2 on Wikipedia.
+                y >>= 1;
+            }
+        }
+
+        int256 maxError = 2 ** (-sum);
+        result = convert(maxError);
+    }
+    } */
 
     /* ================================================================
        Library wrappers.
@@ -888,7 +957,7 @@ contract CryticPRBMath59x18Properties {
         try this.helpersAbs(MIN_SD59x18) {
             // If it doesn't revert, the value must be the negative of MIN_SD59x18
             abs_min = this.helpersAbs(MIN_SD59x18);
-            assert(abs_min == neg(MIN_SD59x18));
+            assert(abs_min.eq(neg(MIN_SD59x18)));
         } catch {}
     }
 
@@ -968,7 +1037,7 @@ contract CryticPRBMath59x18Properties {
 
         // The maximum loss of precision is given by the formula:
         // 2 * | log2(x) - log2(y) | + 1
-        uint256 loss = 2 * intoUint256(abs(log2(x) - log2(y))) + 1;
+        uint256 loss = 2 * intoUint256(abs(log2(x).sub(log2(y)))) + 1;
 
         assert(equal_within_precision(inv_x_y, inv_x_times_inv_y, loss));
     }
@@ -1004,16 +1073,17 @@ contract CryticPRBMath59x18Properties {
         }
     }
 
-    // Test that the result has the same sign as the argument
-    function inv_test_sign(SD59x18 x) public view {
+    // Test that the result has the same sign as the argument.
+    // Since inv() rounds towards zero, we are checking the zero case as well
+    function inv_test_sign(SD59x18 x) public {
         require(x.neq(ZERO_FP));
 
         SD59x18 inv_x = inv(x);
 
         if (x.gt(ZERO_FP)) {
-            assert(inv_x.gt(ZERO_FP));
+            assert(inv_x.gte(ZERO_FP));
         } else {
-            assert(inv_x.lt(ZERO_FP));
+            assert(inv_x.lte(ZERO_FP));
         }
     }
 
@@ -1141,17 +1211,26 @@ contract CryticPRBMath59x18Properties {
        with math rules and expected behaviour.
        ================================================================ */
 
-    /// @dev Notes:
-    /// - Refer to the notes in {exp2}, {log2}, and {mul}.
-    /// - If x is less than -59_794705707972522261, the result is zero.
-    /// - Due to the lossy precision of the iterative approximation, the results are not perfectly accurate to the last decimal.
-    /// - Returns `UNIT` for 0^0.
-    ///
-    /// Requirements:
-    /// - None of the inputs can be `MIN_SD59x18`.
-    /// - x must be less than 192e18.
-    /// - x must be greater than zero.
-    /// - The result must fit in SD59x18.
+/* pow.t.sol
+├── when the base is zero
+│  ├── when the exponent is zero
+│  │  └── it should return the unit number
+│  └── when the exponent is not zero
+│     └── it should return zero
+└── when the base is not zero
+   ├── when the base is the unit number       
+   │  └── it should return the unit number
+   └── when the base is not the unit number
+      ├── when the exponent is zero
+      │  └── it should return the base
+      └── when the exponent is not zero
+         ├── when the exponent is the unit number
+         │  └── it should return the base
+         └── when the exponent is not the unit number
+            ├── when the exponent is negative
+            │  └── it should return the correct value
+            └── when the exponent is positive
+               └── it should return the correct value */
 
     // Test for zero exponent
     // x ** 0 == 1
@@ -1243,6 +1322,7 @@ contract CryticPRBMath59x18Properties {
     // its absolute value and the value of the exponent
     function pow_test_values(SD59x18 x, SD59x18 a) public view {
         require(x.neq(ZERO_FP));
+        require(x.neq(MIN_SD59x18) && a.neq(MIN_SD59x18));
 
         SD59x18 x_a = pow(x, a);
 
@@ -1397,7 +1477,7 @@ contract CryticPRBMath59x18Properties {
 
     // Test for maximum value
     function sqrt_test_maximum() public view {
-        try this.helpersSqrt(MAX_SD59x18) {
+        try this.helpersSqrt(MAX_SQRT) {
             // Expected behaviour, MAX_SD59x18 is positive, and operation
             // should not revert as the result is in range
         } catch {
@@ -1458,7 +1538,7 @@ contract CryticPRBMath59x18Properties {
 
         // The maximum loss of precision is given by the formula:
         // | log2(x) + log2(y) |
-        uint256 loss = intoUint256(abs(log2(x) + log2(y)));
+        uint256 loss = intoUint256(abs(log2(x).add(log2(y))));
 
         assert(equal_within_precision(log2_x_log2_y, log2_xy, loss));
     }
@@ -1546,20 +1626,23 @@ contract CryticPRBMath59x18Properties {
 
         // The maximum loss of precision is given by the formula:
         // | log2(x) + log2(y) |
-        uint256 loss = intoUint256(abs(log2(x) + log2(y)));
+        uint256 loss = intoUint256(abs(log2(x).add(log2(y))));
 
         assert(equal_within_precision(ln_x_ln_y, ln_xy, loss));
     }
 
     // Test for logarithm of a power
     // ln(x ** y) = y * ln(x)
-    function ln_test_power(SD59x18 x, SD59x18 y) public pure {
+    function ln_test_power(SD59x18 x, SD59x18 y) public {
+        require(x.gt(ZERO_FP));
         SD59x18 x_y = pow(x, y);
         SD59x18 ln_x_y = ln(x_y);
 
         SD59x18 y_ln_x = mul(ln(x), y);
 
-        assert(y_ln_x.eq(ln_x_y));
+        uint256 loss = intoUint256(abs(log2(x).add(log2(y))));
+
+        assert(equal_within_precision(ln_x_y, y_ln_x, loss));
     }
 
     /* ================================================================

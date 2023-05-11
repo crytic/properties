@@ -21,4 +21,4 @@
 [submodule "lib/prb-math"]
 	path = lib/prb-math
 	url = https://github.com/PaulRBerg/prb-math
-	branch = v4
+	branch = v3

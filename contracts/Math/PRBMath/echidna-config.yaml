@@ -3,4 +3,4 @@ testMode: assertion
 testLimit: 100000
 deployer: "0x10000"
 sender: ["0x10000", "0x20000", "0x30000"]
-cryticArgs: ["--compile-force-framework", "hardhat"]
+cryticArgs: ["--compile-force-framework", "foundry"]
