@@ -79,16 +79,16 @@ Please follow this structure in your collaborations.
 
 ## How to add a property
 
-Whenever you're adding a property to an existing properties set (e.g., ERC20, ERC721) there are a few things to consider:
-1. If a property is related to an existing property group, it should be added there. E.g., a ERC721 property "totalSupply should never be larger than the maxSupply" could probably be added to the `Mintable` property files. If the property is not related to any existing property group a new file should be created.
+Whenever you're adding a property to an existing properties set (e.g., ERC20, ERC721) we recommend to follow the below guidelines:
+1. If a property is related to an existing property group, it should be added there. E.g., an ERC721 property *"totalSupply should never be larger than the maxSupply"* could probably be added to the `Mintable` property files. If the property is not related to any existing property group a new file should be created.
 2. If the directory structure contains an `internal` and `external` directory, the property should be added to both.
-3. If the directory structure contains a `test` directory, we recommmend adding a test for the property you've added to ensure it works as expected. Once the test is added, you can add the property to the corresponding README file.
-4. We keep a table of all the properties in PROPERTIES.md, this should be updated whenever a new property is added.
+3. If the directory structure contains a `test` directory, we recommmend adding a test for the property to ensure it works as expected. Once the test is added, you can add the property to the corresponding README.md file.
+4. We keep a table of all the properties in [PROPERTIES.md](https://github.com/crytic/properties/blob/main/PROPERTIES.md), this should be updated whenever a new property is added.
 
-As an example, we can illustrate the addition of an ERC721 property "totalSupply should never be larger than the maxSupply".
+As an example, we can illustrate the addition of the previously mentioned ERC721 property: *"totalSupply should never be larger than the maxSupply"*.
 
 ### Example
-The ERC721 properties are split into `internal` and `external` properties, so we will be adding our new property to both, and since the property is related to minting it will be added into the [ERC721ExternalMintableProperties]() and [ERC721MintableProperties]() files. The directory also contains a `test` folder and a [README.md](), so we will add a test for the property and update the README once the property is created.
+Since the ERC721 properties are split into `internal` and `external` properties we will be adding our new property to both, and since the property is related to minting we will add it to the [ERC721ExternalMintableProperties](https://github.com/crytic/properties/blob/main/contracts/ERC721/external/properties/ERC721ExternalMintableProperties.sol) and [ERC721MintableProperties](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721MintableProperties.sol) files. The directory also contains a `test` folder and a [README.md](https://github.com/crytic/properties/blob/main/contracts/ERC721/README.md) with a list of all the tested properties, so we will add a test and update the README once the property is created.
 
 **Creating an internal property.**
 
@@ -109,18 +109,18 @@ function test_ERC721_cannotMintMoreThanMaxSupply() public virtual {
 }
 ```
 
-Now that the property is defined we will modify the [ERC721MintableTests.sol]() contract to break the property. An easy way to do this would be to create a public minting function that does not validate the condition we are testing. The test can be executed using the following command:
+Now that the property is defined we will modify the [ERC721MintableTests.sol](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/test/standard/ERC721MintableTests.sol) contract to break the property. An easy way to do this would be to create a public minting function that does not validate the condition we are testing. The test can be executed using the following command:
 ```
 echidna ./contracts/ERC721/internal/test/standard/ERC721MintableTests.sol --contract TestHarness --config ./contracts/ERC721/internal/test/echidna.config.yaml
 ```
 
-Our property test should fail, indicating that Echidna has found the issue.
+If we correctly added our property the test should fail, indicating that Echidna has found the issue.
 
 **Creating an External Property**
 
-We would do the exact same steps for creating an external property, except that we will make the wrapper function `_prop_maxSupply` external and add it to the [IERC721Internal.sol]() file.
+The steps for creating an external property and mostly the same, except that we will make the wrapper function `_prop_maxSupply` external and add it to the [IERC721Internal.sol](https://github.com/crytic/properties/blob/main/contracts/ERC721/util/IERC721Internal.sol) file.
 ```
-/// file: contracts/ERC721/internal/properties/ERC721MintableProperties.sol
+/// file: contracts/ERC721/external/properties/ERC721ExternalMintableProperties.sol
 
 function test_ERC721_cannotMintMoreThanMaxSupply() public virtual {
   require(token.isMintableOrBurnable);
@@ -131,8 +131,13 @@ function test_ERC721_cannotMintMoreThanMaxSupply() public virtual {
 }
 ```
 
-To perform a test you can modify the ERC721IncorrectMintable contract and run it with the following command:
+To add a test we will modify the [ERC721IncorrectMintable](https://github.com/crytic/properties/blob/main/contracts/ERC721/external/util/ERC721IncorrectMintable.sol) contract so the property fails, and run it with the following command:
+
+```
 echidna ./contracts/ERC721/external/test/standard/ERC721MintableTests.sol --contract TestHarness --config ./contracts/ERC721/external/test/echidna.config.yaml
+```
+
+Now we can add the new property to the [README](https://github.com/crytic/properties/blob/main/contracts/ERC721/README.md) and to the [properties list](https://github.com/crytic/properties/blob/main/PROPERTIES.md).
 
 ## Linting and formatting
 
