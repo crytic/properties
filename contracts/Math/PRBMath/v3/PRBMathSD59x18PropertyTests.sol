@@ -9,8 +9,10 @@ import {mul, div, abs, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, p
 
 contract CryticPRBMath59x18Propertiesv3 {
 
-    event AssertionFailed(SD59x18 result);
-    event AssertionFailed(SD59x18 result1, SD59x18 result2);
+    event PropertyFailed(SD59x18 result);
+    event PropertyFailed(SD59x18 result1, SD59x18 result2);
+    event PropertyFailed(SD59x18 result1, SD59x18 result2, uint256 discardedDigits);
+    event TestLog(int256 num1, int256 num2, int256 result);
 
     /* ================================================================
        59x18 fixed-point constants used for testing specific values.
@@ -144,22 +146,19 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Returns true if the n most significant bits of a and b are almost equal 
     // Uses functions from the library under test!
-    function equal_most_significant_digits_within_precision(SD59x18 a, SD59x18 b, uint256 bits) public view returns (bool) {
-        // Get the number of bits in a and b
-        // Since log(x) returns in the interval [-64, 63), add 64 to be in the interval [0, 127)
-        uint256 a_bits = uint256(int256(convert(log2(a)) + 18));
-        uint256 b_bits = uint256(int256(convert(log2(b)) + 18));
+    function equal_most_significant_digits_within_precision(SD59x18 a, SD59x18 b, int256 digits) public returns (bool) {
+       // Divide both number by digits to truncate the unimportant digits
+       int256 a_uint = SD59x18.unwrap(abs(a));
+       int256 b_uint = SD59x18.unwrap(abs(b));
 
-        // a and b lengths may differ in 1 bit, so the shift should take into account the longest
-        uint256 shift_bits = (a_bits > b_bits) ? (a_bits - bits) : (b_bits - bits);
+       int256 a_significant = a_uint / digits;
+       int256 b_significant = b_uint / digits;
 
-        // Get the _bits_ most significant bits of a and b
-        uint256 a_msb = most_significant_bits(a, bits) >> shift_bits;
-        uint256 b_msb = most_significant_bits(b, bits) >> shift_bits;
+       int256 larger = a_significant > b_significant ? a_significant : b_significant;
+       int256 smaller = a_significant > b_significant ? b_significant : a_significant;
 
-        // See if they are equal within 1 bit precision
-        // This could be modified to get the precision as a parameter to the function
-        return equal_within_precision_u(a_msb, b_msb, 1);
+       emit TestLog(larger, smaller, larger - smaller);
+       return ((larger - smaller) <= 1);
     }
 
     // Return the i most significant bits from |n|. If n has less than i significant bits, return |n|
@@ -186,57 +185,6 @@ contract CryticPRBMath59x18Propertiesv3 {
 
         return (value & mask);
     }
-
-    /* function compute_max_log_error(SD59x18 x) public view returns (SD59x18 result) {
-        int256 xInt = SD59x18.unwrap(x);
-
-        unchecked {
-        // This works because of:
-        //
-        // $$
-        // log_2{x} = -log_2{\frac{1}{x}}
-        // $$
-        int256 sign;
-        if (xInt >= uUNIT) {
-            sign = 1;
-        } else {
-            sign = -1;
-            // Do the fixed-point inversion inline to save gas. The numerator is UNIT * UNIT.
-            xInt = 1e36 / xInt;
-        }
-
-        // Calculate the integer part of the logarithm and add it to the result and finally calculate $y = x * 2^(-n)$.
-        uint256 n = msb(uint256(xInt / uUNIT));
-
-        // This is $y = x * 2^{-n}$.
-        int256 y = xInt >> n;
-
-        // If y is 1, the fractional part is zero.
-        if (y == uUNIT) {
-            return 0;
-        }
-
-        // Calculate the fractional part via the iterative approximation.
-        // The "delta >>= 1" part is equivalent to "delta /= 2", but shifting bits is faster.
-        int256 DOUBLE_UNIT = 2e18;
-        int256 sum;
-        for (int256 delta = uHALF_UNIT; delta > 0; delta >>= 1) {
-            y = (y * y) / uUNIT;
-
-            // Is $y^2 > 2$ and so in the range [2,4)?
-            if (y >= DOUBLE_UNIT) {
-                // Add the 2^{-m} factor to the logarithm.
-                sum += delta;
-
-                // Corresponds to z/2 on Wikipedia.
-                y >>= 1;
-            }
-        }
-
-        int256 maxError = 2 ** (-sum);
-        result = convert(maxError);
-    }
-    } */
 
     /* ================================================================
        Library wrappers.
@@ -329,7 +277,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for commutative property
     // x + y == y + x
     function add_test_commutative(SD59x18 x, SD59x18 y) public pure {
@@ -339,7 +286,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_y.eq(y_x));
     }
 
-    // @audit-ok
     // Test for associative property
     // (x + y) + z == x + (y + z)
     function add_test_associative(SD59x18 x, SD59x18 y, SD59x18 z) public pure {
@@ -351,7 +297,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(xy_z.eq(x_yz));
     }
 
-    // @audit-ok
     // Test for identity operation
     // x + 0 == x (equivalent to x + (-x) == 0)
     function add_test_identity(SD59x18 x) public view {
@@ -361,7 +306,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x.sub(x).eq(ZERO_FP));
     }
 
-    // @audit-ok
     // Test that the result increases or decreases depending
     // on the value to be added
     function add_test_values(SD59x18 x, SD59x18 y) public view {
@@ -374,14 +318,12 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-
     /* ================================================================
        Tests for overflow and edge cases.
        These should make sure that the function reverts on overflow and
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // The result of the addition must be between the maximum
     // and minimum allowed values for SD59x18
     function add_test_range(SD59x18 x, SD59x18 y) public view {
@@ -392,7 +334,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Adding zero to the maximum value shouldn't revert, as it is valid
     // Moreover, the result must be MAX_SD59x18
     function add_test_maximum_value() public view {
@@ -404,7 +345,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Adding one to the maximum value should revert, as it is out of range
     function add_test_maximum_value_plus_one() public view {
         try this.helpersAdd(MAX_SD59x18, ONE_FP) {
@@ -414,7 +354,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Adding zero to the minimum value shouldn't revert, as it is valid
     // Moreover, the result must be MIN_SD59x18
     function add_test_minimum_value() public view {
@@ -426,7 +365,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Adding minus one to the maximum value should revert, as it is out of range
     function add_test_minimum_value_plus_negative_one() public view {
         try this.helpersAdd(MIN_SD59x18, MINUS_ONE_FP) {
@@ -435,9 +373,6 @@ contract CryticPRBMath59x18Propertiesv3 {
             // Expected behaviour, reverts
         }
     }
-
-
-
 
     /* ================================================================
 
@@ -451,7 +386,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test equivalence to addition
     // x - y == x + (-y)
     function sub_test_equivalence_to_addition(SD59x18 x, SD59x18 y) public pure {
@@ -462,7 +396,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(addition.eq(subtraction));
     }
 
-    // @audit-ok
     // Test for non-commutative property
     // x - y == -(y - x)
     function sub_test_non_commutative(SD59x18 x, SD59x18 y) public pure {
@@ -472,7 +405,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_y.eq(neg(y_x)));
     }
 
-    // @audit-ok
     // Test for identity operation
     // x - 0 == x  (equivalent to x - x == 0)
     function sub_test_identity(SD59x18 x) public view {
@@ -482,7 +414,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x.sub(x).eq(ZERO_FP));
     }
 
-    // @audit-ok
     // Test for neutrality over addition and subtraction
     // (x - y) + y == (x + y) - y == x
     function sub_test_neutrality(SD59x18 x, SD59x18 y) public pure {
@@ -496,7 +427,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_minus_y_plus_y.eq(x));
     }
 
-    // @audit-ok
     // Test that the result increases or decreases depending
     // on the value to be subtracted
     function sub_test_values(SD59x18 x, SD59x18 y) public view {
@@ -515,7 +445,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // The result of the subtraction must be between the maximum
     // and minimum allowed values for SD59x18
     function sub_test_range(SD59x18 x, SD59x18 y) public view {
@@ -526,7 +455,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Subtracting zero from the maximum value shouldn't revert, as it is valid
     // Moreover, the result must be MAX_SD59x18
     function sub_test_maximum_value() public view {
@@ -538,7 +466,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Subtracting minus one from the maximum value should revert, 
     // as it is out of range
     function sub_test_maximum_value_minus_neg_one() public view {
@@ -549,7 +476,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Subtracting zero from the minimum value shouldn't revert, as it is valid
     // Moreover, the result must be MIN_SD59x18
     function sub_test_minimum_value() public view {
@@ -561,7 +487,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Subtracting one from the minimum value should revert, as it is out of range
     function sub_test_minimum_value_minus_one() public view {
         try this.helpersSub(MIN_SD59x18, ONE_FP) {
@@ -570,8 +495,6 @@ contract CryticPRBMath59x18Propertiesv3 {
             // Expected behaviour, reverts
         }
     }
-
-
 
     /* ================================================================
 
@@ -585,7 +508,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for commutative property
     // x * y == y * x
     function mul_test_commutative(SD59x18 x, SD59x18 y) public pure {
@@ -605,7 +527,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 xy_z = x_y.mul(z);
         SD59x18 x_yz = x.mul(y_z);
 
-        // todo check if this should not be used
         // Failure if all significant digits are lost
         require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
         require(significant_digits_after_mult(y, z) > REQUIRED_SIGNIFICANT_DIGITS);
@@ -613,7 +534,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         require(significant_digits_after_mult(x, y_z) > REQUIRED_SIGNIFICANT_DIGITS);
 
         assert(equal_within_tolerance(xy_z, x_yz, ONE_TENTH_FP));
-        //assert(xy_z.eq(x_yz));
     }
 
     // @audit - No guarantee of precision
@@ -626,17 +546,15 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x_times_y = x.mul(y);
         SD59x18 x_times_z = x.mul(z);
 
-        // todo check if this should not be used
         // Failure if all significant digits are lost
         require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
         require(significant_digits_after_mult(x, z) > REQUIRED_SIGNIFICANT_DIGITS);
         require(significant_digits_after_mult(x, y_plus_z) > REQUIRED_SIGNIFICANT_DIGITS);
 
         assert(equal_within_tolerance(add(x_times_y, x_times_z), x_times_y_plus_z, ONE_TENTH_FP));
-        //assert(x_times_y.add(x_times_z).eq(x_times_y_plus_z));
     }
 
-    // @audit-ok
+
     // Test for identity operation
     // x * 1 == x  (also check that x * 0 == 0)
     function mul_test_identity(SD59x18 x) public view {
@@ -672,14 +590,12 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
     
-
     /* ================================================================
        Tests for overflow and edge cases.
        These will make sure that the function reverts on overflow and
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // The result of the multiplication must be between the maximum
     // and minimum allowed values for SD59x18
     function mul_test_range(SD59x18 x, SD59x18 y) public view {
@@ -690,7 +606,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Multiplying the maximum value times one shouldn't revert, as it is valid
     // Moreover, the result must be MAX_SD59x18
     function mul_test_maximum_value() public view {
@@ -702,7 +617,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Multiplying the minimum value times one shouldn't revert, as it is valid
     // Moreover, the result must be MIN_SD59x18
     function mul_test_minimum_value() public view {
@@ -713,7 +627,6 @@ contract CryticPRBMath59x18Propertiesv3 {
             assert(false);
         }
     }
-
 
     /* ================================================================
 
@@ -727,7 +640,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for identity property
     // x / 1 == x (equivalent to x / x == 1)
     // Moreover, x/x should not revert unless x == 0
@@ -750,7 +662,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for negative divisor
     // x / -y == -(x / y)
     function div_test_negative_divisor(SD59x18 x, SD59x18 y) public view {
@@ -762,7 +673,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_y.eq(neg(x_minus_y)));
     }
 
-    // @audit-ok
     // Test for division with 0 as numerator
     // 0 / x = 0
     function div_test_division_num_zero(SD59x18 x) public view {
@@ -773,7 +683,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(ZERO_FP.eq(div_0));
     }
 
-    // @audit-ok
     // Test that the absolute value of the result increases or
     // decreases depending on the denominator's absolute value
     function div_test_values(SD59x18 x, SD59x18 y) public view {
@@ -794,7 +703,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
+
     // Test for division by zero
     function div_test_div_by_zero(SD59x18 x) public view {
         try this.helpersDiv(x, ZERO_FP) {
@@ -805,7 +714,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for division by a large value, the result should be less than one
     function div_test_maximum_denominator(SD59x18 x) public view {
         SD59x18 div_large = div(x, MAX_SD59x18);
@@ -813,7 +721,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(abs(div_large).lte(ONE_FP));
     }
 
-    // @audit-ok
     // Test for division of a large value
     // This should revert if |x| < 1 as it would return a value higher than max
     function div_test_maximum_numerator(SD59x18 x) public view {
@@ -829,7 +736,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for values in range
     function div_test_range(SD59x18 x, SD59x18 y) public view {
         SD59x18 result;
@@ -855,7 +761,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for the double negation
     // -(-x) == x
     function neg_test_double_negation(SD59x18 x) public pure {
@@ -864,7 +769,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x.eq(double_neg));
     }
 
-    // @audit-ok
     // Test for the identity operation
     // x + (-x) == 0
     function neg_test_identity(SD59x18 x) public view {
@@ -879,7 +783,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test for the zero-case
     // -0 == 0
     function neg_test_zero() public view {
@@ -922,7 +825,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
+
     // Test that the absolute value is always positive
     function abs_test_positive(SD59x18 x) public view {
         SD59x18 abs_x = abs(x);
@@ -930,7 +833,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(abs_x.gte(ZERO_FP));
     }
 
-    // @audit-ok
     // Test that the absolute value of a number equals the
     // absolute value of the negative of the same number
     function abs_test_negative(SD59x18 x) public pure {
@@ -956,7 +858,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(equal_within_precision(abs_xy, abs_x_abs_y, 2));
     }
 
-    // @audit-ok
     // Test the subadditivity property
     // | x + y | <= |x| + |y|
     function abs_test_subadditivity(SD59x18 x, SD59x18 y) public pure {
@@ -973,7 +874,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test the zero-case | 0 | = 0
     function abs_test_zero() public view {
         SD59x18 abs_zero;
@@ -988,7 +888,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test the maximum value
     function abs_test_maximum() public view {
         SD59x18 abs_max;
@@ -1000,7 +899,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         } catch {}
     }
 
-    // @audit-ok
     // Test the minimum value
     function abs_test_minimum_revert() public view {
         SD59x18 abs_min;
@@ -1011,7 +909,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         } catch {}
     }
 
-    // @audit-ok
     // Test the minimum value
     function abs_test_minimum_allowed() public view {
         SD59x18 abs_min;
@@ -1036,7 +933,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test that the inverse of the inverse is close enough to the
     // original number
     function inv_test_double_inverse(SD59x18 x) public view {
@@ -1050,7 +946,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(equal_within_precision(x, double_inv_x, loss));
     }
 
-    // @audit-ok
     // Test equivalence with division
     function inv_test_division(SD59x18 x) public view {
         require(x.neq(ZERO_FP));
@@ -1107,7 +1002,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(equal_within_precision(inv_x_y, inv_x_times_inv_y, loss));
     }
 
-    // @audit-ok
     // Test identity property
     // Intermediate result should have at least REQUIRED_SIGNIFICANT_DIGITS
     function inv_test_identity(SD59x18 x) public view {
@@ -1124,7 +1018,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(equal_within_tolerance(identity, ONE_FP, ONE_TENTH_FP));
     }
 
-    // @audit-ok
     // Test that the absolute value of the result is in range zero-one
     // if x is greater than one, else, the absolute value of the result
     // must be greater than one
@@ -1140,7 +1033,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test that the result has the same sign as the argument.
     // Since inv() rounds towards zero, we are checking the zero case as well
     function inv_test_sign(SD59x18 x) public {
@@ -1161,7 +1053,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test the zero-case, should revert
     function inv_test_zero() public view {
         try this.helpersInv(ZERO_FP) {
@@ -1170,7 +1061,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         } catch {}
     }
 
-    // @audit-ok
     // Test the maximum value case, should not revert, and be close to zero
     function inv_test_maximum() public view {
         SD59x18 inv_maximum;
@@ -1198,7 +1088,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-
     /* ================================================================
 
                         TESTS FOR FUNCTION avg()
@@ -1211,7 +1100,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test that the result is between the two operands
     // avg(x, y) >= min(x, y) && avg(x, y) <= max(x, y)
     function avg_test_values_in_range(SD59x18 x, SD59x18 y) public pure {
@@ -1224,7 +1112,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test that the average of the same number is itself
     // avg(x, x) == x
     function avg_test_one_value(SD59x18 x) public pure {
@@ -1233,7 +1120,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(avg_x.eq(x));
     }
 
-    // @audit-ok
     // Test that the order of operands is irrelevant
     // avg(x, y) == avg(y, x)
     function avg_test_operand_order(SD59x18 x, SD59x18 y) public pure {
@@ -1249,7 +1135,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test for the maximum value
     function avg_test_maximum() public view {
         SD59x18 result;
@@ -1262,7 +1147,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         } catch {}
     }
 
-    // @audit-ok
     // Test for the minimum value
     function avg_test_minimum() public view {
         SD59x18 result;
@@ -1287,7 +1171,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for zero exponent
     // x ** 0 == 1
     function pow_test_zero_exponent(SD59x18 x) public view {
@@ -1296,7 +1179,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_pow_0.eq(ONE_FP));
     }
 
-    // @audit-ok
     // Test for zero base
     // 0 ** x == 0 (for positive x)
     function pow_test_zero_base(SD59x18 x) public view {
@@ -1307,7 +1189,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(zero_pow_x.eq(ZERO_FP));
     }
 
-    // @audit-ok
     // Test for exponent one
     // x ** 1 == x
     function pow_test_one_exponent(SD59x18 x) public view {
@@ -1316,7 +1197,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_pow_1.eq(x));
     }
 
-    // @audit-ok
     // Test for base one
     // 1 ** x == 1
     function pow_test_base_one(SD59x18 x) public view {
@@ -1332,14 +1212,18 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x,
         SD59x18 a,
         SD59x18 b
-    ) public view {
+    ) public {
         require(x.neq(ZERO_FP));
 
         SD59x18 x_a = pow(x, a);
         SD59x18 x_b = pow(x, b);
         SD59x18 x_ab = pow(x, a.add(b));
 
-        assert(equal_within_precision(mul(x_a, x_b), x_ab, 10));
+        uint256 power = 9;
+        int256 digits = int256(10**power);
+
+        emit PropertyFailed(mul(x_a, x_b), x_ab, power);
+        assert(equal_most_significant_digits_within_precision(mul(x_a, x_b), x_ab, digits));
     }
 
     // @audit - fails
@@ -1349,14 +1233,18 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x,
         SD59x18 a,
         SD59x18 b
-    ) public view {
+    ) public {
         require(x.neq(ZERO_FP));
 
         SD59x18 x_a = pow(x, a);
         SD59x18 x_a_b = pow(x_a, b);
         SD59x18 x_ab = pow(x, a.mul(b));
 
-        assert(equal_within_precision(x_a_b, x_ab, 10));
+        uint256 power = 9;
+        int256 digits = int256(10**power);
+
+        emit PropertyFailed(x_a_b, x_ab, power);
+        assert(equal_most_significant_digits_within_precision(x_a_b, x_ab, digits));
     }
 
     // @audit check precision
@@ -1380,25 +1268,26 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(equal_within_precision(mul(x_a, y_a), xy_a, 10));
     }
 
-    // @audit - fails
+    // @audit - fails, add some relative error
     // Test for result being greater than or lower than the argument, depending on
     // its absolute value and the value of the exponent
-    function pow_test_values(SD59x18 x, SD59x18 a) public view {
+    function pow_test_values(SD59x18 x, SD59x18 a) public {
         require(x.neq(ZERO_FP));
         require(x.neq(MIN_SD59x18) && a.neq(MIN_SD59x18));
 
         SD59x18 x_a = pow(x, a);
 
         if (abs(x).gte(ONE_FP)) {
+            emit PropertyFailed(x_a, ONE_FP);
             assert(abs(x_a).gte(ONE_FP));
         }
 
         if (abs(x).lte(ONE_FP)) {
+            emit PropertyFailed(x_a, ONE_FP);
             assert(abs(x_a).lte(ONE_FP));
         }
     }
 
-    // @audit-ok
     // Test for result sign: if the exponent is even, sign is positive
     // if the exponent is odd, preserves the sign of the base
     function pow_test_sign(SD59x18 x, SD59x18 a) public view {
@@ -1429,8 +1318,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-
-    // @audit-ok
     // Test for maximum base and exponent > 1
     function pow_test_maximum_base(SD59x18 a) public view {
         require(a.gt(ONE_FP));
@@ -1465,7 +1352,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for the inverse operation
     // sqrt(x) * sqrt(x) == x
     function sqrt_test_inverse_mul(SD59x18 x) public view {
@@ -1484,7 +1370,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         );
     }
 
-    // @audit-ok
     // Test for the inverse operation
     // sqrt(x) ** 2 == x
     function sqrt_test_inverse_pow(SD59x18 x) public view {
@@ -1531,13 +1416,12 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
+
     // Test for zero case
     function sqrt_test_zero() public view {
         assert(sqrt(ZERO_FP).eq(ZERO_FP));
     }
 
-    // @audit-ok
     // Test for maximum value
     function sqrt_test_maximum() public view {
         try this.helpersSqrt(MAX_SQRT) {
@@ -1549,7 +1433,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for minimum value
     function sqrt_test_minimum() public view {
         try this.helpersSqrt(MIN_SD59x18) {
@@ -1560,7 +1443,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for negative operands
     function sqrt_test_negative(SD59x18 x) public view {
         require(x.lt(ZERO_FP));
@@ -1609,12 +1491,16 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit - fails
     // Test for logarithm of a power
     // log2(x ** y) = y * log2(x)
-    function log2_test_power(SD59x18 x, SD59x18 y) public view {
+    function log2_test_power(SD59x18 x, SD59x18 y) public {
         SD59x18 x_y = pow(x, y);
         SD59x18 log2_x_y = log2(x_y);
         SD59x18 y_log2_x = mul(log2(x), y);
 
-        assert(equal_within_precision(y_log2_x, log2_x_y, 4));
+        uint256 power = 9;
+        int256 digits = int256(10**power);
+
+        emit PropertyFailed(y_log2_x, log2_x_y, power);
+        assert(equal_most_significant_digits_within_precision(y_log2_x, log2_x_y, digits));
     }
 
     /* ================================================================
@@ -1623,7 +1509,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test for zero case, should revert
     function log2_test_zero() public view {
         try this.helpersLog2(ZERO_FP) {
@@ -1634,7 +1519,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for maximum value case, should return a positive number
     function log2_test_maximum() public view {
         SD59x18 result;
@@ -1649,7 +1533,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for negative values, should revert as log2 is not defined
     function log2_test_negative(SD59x18 x) public view {
         require(x.lt(ZERO_FP));
@@ -1706,10 +1589,10 @@ contract CryticPRBMath59x18Propertiesv3 {
 
         SD59x18 y_ln_x = mul(ln(x), y);
 
-        // todo this isn't correct
-        uint256 loss = intoUint256(abs(log2(x).add(log2(y))));
+        require(significant_digits_after_mult(ln(x), y) > REQUIRED_SIGNIFICANT_DIGITS);
 
-        assert(equal_within_precision(ln_x_y, y_ln_x, 4));
+        emit PropertyFailed(ln_x_y, y_ln_x);
+        assert(equal_within_tolerance(ln_x_y, y_ln_x, ONE_TENTH_FP));
     }
 
     /* ================================================================
@@ -1718,7 +1601,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test for zero case, should revert
     function ln_test_zero() public view {
         try this.helpersLn(ZERO_FP) {
@@ -1729,7 +1611,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for maximum value case, should return a positive number
     function ln_test_maximum() public view {
         SD59x18 result;
@@ -1744,7 +1625,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for negative values, should revert as ln is not defined
     function ln_test_negative(SD59x18 x) public view {
         require(x.lt(ZERO_FP));
@@ -1769,7 +1649,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for equality with pow(2, x) for integer x
     // pow(2, x) == exp2(x)
     function exp2_test_equivalence_pow(SD59x18 x) public view {
@@ -1782,21 +1661,17 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit - fails
     // Test for inverse function
     // If y = log2(x) then exp2(y) == x
-    function exp2_test_inverse(SD59x18 x) public view {
+    function exp2_test_inverse(SD59x18 x) public {
         SD59x18 log2_x = log2(x);
         SD59x18 exp2_x = exp2(log2_x);
 
-        // todo is this the correct number of bits?
-        uint256 bits = 18;
+        uint256 power = 30;
+        int256 digits = int256(10**power);
 
-        if (log2_x.lt(ZERO_FP)) {
-            bits = intoUint256(convert(int256(bits)).add(log2_x));
-        }
-
-        assert(equal_most_significant_digits_within_precision(x, exp2_x, bits));
+        emit PropertyFailed(x, exp2_x, power);
+        assert(equal_most_significant_digits_within_precision(x, exp2_x, digits));
     }
 
-    // @audit-ok
     // Test for negative exponent
     // exp2(-x) == inv( exp2(x) )
     function exp2_test_negative_exponent(SD59x18 x) public view {
@@ -1815,7 +1690,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test for zero case
     // exp2(0) == 1
     function exp2_test_zero() public view {
@@ -1823,7 +1697,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(exp_zero.eq(ONE_FP));
     }
 
-    // @audit-ok
     // Test for maximum value. This should overflow as it won't fit
     // in the data type
     function exp2_test_maximum() public view {
@@ -1835,7 +1708,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for minimum value. This should return zero since
     // 2 ** -x == 1 / 2 ** x that tends to zero as x increases
     function exp2_test_minimum() public view {
@@ -1866,18 +1738,16 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit - fails
     // Test for inverse function
     // If y = ln(x) then exp(y) == x
-    function exp_test_inverse(SD59x18 x) public view {
+    function exp_test_inverse(SD59x18 x) public {
         SD59x18 ln_x = ln(x);
         SD59x18 exp_x = exp(ln_x);
-        SD59x18 log2_x = log2(x);
+        SD59x18 log10_x = log10(x);
 
-        uint256 bits = 18;
+        uint256 power = 16;
+        int256 digits = int256(10**power);
 
-        if (log2_x.lt(ZERO_FP)) {
-            bits = intoUint256(convert(int256(bits)).add(log2_x));
-        }
-
-        assert(equal_most_significant_digits_within_precision(x, exp_x, bits));
+        emit PropertyFailed(x, exp_x, power);
+        assert(equal_most_significant_digits_within_precision(x, exp_x, digits));
     }
 
     // @audit check precision
@@ -1899,7 +1769,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test for zero case
     // exp(0) == 1
     function exp_test_zero() public view {
@@ -1907,7 +1776,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(exp_zero.eq(ONE_FP));
     }
 
-    // @audit-ok
     // Test for maximum value. This should overflow as it won't fit
     // in the data type
     function exp_test_maximum() public view {
@@ -1919,7 +1787,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for minimum value. This should return zero since
     // e ** -x == 1 / e ** x that tends to zero as x increases
     function exp_test_minimum() public view {
@@ -1947,7 +1814,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit-ok
     // Test for zero exponent
     // x ** 0 == 1
     function powu_test_zero_exponent(SD59x18 x) public view {
@@ -1956,7 +1822,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_pow_0.eq(ONE_FP));
     }
 
-    // @audit-ok
     // Test for zero base
     // 0 ** x == 0 (for positive x)
     function powu_test_zero_base(uint256 x) public view {
@@ -1967,7 +1832,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(zero_pow_x.eq(ZERO_FP));
     }
 
-    // @audit-ok
     // Test for exponent one
     // x ** 1 == x
     function powu_test_one_exponent(SD59x18 x) public view {
@@ -1976,7 +1840,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_pow_1.eq(x));
     }
 
-    // @audit-ok
     // Test for base one
     // 1 ** x == 1
     function powu_test_base_one(uint256 x) public view {
@@ -2058,7 +1921,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for result sign: if the exponent is even, sign is positive
     // if the exponent is odd, preserves the sign of the base
     function powu_test_sign(SD59x18 x, uint256 a) public view {
@@ -2089,8 +1951,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-
-    // @audit-ok
     // Test for maximum base and exponent > 1
     function powu_test_maximum_base(uint256 a) public view {
         require(a > 1);
@@ -2154,11 +2014,11 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 log10_x_y = log10(x_y);
         SD59x18 y_log10_x = mul(log10(x), y);
 
-        if(!equal_within_precision(log10_x_y, y_log10_x, 18)){
-            emit AssertionFailed(log10_x_y, y_log10_x);
-        }
+        uint256 power = 9;
+        int256 digits = int256(10**power);
 
-        assert(equal_within_precision(log10_x_y, y_log10_x, 10));
+        emit PropertyFailed(log10_x_y, y_log10_x, power);  
+        assert(equal_most_significant_digits_within_precision(log10_x_y, y_log10_x, digits));
     }
 
     /* ================================================================
@@ -2167,7 +2027,6 @@ contract CryticPRBMath59x18Propertiesv3 {
        behaves correctly on edge cases
        ================================================================ */
 
-    // @audit-ok
     // Test for zero case, should revert
     function log10_test_zero() public view {
         try this.helpersLog10(ZERO_FP) {
@@ -2178,7 +2037,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for maximum value case, should return a positive number
     function log10_test_maximum() public view {
         SD59x18 result;
@@ -2193,7 +2051,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
-    // @audit-ok
     // Test for negative values, should revert as log10 is not defined
     function log10_test_negative(SD59x18 x) public view {
         require(x.lt(ZERO_FP));
