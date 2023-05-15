@@ -1,39 +1,38 @@
 {
-	"name": "@crytic/properties",
-	"version": "0.0.1",
-	"description": "Pre-made invariants for fuzz testing smart-contracts",
-	"main": "index.js",
-	"scripts": {
-		"compile": "hardhat compile",
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"format": "prettier --write . && npm run format-embedded-solidity",
-		"format-embedded-solidity": "prettier --write \"**/*.md\" --embedded-language-formatting=auto --plugin prettier-plugin-solidity --tab-width 4 --print-width 120 && prettier --write \"**/*.md\"",
-		"lint": "npm run lint-check-format && npm run lint-check-links",
-		"lint-check-format": "prettier --check .",
-		"lint-check-links": "find . -name '*.md' -not -path './node_modules/*' -print0 | xargs -0 -n1 markdown-link-check",
-		"echidna-prb-ud": "echidna . --contract CryticPRBMath60x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
-		"echidna-prb-sd": "echidna . --contract CryticPRBMath59x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
-		"echidna-abdk": "echidna . --contract CryticABDKMath64x64Properties --config ./contracts/Math/echidna-config.yaml"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/crytic/properties.git"
-	},
-	"author": "Trail of Bits",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/crytic/properties/issues"
-	},
-	"homepage": "https://github.com/crytic/properties#readme",
-	"dependencies": {
-		"@openzeppelin/contracts": "^4.7.3",
-		"@prb/math": "^4.0.0",
-		"markdown-link-check": "^3.11.0",
-		"prettier": "^2.8.7",
-		"prettier-plugin-solidity": "^1.1.3",
-		"solmate": "^6.6.1"
-	},
-	"devDependencies": {
-		"hardhat": "^2.9.3"
-	}
+  "name": "@crytic/properties",
+  "version": "0.0.1",
+  "description": "Pre-made invariants for fuzz testing smart-contracts",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write . && npm run format-embedded-solidity",
+    "format-embedded-solidity": "prettier --write \"**/*.md\" --embedded-language-formatting=auto --plugin prettier-plugin-solidity --tab-width 4 --print-width 120 && prettier --write \"**/*.md\"",
+    "lint": "npm run lint-check-format && npm run lint-check-links",
+    "lint-check-format": "prettier --check .",
+    "lint-check-links": "find . -name '*.md' -not -path './node_modules/*' -print0 | xargs -0 -n1 markdown-link-check",
+	"echidna-prb-ud": "echidna . --contract CryticPRBMath60x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
+	"echidna-prb-sd": "echidna . --contract CryticPRBMath59x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
+	"echidna-abdk": "echidna . --contract CryticABDKMath64x64Properties --config ./contracts/Math/echidna-config.yaml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crytic/properties.git"
+  },
+  "author": "Trail of Bits",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/crytic/properties/issues"
+  },
+  "homepage": "https://github.com/crytic/properties#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.7.3",
+    "markdown-link-check": "^3.11.0",
+    "prettier": "^2.8.7",
+    "prettier-plugin-solidity": "^1.1.3",
+    "solmate": "^6.6.1"
+  },
+  "devDependencies": {
+    "hardhat": "^2.9.3"
+  }
 }
