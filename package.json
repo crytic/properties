@@ -11,9 +11,9 @@
     "lint": "npm run lint-check-format && npm run lint-check-links",
     "lint-check-format": "prettier --check .",
     "lint-check-links": "find . -name '*.md' -not -path './node_modules/*' -print0 | xargs -0 -n1 markdown-link-check",
-	"echidna-prb-ud": "echidna . --contract CryticPRBMath60x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
-	"echidna-prb-sd": "echidna . --contract CryticPRBMath59x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
-	"echidna-abdk": "echidna . --contract CryticABDKMath64x64Properties --config ./contracts/Math/echidna-config.yaml"
+    "echidna-prb-ud": "echidna . --contract CryticPRBMath60x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
+    "echidna-prb-sd": "echidna . --contract CryticPRBMath59x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml",
+    "echidna-abdk": "echidna . --contract CryticABDKMath64x64Properties --config ./contracts/Math/echidna-config.yaml"
   },
   "repository": {
     "type": "git",
