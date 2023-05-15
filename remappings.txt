@@ -6,4 +6,4 @@ forge-std/=lib/forge-std/src/
 @openzeppelin/=lib/openzeppelin-contracts/
 @prb/math/=lib/prb-math/
 prb-test/=lib/prb-math/lib/prb-test/src/
-solmate/=lib/solmate/src/
+solmate/=lib/solmate/
