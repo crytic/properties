@@ -98,14 +98,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         return (eq(r, convert(0)));
     }
 
-    function equal_within_precision_u(uint256 a, uint256 b, uint256 precision_bits) public pure returns(bool) {
-        uint256 max = (a > b) ? a : b;
-        uint256 min = (a > b) ? b : a;
-        uint256 r = (max - min) >> precision_bits;
-        
-        return (r == 0);
-    }
-
     // This function determines if the relative error between a and b is less
     // than error_percent % (expressed as a 59x18 value)
     // Uses functions from the library under test!
@@ -115,15 +107,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         require(tol_value.neq(ZERO_FP));
         emit PropertyFailed(a, b, tol_value);
         return (lte(sub(b, a), tol_value));
-    }
-
-    // Check that there are remaining significant digits after a multiplication
-    // Uses functions from the library under test!
-    function significant_digits_lost_in_mult(UD60x18 a, UD60x18 b) public pure returns (bool) {
-        uint256 la = convert(floor(log10(a)));
-        uint256 lb = convert(floor(log10(b)));
-
-        return(la + lb < 18);
     }
 
     // Return how many significant bits will remain after multiplying a and b

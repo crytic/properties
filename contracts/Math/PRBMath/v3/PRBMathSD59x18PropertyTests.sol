@@ -107,14 +107,6 @@ contract CryticPRBMath59x18Propertiesv3 {
         return (eq(r, convert(0)));
     }
 
-    function equal_within_precision_u(uint256 a, uint256 b, uint256 precision_bits) public pure returns(bool) {
-        uint256 max = (a > b) ? a : b;
-        uint256 min = (a > b) ? b : a;
-        uint256 r = (max - min) >> precision_bits;
-        
-        return (r == 0);
-    }
-
     // This function determines if the relative error between a and b is less
     // than error_percent % (expressed as a 59x18 value)
     // Uses functions from the library under test!
@@ -241,12 +233,6 @@ contract CryticPRBMath59x18Propertiesv3 {
     function helpersFloor(SD59x18 x) public pure returns (SD59x18) {
         return floor(x);
     }
-
-    /* ================================================================
-       Bounding helpers
-       ================================================================ */
-
-    
 
     /* ================================================================
 
