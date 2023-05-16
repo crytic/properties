@@ -807,7 +807,9 @@ contract CryticPRBMath60x18Propertiesv3 {
         try this.helpersAvg(MAX_UD60x18, MAX_UD60x18) {
             result = this.helpersAvg(MAX_UD60x18, MAX_UD60x18);
             assert(result.eq(MAX_UD60x18));
-        } catch {}
+        } catch {
+            assert(false);
+        }
     }
 
     /* ================================================================

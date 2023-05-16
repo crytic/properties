@@ -893,7 +893,9 @@ contract CryticPRBMath59x18Propertiesv3 {
             // If it doesn't revert, the value must be MAX_SD59x18
             abs_max = this.helpersAbs(MAX_SD59x18);
             assert(abs_max.eq(MAX_SD59x18));
-        } catch {}
+        } catch {
+            assert(false);
+        }
     }
 
     // Test the minimum value
@@ -915,7 +917,9 @@ contract CryticPRBMath59x18Propertiesv3 {
             // If it doesn't revert, the value must be the negative of MIN_SD59x18 + 1
             abs_min = this.helpersAbs(input);
             assert(abs_min.eq(neg(input)));
-        } catch {}
+        } catch {
+            assert(false);
+        }
     }
 
     /* ================================================================
@@ -1122,7 +1126,9 @@ contract CryticPRBMath59x18Propertiesv3 {
         try this.helpersAvg(MAX_SD59x18, MAX_SD59x18) {
             result = this.helpersAvg(MAX_SD59x18, MAX_SD59x18);
             assert(result.eq(MAX_SD59x18));
-        } catch {}
+        } catch {
+            assert(false);
+        }
     }
 
     // Test for the minimum value
@@ -1134,7 +1140,9 @@ contract CryticPRBMath59x18Propertiesv3 {
         try this.helpersAvg(MIN_SD59x18, MIN_SD59x18) {
             result = this.helpersAvg(MIN_SD59x18, MIN_SD59x18);
             assert(result.eq(MIN_SD59x18));
-        } catch {}
+        } catch {
+            assert(false);
+        }
     }
 
     /* ================================================================
