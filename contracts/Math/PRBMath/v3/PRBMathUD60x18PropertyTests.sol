@@ -86,7 +86,6 @@ contract CryticPRBMath60x18Propertiesv3 {
        Helper functions.
        ================================================================ */
 
-    // @audit not checking for overflows
     // These functions allows to compare a and b for equality, discarding
     // the last precision_bits bits.
     // Uses functions from the library under test!
@@ -99,7 +98,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         return (eq(r, convert(0)));
     }
 
-    // @audit not checking for overflows
     function equal_within_precision_u(uint256 a, uint256 b, uint256 precision_bits) public pure returns(bool) {
         uint256 max = (a > b) ? a : b;
         uint256 min = (a > b) ? b : a;
@@ -119,7 +117,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         return (lte(sub(b, a), tol_value));
     }
 
-    // @audit precision can never be negative
     // Check that there are remaining significant digits after a multiplication
     // Uses functions from the library under test!
     function significant_digits_lost_in_mult(UD60x18 a, UD60x18 b) public pure returns (bool) {
@@ -129,7 +126,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         return(la + lb < 18);
     }
 
-    // @audit precision can never be negative
     // Return how many significant bits will remain after multiplying a and b
     // Uses functions from the library under test!
     function significant_digits_after_mult(UD60x18 a, UD60x18 b) public pure returns (uint256) {
@@ -434,7 +430,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(x_y.eq(y_x));
     }
 
-    // @audit - No guarantee of precision
     // Test for associative property
     // (x * y) * z == x * (y * z)
     function mul_test_associative(UD60x18 x, UD60x18 y, UD60x18 z) public {
@@ -447,7 +442,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_tolerance(xy_z, x_yz, ONE_TENTH_FP));
     }
 
-    // @audit - No guarantee of precision
     // Test for distributive property
     // x * (y + z) == x * y + x * z
     function mul_test_distributive(UD60x18 x, UD60x18 y, UD60x18 z) public {
@@ -470,7 +464,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(x_1.eq(x));
     }
 
-    // @audit - No guarantee of precision
     // Test that the result increases or decreases depending
     // on the value to be added
     function mul_test_values(UD60x18 x, UD60x18 y) public {
@@ -524,11 +517,15 @@ contract CryticPRBMath60x18Propertiesv3 {
 
     // Test for identity property
     // x / 1 == x (equivalent to x / x == 1)
-    // Moreover, x/x should not revert unless x == 0
-    function div_test_division_identity(UD60x18 x) public {
+    function div_test_division_identity_x_div_1(UD60x18 x) public {
         UD60x18 div_1 = div(x, ONE_FP);
+        
         assert(x.eq(div_1));
+    }
 
+    // Test for identity property
+    // x/x should not revert unless x == 0
+    function div_test_division_identity_x_div_x(UD60x18 x) public {
         UD60x18 div_x;
 
         try this.helpersDiv(x, x) {
@@ -653,7 +650,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(inv_x.eq(div_1_x));
     }
 
-    // @audit check if loss is correct
     // Test the anticommutativity of the division
     // x / y == 1 / (y / x)
     function inv_test_division_noncommutativity(
@@ -668,7 +664,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_tolerance(x_y, inv(y_x), ONE_TENTH_FP));
     }
 
-    // @audit check if loss is correct
     // Test the multiplication of inverses
     // 1/(x * y) == 1/x * 1/y
     function inv_test_multiplication(UD60x18 x, UD60x18 y) public {
@@ -689,7 +684,6 @@ contract CryticPRBMath60x18Propertiesv3 {
     }
 
     // Test multiplicative identity property
-    // Intermediate result should have at least REQUIRED_SIGNIFICANT_DIGITS
     function inv_test_identity(UD60x18 x) public {
         require(x.neq(ZERO_FP));
 
@@ -865,7 +859,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(one_pow_y.eq(ONE_FP));
     }
 
-    // @audit - Fails
     // Test for product of powers of the same base
     // x ** a * x ** b == x ** (a + b)
     function pow_test_product_same_base(
@@ -887,7 +880,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_most_significant_digits_within_precision(mul(x_a, x_b), x_ab, digits));
     }
 
-    // @audit - fails
     // Test for power of an exponentiation
     // (x ** a) ** b == x ** (a * b)
     function pow_test_power_of_an_exponentiation(
@@ -909,7 +901,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_most_significant_digits_within_precision(x_a_b, x_ab, digits));
     }
 
-    // @audit check precision
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
     function pow_test_product_power(
@@ -934,7 +925,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_most_significant_digits_within_precision(mul(x_a, y_a), xy_a, digits));
     }
 
-    // @audit - fails
     // Test for result being greater than or lower than the argument, depending on
     // its value and the value of the exponent
     function pow_test_values(UD60x18 x, UD60x18 a) public {
@@ -1038,7 +1028,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         );
     }
 
-    // @audit check the precision
     // Test for distributive property respect to the multiplication
     // sqrt(x) * sqrt(y) == sqrt(x * y)
     function sqrt_test_distributive(UD60x18 x, UD60x18 y) public {
@@ -1086,7 +1075,6 @@ contract CryticPRBMath60x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit check loss
     // Test for distributive property respect to multiplication
     // log2(x * y) = log2(x) + log2(y)
     function log2_test_distributive_mul(UD60x18 x, UD60x18 y) public {
@@ -1106,7 +1094,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_precision(log2_x_log2_y, log2_xy, loss));
     }
 
-    // @audit - fails
     // Test for logarithm of a power
     // log2(x ** y) = y * log2(x)
     function log2_test_power(UD60x18 x, UD60x18 y) public {
@@ -1178,7 +1165,6 @@ contract CryticPRBMath60x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit check precision
     // Test for distributive property respect to multiplication
     // ln(x * y) = ln(x) + ln(y)
     function ln_test_distributive_mul(UD60x18 x, UD60x18 y) public {
@@ -1200,7 +1186,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_precision(ln_x_ln_y, ln_xy, loss));
     }
 
-    // @audit check precision
     // Test for logarithm of a power
     // ln(x ** y) = y * ln(x)
     function ln_test_power(UD60x18 x, UD60x18 y) public {
@@ -1280,7 +1265,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(exp2_x.eq(pow_2_x));
     }
 
-    // @audit - fails
     // Test for inverse function
     // If y = log2(x) then exp2(y) == x
     function exp2_test_inverse(UD60x18 x) public {
@@ -1332,7 +1316,6 @@ contract CryticPRBMath60x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit - fails
     // Test for inverse function
     // If y = ln(x) then exp(y) == x
     function exp_test_inverse(UD60x18 x) public {
@@ -1419,7 +1402,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(one_pow_a.eq(ONE_FP));
     }
 
-    // @audit - Fails
     // Test for product of powers of the same base
     // x ** a * x ** b == x ** (a + b)
     function powu_test_product_same_base(
@@ -1436,7 +1418,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_precision(mul(x_a, x_b), x_ab, 10));
     }
 
-    // @audit - fails
     // Test for power of an exponentiation
     // (x ** a) ** b == x ** (a * b)
     function powu_test_power_of_an_exponentiation(
@@ -1453,7 +1434,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_precision(x_a_b, x_ab, 10));
     }
 
-    // @audit check precision
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
     function powu_test_product_power(
@@ -1474,7 +1454,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_precision(mul(x_a, y_a), xy_a, 10));
     }
 
-    // @audit - fails
     // Test for result being greater than or lower than the argument, depending on
     // its value and the value of the exponent
     function powu_test_values(UD60x18 x, uint256 a) public {
@@ -1509,7 +1488,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         }
     }
 
-    // @audit Check 2**64
     // Test for base < 1 and high exponent
     function powu_test_high_exponent(UD60x18 x, uint256 a) public {
         require(x.lt(ONE_FP) && a > 2 ** 64);
@@ -1531,7 +1509,6 @@ contract CryticPRBMath60x18Propertiesv3 {
        with math rules and expected behaviour.
        ================================================================ */
 
-    // @audit check loss
     // Test for distributive property respect to multiplication
     // log10(x * y) = log10(x) + log10(y)
     function log10_test_distributive_mul(UD60x18 x, UD60x18 y) public {
@@ -1553,7 +1530,6 @@ contract CryticPRBMath60x18Propertiesv3 {
         assert(equal_within_precision(log10_x_log10_y, log10_xy, loss));
     }
 
-    // @audit - fails
     // Test for logarithm of a power
     // log10(x ** y) = y * log10(x)
     function log10_test_power(UD60x18 x, UD60x18 y) public {
