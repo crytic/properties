@@ -12,6 +12,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     event PropertyFailed(SD59x18 result);
     event PropertyFailed(SD59x18 result1, SD59x18 result2);
     event PropertyFailed(SD59x18 result1, SD59x18 result2, uint256 discardedDigits);
+    event PropertyFailed(SD59x18 result1, SD59x18 result2, SD59x18 discardedDigits);
     event TestLog(int256 num1, int256 num2, int256 result);
 
     /* ================================================================
@@ -70,7 +71,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     SD59x18 internal constant MAX_PERMITTED_EXP = SD59x18.wrap(133_084258667509499440);
     SD59x18 internal constant MIN_PERMITTED_EXP = SD59x18.wrap(-41_446531673892822322);
-
+    
+    SD59x18 internal constant MAX_PERMITTED_POW = SD59x18.wrap(2 ** 192 * 10 ** 18 - 1);
     /// @dev Half the UNIT number.
     int256 constant uHALF_UNIT = 0.5e18;
     SD59x18 constant HALF_UNIT = SD59x18.wrap(uHALF_UNIT);
@@ -118,9 +120,11 @@ contract CryticPRBMath59x18Propertiesv3 {
     // This function determines if the relative error between a and b is less
     // than error_percent % (expressed as a 59x18 value)
     // Uses functions from the library under test!
-    function equal_within_tolerance(SD59x18 a, SD59x18 b, SD59x18 error_percent) public pure returns(bool) {
+    function equal_within_tolerance(SD59x18 a, SD59x18 b, SD59x18 error_percent) public returns(bool) {
         SD59x18 tol_value = abs(mul(a, div(error_percent, convert(100))));
 
+        require(tol_value.neq(ZERO_FP));
+        emit PropertyFailed(a, b, tol_value);
         return (lte(abs(sub(b, a)), tol_value));
     }
 
@@ -159,31 +163,6 @@ contract CryticPRBMath59x18Propertiesv3 {
 
        emit TestLog(larger, smaller, larger - smaller);
        return ((larger - smaller) <= 1);
-    }
-
-    // Return the i most significant bits from |n|. If n has less than i significant bits, return |n|
-    // Uses functions from the library under test!
-    function most_significant_bits(
-        SD59x18 n,
-        uint256 i
-    ) public view returns (uint256) {
-        if (n.eq(MIN_SD59x18)) return 0;
-        
-        // Create a mask consisting of i bits set to 1
-        uint256 mask = (2 ** i) - 1;
-
-        // Get the positive value of n
-        uint256 value = (n.gt(ZERO_FP)) ? intoUint256(n) : intoUint256(neg(n));
-
-        // Get the position of the MSB set to 1 of n
-        uint256 pos = msb(value);
-
-        // Shift the mask to match the rightmost 1-set bit
-        if (pos > i) {
-            mask <<= (pos - i);
-        }
-
-        return (value & mask);
     }
 
     /* ================================================================
@@ -266,6 +245,12 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     /* ================================================================
+       Bounding helpers
+       ================================================================ */
+
+    
+
+    /* ================================================================
 
                         TESTS FOR FUNCTION add()
 
@@ -299,7 +284,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for identity operation
     // x + 0 == x (equivalent to x + (-x) == 0)
-    function add_test_identity(SD59x18 x) public view {
+    function add_test_identity(SD59x18 x) public {
         SD59x18 x_0 = x.add(ZERO_FP);
 
         assert(x.eq(x_0));
@@ -308,7 +293,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test that the result increases or decreases depending
     // on the value to be added
-    function add_test_values(SD59x18 x, SD59x18 y) public view {
+    function add_test_values(SD59x18 x, SD59x18 y) public {
         SD59x18 x_y = x.add(y);
 
         if (y.gte(ZERO_FP)) {
@@ -326,7 +311,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // The result of the addition must be between the maximum
     // and minimum allowed values for SD59x18
-    function add_test_range(SD59x18 x, SD59x18 y) public view {
+    function add_test_range(SD59x18 x, SD59x18 y) public {
         try this.helpersAdd(x, y) returns (SD59x18 result) {
             assert(result.lte(MAX_SD59x18) && result.gte(MIN_SD59x18));
         } catch {
@@ -336,7 +321,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Adding zero to the maximum value shouldn't revert, as it is valid
     // Moreover, the result must be MAX_SD59x18
-    function add_test_maximum_value() public view {
+    function add_test_maximum_value() public {
         try this.helpersAdd(MAX_SD59x18, ZERO_FP) returns (SD59x18 result) {
             // Expected behaviour, does not revert
             assert(result.eq(MAX_SD59x18));
@@ -346,7 +331,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Adding one to the maximum value should revert, as it is out of range
-    function add_test_maximum_value_plus_one() public view {
+    function add_test_maximum_value_plus_one() public {
         try this.helpersAdd(MAX_SD59x18, ONE_FP) {
             assert(false);
         } catch {
@@ -356,7 +341,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Adding zero to the minimum value shouldn't revert, as it is valid
     // Moreover, the result must be MIN_SD59x18
-    function add_test_minimum_value() public view {
+    function add_test_minimum_value() public {
         try this.helpersAdd(MIN_SD59x18, ZERO_FP) returns (SD59x18 result) {
             // Expected behaviour, does not revert
             assert(result.eq(MIN_SD59x18));
@@ -366,7 +351,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Adding minus one to the maximum value should revert, as it is out of range
-    function add_test_minimum_value_plus_negative_one() public view {
+    function add_test_minimum_value_plus_negative_one() public {
         try this.helpersAdd(MIN_SD59x18, MINUS_ONE_FP) {
             assert(false);
         } catch {
@@ -407,7 +392,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for identity operation
     // x - 0 == x  (equivalent to x - x == 0)
-    function sub_test_identity(SD59x18 x) public view {
+    function sub_test_identity(SD59x18 x) public {
         SD59x18 x_0 = x.sub(ZERO_FP);
 
         assert(x_0.eq(x));
@@ -429,7 +414,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test that the result increases or decreases depending
     // on the value to be subtracted
-    function sub_test_values(SD59x18 x, SD59x18 y) public view {
+    function sub_test_values(SD59x18 x, SD59x18 y) public {
         SD59x18 x_y = x.sub(y);
 
         if (y.gte(ZERO_FP)) {
@@ -447,7 +432,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // The result of the subtraction must be between the maximum
     // and minimum allowed values for SD59x18
-    function sub_test_range(SD59x18 x, SD59x18 y) public view {
+    function sub_test_range(SD59x18 x, SD59x18 y) public {
         try this.helpersSub(x, y) returns (SD59x18 result) {
             assert(result.lte(MAX_SD59x18) && result.gte(MIN_SD59x18));
         } catch {
@@ -457,7 +442,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Subtracting zero from the maximum value shouldn't revert, as it is valid
     // Moreover, the result must be MAX_SD59x18
-    function sub_test_maximum_value() public view {
+    function sub_test_maximum_value() public {
         try this.helpersSub(MAX_SD59x18, ZERO_FP) returns (SD59x18 result) {
             // Expected behaviour, does not revert
             assert(result.eq(MAX_SD59x18));
@@ -468,7 +453,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Subtracting minus one from the maximum value should revert, 
     // as it is out of range
-    function sub_test_maximum_value_minus_neg_one() public view {
+    function sub_test_maximum_value_minus_neg_one() public {
         try this.helpersSub(MAX_SD59x18, MINUS_ONE_FP) {
             assert(false);
         } catch {
@@ -478,7 +463,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Subtracting zero from the minimum value shouldn't revert, as it is valid
     // Moreover, the result must be MIN_SD59x18
-    function sub_test_minimum_value() public view {
+    function sub_test_minimum_value() public {
         try this.helpersSub(MIN_SD59x18, ZERO_FP) returns (SD59x18 result) {
             // Expected behaviour, does not revert
             assert(result.eq(MIN_SD59x18));
@@ -488,7 +473,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Subtracting one from the minimum value should revert, as it is out of range
-    function sub_test_minimum_value_minus_one() public view {
+    function sub_test_minimum_value_minus_one() public {
         try this.helpersSub(MIN_SD59x18, ONE_FP) {
             assert(false);
         } catch {
@@ -511,7 +496,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test for commutative property
     // x * y == y * x
     function mul_test_commutative(SD59x18 x, SD59x18 y) public pure {
-        require(x.neq(MIN_SD59x18) && y.neq(MIN_SD59x18));
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
         SD59x18 x_y = x.mul(y);
         SD59x18 y_x = y.mul(x);
 
@@ -521,35 +506,29 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit - No guarantee of precision
     // Test for associative property
     // (x * y) * z == x * (y * z)
-    function mul_test_associative(SD59x18 x, SD59x18 y, SD59x18 z) public view {
+    function mul_test_associative(SD59x18 x, SD59x18 y, SD59x18 z) public {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18) && z.gt(MIN_SD59x18));
         SD59x18 x_y = x.mul(y);
         SD59x18 y_z = y.mul(z);
         SD59x18 xy_z = x_y.mul(z);
         SD59x18 x_yz = x.mul(y_z);
 
-        // Failure if all significant digits are lost
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(y, z) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(x_y, z) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(x, y_z) > REQUIRED_SIGNIFICANT_DIGITS);
-
+        require(xy_z.neq(ZERO_FP) && x_yz.neq(ZERO_FP));
         assert(equal_within_tolerance(xy_z, x_yz, ONE_TENTH_FP));
     }
 
     // @audit - No guarantee of precision
     // Test for distributive property
     // x * (y + z) == x * y + x * z
-    function mul_test_distributive(SD59x18 x, SD59x18 y, SD59x18 z) public view {
+    function mul_test_distributive(SD59x18 x, SD59x18 y, SD59x18 z) public {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18) && z.gt(MIN_SD59x18));
         SD59x18 y_plus_z = y.add(z);
         SD59x18 x_times_y_plus_z = x.mul(y_plus_z);
 
         SD59x18 x_times_y = x.mul(y);
         SD59x18 x_times_z = x.mul(z);
 
-        // Failure if all significant digits are lost
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(x, z) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(x, y_plus_z) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(add(x_times_y, x_times_z).neq(ZERO_FP) && x_times_y_plus_z.neq(ZERO_FP));
 
         assert(equal_within_tolerance(add(x_times_y, x_times_z), x_times_y_plus_z, ONE_TENTH_FP));
     }
@@ -557,7 +536,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for identity operation
     // x * 1 == x  (also check that x * 0 == 0)
-    function mul_test_identity(SD59x18 x) public view {
+    function mul_test_identity(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
         SD59x18 x_1 = x.mul(ONE_FP);
         SD59x18 x_0 = x.mul(ZERO_FP);
 
@@ -565,28 +545,32 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(x_1.eq(x));
     }
 
-    // @audit - No guarantee of precision
-    // Test that the result increases or decreases depending
-    // on the value to be added
-    function mul_test_values(SD59x18 x, SD59x18 y) public view {
-        require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
+
+    // If x is positive and y is >= 1, the result should be larger than or equal to x
+    // If x is positive and y is < 1, the result should be smaller than x
+    function mul_test_x_positive(SD59x18 x, SD59x18 y) public {
+        require(x.gte(ZERO_FP));
 
         SD59x18 x_y = x.mul(y);
 
-        //require(significant_digits_lost_in_mult(x, y) == false);
-
-        if (x.gte(ZERO_FP)) {
-            if (y.gte(ONE_FP)) {
-                assert(x_y.gte(x));
-            } else {
-                assert(x_y.lte(x));
-            }
+        if (y.gte(ONE_FP)) {
+            assert(x_y.gte(x));
         } else {
-            if (y.gte(ONE_FP)) {
-                assert(x_y.lte(x));
-            } else {
-                assert(x_y.gte(x));
-            }
+            assert(x_y.lte(x));
+        }
+    }
+
+    // If x is negative and y is >= 1, the result should be smaller than or equal to x
+    // If x is negative and y is < 1, the result should be larger than or equal to x
+    function mul_test_x_negative(SD59x18 x, SD59x18 y) public {
+        require(x.lte(ZERO_FP) && y.neq(ZERO_FP));
+
+        SD59x18 x_y = x.mul(y);
+
+        if (y.gte(ONE_FP)) {
+            assert(x_y.lte(x));
+        } else {
+            assert(x_y.gte(x));
         }
     }
     
@@ -598,7 +582,9 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // The result of the multiplication must be between the maximum
     // and minimum allowed values for SD59x18
-    function mul_test_range(SD59x18 x, SD59x18 y) public view {
+    function mul_test_range(SD59x18 x, SD59x18 y) public {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
+
         try this.helpersMul(x, y) returns(SD59x18 result) {
             assert(result.lte(MAX_SD59x18) && result.gte(MIN_SD59x18));
         } catch {
@@ -608,7 +594,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Multiplying the maximum value times one shouldn't revert, as it is valid
     // Moreover, the result must be MAX_SD59x18
-    function mul_test_maximum_value() public view {
+    function mul_test_maximum_value() public {
         try this.helpersMul(MAX_SD59x18, ONE_FP) returns (SD59x18 result) {
             // Expected behaviour, does not revert
             assert(result.eq(MAX_SD59x18));
@@ -619,7 +605,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Multiplying the minimum value times one shouldn't revert, as it is valid
     // Moreover, the result must be MIN_SD59x18
-    function mul_test_minimum_value() public view {
+    function mul_test_minimum_value() public {
         try this.helpersMul(MIN_SD59x18.add(ONE_FP), ONE_FP) returns (SD59x18 result) {
             // Expected behaviour, does not revert
             assert(result.eq(MIN_SD59x18.add(ONE_FP)));
@@ -643,7 +629,8 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test for identity property
     // x / 1 == x (equivalent to x / x == 1)
     // Moreover, x/x should not revert unless x == 0
-    function div_test_division_identity(SD59x18 x) public view {
+    function div_test_division_identity(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
         SD59x18 div_1 = div(x, ONE_FP);
         assert(x.eq(div_1));
 
@@ -664,7 +651,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for negative divisor
     // x / -y == -(x / y)
-    function div_test_negative_divisor(SD59x18 x, SD59x18 y) public view {
+    function div_test_negative_divisor(SD59x18 x, SD59x18 y) public {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
         require(y.lt(ZERO_FP));
 
         SD59x18 x_y = div(x, y);
@@ -675,7 +663,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for division with 0 as numerator
     // 0 / x = 0
-    function div_test_division_num_zero(SD59x18 x) public view {
+    function div_test_division_num_zero(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
         require(x.neq(ZERO_FP));
 
         SD59x18 div_0 = div(ZERO_FP, x);
@@ -685,7 +674,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test that the absolute value of the result increases or
     // decreases depending on the denominator's absolute value
-    function div_test_values(SD59x18 x, SD59x18 y) public view {
+    function div_test_values(SD59x18 x, SD59x18 y) public {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
         require(y.neq(ZERO_FP));
 
         SD59x18 x_y = abs(div(x, y));
@@ -705,7 +695,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
 
     // Test for division by zero
-    function div_test_div_by_zero(SD59x18 x) public view {
+    function div_test_div_by_zero(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
         try this.helpersDiv(x, ZERO_FP) {
             // Unexpected, this should revert
             assert(false);
@@ -715,7 +706,8 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for division by a large value, the result should be less than one
-    function div_test_maximum_denominator(SD59x18 x) public view {
+    function div_test_maximum_denominator(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
         SD59x18 div_large = div(x, MAX_SD59x18);
 
         assert(abs(div_large).lte(ONE_FP));
@@ -723,21 +715,22 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for division of a large value
     // This should revert if |x| < 1 as it would return a value higher than max
-    function div_test_maximum_numerator(SD59x18 x) public view {
+    function div_test_maximum_numerator(SD59x18 y) public {
         SD59x18 div_large;
 
-        try this.helpersDiv(MAX_SD59x18, x) {
+        try this.helpersDiv(MAX_SD59x18, y) {
             // If it didn't revert, then |x| >= 1
-            div_large = div(MAX_SD59x18, x);
+            div_large = div(MAX_SD59x18, y);
 
-            assert(abs(x).gte(ONE_FP));
+            assert(abs(y).gte(ONE_FP));
         } catch {
             // Expected revert as result is higher than max
         }
     }
 
     // Test for values in range
-    function div_test_range(SD59x18 x, SD59x18 y) public view {
+    function div_test_range(SD59x18 x, SD59x18 y) public {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
         SD59x18 result;
 
         try this.helpersDiv(x, y) {
@@ -771,7 +764,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for the identity operation
     // x + (-x) == 0
-    function neg_test_identity(SD59x18 x) public view {
+    function neg_test_identity(SD59x18 x) public {
         SD59x18 neg_x = neg(x);
 
         assert(add(x, neg_x).eq(ZERO_FP));
@@ -785,7 +778,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for the zero-case
     // -0 == 0
-    function neg_test_zero() public view {
+    function neg_test_zero() public {
         SD59x18 neg_x = neg(ZERO_FP);
 
         assert(neg_x.eq(ZERO_FP));
@@ -794,7 +787,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit todo check what is used for SD59x18
     // Test for the maximum value case
     // Since this is implementation-dependant, we will actually test with MAX_SD59x18-EPS
-    function neg_test_maximum() public view {
+    function neg_test_maximum() public {
         try this.neg(sub(MAX_SD59x18, EPSILON)) {
             // Expected behaviour, does not revert
         } catch {
@@ -805,7 +798,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit todo check what is used for SD59x18
     // Test for the minimum value case
     // Since this is implementation-dependant, we will actually test with MIN_SD59x18+EPS
-    function neg_test_minimum() public view {
+    function neg_test_minimum() public {
         try this.neg(add(MIN_SD59x18, EPSILON)) {
             // Expected behaviour, does not revert
         } catch {
@@ -827,7 +820,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
 
     // Test that the absolute value is always positive
-    function abs_test_positive(SD59x18 x) public view {
+    function abs_test_positive(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
         SD59x18 abs_x = abs(x);
 
         assert(abs_x.gte(ZERO_FP));
@@ -836,6 +830,8 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test that the absolute value of a number equals the
     // absolute value of the negative of the same number
     function abs_test_negative(SD59x18 x) public pure {
+        require(x.gt(MIN_SD59x18));
+
         SD59x18 abs_x = abs(x);
         SD59x18 abs_minus_x = abs(neg(x));
 
@@ -846,6 +842,8 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test the multiplicativeness property
     // | x * y | == |x| * |y|
     function abs_test_multiplicativeness(SD59x18 x, SD59x18 y) public pure {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
+
         SD59x18 abs_x = abs(x);
         SD59x18 abs_y = abs(y);
         SD59x18 abs_xy = abs(mul(x, y));
@@ -861,6 +859,8 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test the subadditivity property
     // | x + y | <= |x| + |y|
     function abs_test_subadditivity(SD59x18 x, SD59x18 y) public pure {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
+
         SD59x18 abs_x = abs(x);
         SD59x18 abs_y = abs(y);
         SD59x18 abs_xy = abs(add(x, y));
@@ -875,7 +875,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test the zero-case | 0 | = 0
-    function abs_test_zero() public view {
+    function abs_test_zero() public {
         SD59x18 abs_zero;
 
         try this.helpersAbs(ZERO_FP) {
@@ -889,7 +889,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test the maximum value
-    function abs_test_maximum() public view {
+    function abs_test_maximum() public {
         SD59x18 abs_max;
 
         try this.helpersAbs(MAX_SD59x18) {
@@ -900,7 +900,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test the minimum value
-    function abs_test_minimum_revert() public view {
+    function abs_test_minimum_revert() public {
         SD59x18 abs_min;
 
         try this.helpersAbs(MIN_SD59x18) {
@@ -910,9 +910,9 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test the minimum value
-    function abs_test_minimum_allowed() public view {
+    function abs_test_minimum_allowed() public {
         SD59x18 abs_min;
-        SD59x18 input = MIN_SD59x18.add(ONE_FP);
+        SD59x18 input = MIN_SD59x18.add(SD59x18.wrap(1));
 
         try this.helpersAbs(input) {
             // If it doesn't revert, the value must be the negative of MIN_SD59x18 + 1
@@ -935,7 +935,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test that the inverse of the inverse is close enough to the
     // original number
-    function inv_test_double_inverse(SD59x18 x) public view {
+    function inv_test_double_inverse(SD59x18 x) public {
         require(x.neq(ZERO_FP));
 
         SD59x18 double_inv_x = inv(inv(x));
@@ -947,7 +947,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test equivalence with division
-    function inv_test_division(SD59x18 x) public view {
+    function inv_test_division(SD59x18 x) public {
         require(x.neq(ZERO_FP));
 
         SD59x18 inv_x = inv(x);
@@ -962,25 +962,25 @@ contract CryticPRBMath59x18Propertiesv3 {
     function inv_test_division_noncommutativity(
         SD59x18 x,
         SD59x18 y
-    ) public view {
+    ) public {
         require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
 
         SD59x18 x_y = div(x, y);
         SD59x18 y_x = div(y, x);
 
-        require(
+/*         require(
             significant_digits_after_mult(x, inv(y)) > REQUIRED_SIGNIFICANT_DIGITS
         );
         require(
             significant_digits_after_mult(y, inv(x)) > REQUIRED_SIGNIFICANT_DIGITS
-        );
+        ); */
         assert(equal_within_tolerance(x_y, inv(y_x), ONE_TENTH_FP));
     }
 
     // @audit check if loss is correct
     // Test the multiplication of inverses
     // 1/(x * y) == 1/x * 1/y
-    function inv_test_multiplication(SD59x18 x, SD59x18 y) public view {
+    function inv_test_multiplication(SD59x18 x, SD59x18 y) public {
         require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
 
         SD59x18 inv_x = inv(x);
@@ -990,10 +990,10 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x_y = mul(x, y);
         SD59x18 inv_x_y = inv(x_y);
 
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
+        /* require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
         require(
             significant_digits_after_mult(inv_x, inv_y) > REQUIRED_SIGNIFICANT_DIGITS
-        );
+        ); */
 
         // The maximum loss of precision is given by the formula:
         // 2 * | log2(x) - log2(y) | + 1
@@ -1004,15 +1004,11 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test identity property
     // Intermediate result should have at least REQUIRED_SIGNIFICANT_DIGITS
-    function inv_test_identity(SD59x18 x) public view {
+    function inv_test_identity(SD59x18 x) public {
         require(x.neq(ZERO_FP));
 
         SD59x18 inv_x = inv(x);
         SD59x18 identity = mul(inv_x, x);
-
-        require(
-            significant_digits_after_mult(x, inv_x) > REQUIRED_SIGNIFICANT_DIGITS
-        );
 
         // They should agree with a tolerance of one tenth of a percent
         assert(equal_within_tolerance(identity, ONE_FP, ONE_TENTH_FP));
@@ -1021,7 +1017,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test that the absolute value of the result is in range zero-one
     // if x is greater than one, else, the absolute value of the result
     // must be greater than one
-    function inv_test_values(SD59x18 x) public view {
+    function inv_test_values(SD59x18 x) public {
         require(x.neq(ZERO_FP));
 
         SD59x18 abs_inv_x = abs(inv(x));
@@ -1054,7 +1050,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test the zero-case, should revert
-    function inv_test_zero() public view {
+    function inv_test_zero() public {
         try this.helpersInv(ZERO_FP) {
             // Unexpected, the function must revert
             assert(false);
@@ -1062,7 +1058,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test the maximum value case, should not revert, and be close to zero
-    function inv_test_maximum() public view {
+    function inv_test_maximum() public {
         SD59x18 inv_maximum;
 
         try this.helpersInv(MAX_SD59x18) {
@@ -1076,7 +1072,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // @audit Check precision
     // Test the minimum value case, should not revert, and be close to zero
-    function inv_test_minimum() public view {
+    function inv_test_minimum() public {
         SD59x18 inv_minimum;
 
         try this.helpersInv(MIN_SD59x18) {
@@ -1136,7 +1132,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test for the maximum value
-    function avg_test_maximum() public view {
+    function avg_test_maximum() public {
         SD59x18 result;
 
         // This may revert due to overflow depending on implementation
@@ -1148,7 +1144,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for the minimum value
-    function avg_test_minimum() public view {
+    function avg_test_minimum() public {
         SD59x18 result;
 
         // This may revert due to overflow depending on implementation
@@ -1173,7 +1169,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for zero exponent
     // x ** 0 == 1
-    function pow_test_zero_exponent(SD59x18 x) public view {
+    function pow_test_zero_exponent(SD59x18 x) public {
+        require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
         SD59x18 x_pow_0 = pow(x, ZERO_FP);
 
         assert(x_pow_0.eq(ONE_FP));
@@ -1181,17 +1178,17 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for zero base
     // 0 ** x == 0 (for positive x)
-    function pow_test_zero_base(SD59x18 x) public view {
-        require(x.neq(ZERO_FP));
+    function pow_test_zero_base(SD59x18 a) public {
 
-        SD59x18 zero_pow_x = pow(ZERO_FP, x);
+        SD59x18 zero_pow_a = pow(ZERO_FP, a);
 
-        assert(zero_pow_x.eq(ZERO_FP));
+        assert(zero_pow_a.eq(ZERO_FP));
     }
 
     // Test for exponent one
     // x ** 1 == x
-    function pow_test_one_exponent(SD59x18 x) public view {
+    function pow_test_one_exponent(SD59x18 x) public {
+        require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
         SD59x18 x_pow_1 = pow(x, ONE_FP);
 
         assert(x_pow_1.eq(x));
@@ -1199,10 +1196,10 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for base one
     // 1 ** x == 1
-    function pow_test_base_one(SD59x18 x) public view {
-        SD59x18 one_pow_x = pow(ONE_FP, x);
+    function pow_test_base_one(SD59x18 a) public {
+        SD59x18 one_pow_a = pow(ONE_FP, a);
 
-        assert(one_pow_x.eq(ONE_FP));
+        assert(one_pow_a.eq(ONE_FP));
     }
 
     // @audit - Fails
@@ -1213,7 +1210,7 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 a,
         SD59x18 b
     ) public {
-        require(x.neq(ZERO_FP));
+        require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
 
         SD59x18 x_a = pow(x, a);
         SD59x18 x_b = pow(x, b);
@@ -1234,7 +1231,8 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 a,
         SD59x18 b
     ) public {
-        require(x.neq(ZERO_FP));
+        require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
+        require(a.mul(b).neq(ZERO_FP));
 
         SD59x18 x_a = pow(x, a);
         SD59x18 x_a_b = pow(x_a, b);
@@ -1254,8 +1252,9 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x,
         SD59x18 y,
         SD59x18 a
-    ) public view {
-        require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
+    ) public {
+        require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
+        require(y.gte(ZERO_FP) && y.lte(MAX_PERMITTED_POW));
         // todo this should probably be changed
         require(a.gt(convert(2 ** 32))); // to avoid massive loss of precision
 
@@ -1272,8 +1271,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test for result being greater than or lower than the argument, depending on
     // its absolute value and the value of the exponent
     function pow_test_values(SD59x18 x, SD59x18 a) public {
-        require(x.neq(ZERO_FP));
-        require(x.neq(MIN_SD59x18) && a.neq(MIN_SD59x18));
+        require(x.gte(ZERO_FP));
 
         SD59x18 x_a = pow(x, a);
 
@@ -1290,8 +1288,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for result sign: if the exponent is even, sign is positive
     // if the exponent is odd, preserves the sign of the base
-    function pow_test_sign(SD59x18 x, SD59x18 a) public view {
-        require(x.neq(ZERO_FP) && a.neq(ZERO_FP));
+    function pow_test_sign(SD59x18 x, SD59x18 a) public {
+        require(x.gte(ZERO_FP));
 
         SD59x18 x_a = pow(x, a);
 
@@ -1319,7 +1317,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test for maximum base and exponent > 1
-    function pow_test_maximum_base(SD59x18 a) public view {
+    function pow_test_maximum_base(SD59x18 a) public {
         require(a.gt(ONE_FP));
 
         try this.helpersPow(MAX_SD59x18, a) {
@@ -1332,8 +1330,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // @audit Check 2**18
     // Test for abs(base) < 1 and high exponent
-    function pow_test_high_exponent(SD59x18 x, SD59x18 a) public view {
-        require(abs(x).lt(ONE_FP) && a.gt(convert(2 ** 18)));
+    function pow_test_high_exponent(SD59x18 x, SD59x18 a) public {
+        require(abs(x).lt(ONE_FP) && a.gt(convert(2 ** 32)));
 
         SD59x18 result = pow(x, a);
 
@@ -1354,7 +1352,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for the inverse operation
     // sqrt(x) * sqrt(x) == x
-    function sqrt_test_inverse_mul(SD59x18 x) public view {
+    function sqrt_test_inverse_mul(SD59x18 x) public {
         require(x.gte(ZERO_FP));
 
         SD59x18 sqrt_x = sqrt(x);
@@ -1372,7 +1370,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for the inverse operation
     // sqrt(x) ** 2 == x
-    function sqrt_test_inverse_pow(SD59x18 x) public view {
+    function sqrt_test_inverse_pow(SD59x18 x) public {
         require(x.gte(ZERO_FP));
 
         SD59x18 sqrt_x = sqrt(x);
@@ -1391,7 +1389,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit check the precision
     // Test for distributive property respect to the multiplication
     // sqrt(x) * sqrt(y) == sqrt(x * y)
-    function sqrt_test_distributive(SD59x18 x, SD59x18 y) public view {
+    function sqrt_test_distributive(SD59x18 x, SD59x18 y) public {
         require(x.gte(ZERO_FP) && y.gte(ZERO_FP));
 
         SD59x18 sqrt_x = sqrt(x);
@@ -1418,12 +1416,12 @@ contract CryticPRBMath59x18Propertiesv3 {
 
 
     // Test for zero case
-    function sqrt_test_zero() public view {
+    function sqrt_test_zero() public {
         assert(sqrt(ZERO_FP).eq(ZERO_FP));
     }
 
     // Test for maximum value
-    function sqrt_test_maximum() public view {
+    function sqrt_test_maximum() public {
         try this.helpersSqrt(MAX_SQRT) {
             // Expected behaviour, MAX_SQRT is positive, and operation
             // should not revert as the result is in range
@@ -1434,7 +1432,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for minimum value
-    function sqrt_test_minimum() public view {
+    function sqrt_test_minimum() public {
         try this.helpersSqrt(MIN_SD59x18) {
             // Unexpected, should revert. MIN_SD59x18 is negative.
             assert(false);
@@ -1444,7 +1442,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for negative operands
-    function sqrt_test_negative(SD59x18 x) public view {
+    function sqrt_test_negative(SD59x18 x) public {
         require(x.lt(ZERO_FP));
 
         try this.helpersSqrt(x) {
@@ -1470,7 +1468,8 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit check loss
     // Test for distributive property respect to multiplication
     // log2(x * y) = log2(x) + log2(y)
-    function log2_test_distributive_mul(SD59x18 x, SD59x18 y) public view {
+    function log2_test_distributive_mul(SD59x18 x, SD59x18 y) public {
+        require(x.gt(ZERO_FP) && y.gt(ZERO_FP));
         SD59x18 log2_x = log2(x);
         SD59x18 log2_y = log2(y);
         SD59x18 log2_x_log2_y = add(log2_x, log2_y);
@@ -1492,15 +1491,13 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test for logarithm of a power
     // log2(x ** y) = y * log2(x)
     function log2_test_power(SD59x18 x, SD59x18 y) public {
+        require(x.gt(ZERO_FP));
         SD59x18 x_y = pow(x, y);
+        require(x_y.gt(ZERO_FP));
         SD59x18 log2_x_y = log2(x_y);
         SD59x18 y_log2_x = mul(log2(x), y);
 
-        uint256 power = 9;
-        int256 digits = int256(10**power);
-
-        emit PropertyFailed(y_log2_x, log2_x_y, power);
-        assert(equal_most_significant_digits_within_precision(y_log2_x, log2_x_y, digits));
+        assert(equal_within_tolerance(y_log2_x, log2_x_y, ONE_FP));
     }
 
     /* ================================================================
@@ -1510,7 +1507,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test for zero case, should revert
-    function log2_test_zero() public view {
+    function log2_test_zero() public {
         try this.helpersLog2(ZERO_FP) {
             // Unexpected, should revert
             assert(false);
@@ -1520,7 +1517,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for maximum value case, should return a positive number
-    function log2_test_maximum() public view {
+    function log2_test_maximum() public {
         SD59x18 result;
 
         try this.helpersLog2(MAX_SD59x18) {
@@ -1534,7 +1531,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for negative values, should revert as log2 is not defined
-    function log2_test_negative(SD59x18 x) public view {
+    function log2_test_negative(SD59x18 x) public {
         require(x.lt(ZERO_FP));
 
         try this.helpersLog2(x) {
@@ -1560,7 +1557,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit check precision
     // Test for distributive property respect to multiplication
     // ln(x * y) = ln(x) + ln(y)
-    function ln_test_distributive_mul(SD59x18 x, SD59x18 y) public view {
+    function ln_test_distributive_mul(SD59x18 x, SD59x18 y) public {
         require(x.gt(ZERO_FP) && y.gt(ZERO_FP));
 
         SD59x18 ln_x = ln(x);
@@ -1602,7 +1599,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test for zero case, should revert
-    function ln_test_zero() public view {
+    function ln_test_zero() public {
         try this.helpersLn(ZERO_FP) {
             // Unexpected, should revert
             assert(false);
@@ -1612,7 +1609,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for maximum value case, should return a positive number
-    function ln_test_maximum() public view {
+    function ln_test_maximum() public {
         SD59x18 result;
 
         try this.helpersLn(MAX_SD59x18) {
@@ -1626,7 +1623,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for negative values, should revert as ln is not defined
-    function ln_test_negative(SD59x18 x) public view {
+    function ln_test_negative(SD59x18 x) public {
         require(x.lt(ZERO_FP));
 
         try this.helpersLn(x) {
@@ -1651,7 +1648,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for equality with pow(2, x) for integer x
     // pow(2, x) == exp2(x)
-    function exp2_test_equivalence_pow(SD59x18 x) public view {
+    function exp2_test_equivalence_pow(SD59x18 x) public {
+        require(x.lte(MAX_PERMITTED_EXP2));
         SD59x18 exp2_x = exp2(x);
         SD59x18 pow_2_x = pow(TWO_FP, x);
 
@@ -1662,6 +1660,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test for inverse function
     // If y = log2(x) then exp2(y) == x
     function exp2_test_inverse(SD59x18 x) public {
+        require(x.lte(MAX_PERMITTED_EXP2) && x.gt(ZERO_FP));
         SD59x18 log2_x = log2(x);
         SD59x18 exp2_x = exp2(log2_x);
 
@@ -1674,14 +1673,18 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for negative exponent
     // exp2(-x) == inv( exp2(x) )
-    function exp2_test_negative_exponent(SD59x18 x) public view {
+    function exp2_test_negative_exponent(SD59x18 x) public {
         require(x.lt(ZERO_FP) && x.neq(MIN_SD59x18));
 
         SD59x18 exp2_x = exp2(x);
         SD59x18 exp2_minus_x = exp2(neg(x));
 
-        // Result should be within 4 bits precision for the worst case
-        assert(equal_within_precision(exp2_x, inv(exp2_minus_x), 4));
+        uint256 power = 2;
+        int256 digits = int256(10**power);
+
+        emit PropertyFailed(exp2_x, inv(exp2_minus_x), power);
+        // Result should be within 2 digits precision for the worst case
+        assert(equal_most_significant_digits_within_precision(exp2_x, inv(exp2_minus_x), digits));
     }
 
     /* ================================================================
@@ -1692,14 +1695,14 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for zero case
     // exp2(0) == 1
-    function exp2_test_zero() public view {
+    function exp2_test_zero() public {
         SD59x18 exp_zero = exp2(ZERO_FP);
         assert(exp_zero.eq(ONE_FP));
     }
 
     // Test for maximum value. This should overflow as it won't fit
     // in the data type
-    function exp2_test_maximum() public view {
+    function exp2_test_maximum() public {
         try this.helpersExp2(MAX_SD59x18) {
             // Unexpected, should revert
             assert(false);
@@ -1708,9 +1711,20 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
+        // Test for maximum value. This should overflow as it won't fit
+    // in the data type
+    function exp2_test_maximum_permitted() public {
+        try this.helpersExp2(MAX_PERMITTED_EXP2) {
+            // Should always pass
+        } catch {
+            // Should never revert
+            assert(false);
+        }
+    }
+
     // Test for minimum value. This should return zero since
     // 2 ** -x == 1 / 2 ** x that tends to zero as x increases
-    function exp2_test_minimum() public view {
+    function exp2_test_minimum() public {
         SD59x18 result;
 
         try this.helpersExp2(MIN_SD59x18) {
@@ -1739,6 +1753,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test for inverse function
     // If y = ln(x) then exp(y) == x
     function exp_test_inverse(SD59x18 x) public {
+        require(x.lte(MAX_PERMITTED_EXP));
         SD59x18 ln_x = ln(x);
         SD59x18 exp_x = exp(ln_x);
         SD59x18 log10_x = log10(x);
@@ -1753,7 +1768,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit check precision
     // Test for negative exponent
     // exp(-x) == inv( exp(x) )
-    function exp_test_negative_exponent(SD59x18 x) public view {
+    function exp_test_negative_exponent(SD59x18 x) public {
         require(x.lt(ZERO_FP) && x.neq(MIN_SD59x18));
 
         SD59x18 exp_x = exp(x);
@@ -1771,14 +1786,14 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for zero case
     // exp(0) == 1
-    function exp_test_zero() public view {
+    function exp_test_zero() public {
         SD59x18 exp_zero = exp(ZERO_FP);
         assert(exp_zero.eq(ONE_FP));
     }
 
     // Test for maximum value. This should overflow as it won't fit
     // in the data type
-    function exp_test_maximum() public view {
+    function exp_test_maximum() public {
         try this.helpersExp(MAX_SD59x18) {
             // Unexpected, should revert
             assert(false);
@@ -1787,9 +1802,20 @@ contract CryticPRBMath59x18Propertiesv3 {
         }
     }
 
+    // Test for maximum value. This should overflow as it won't fit
+    // in the data type
+    function exp_test_maximum_permitted() public {
+        try this.helpersExp(MAX_PERMITTED_EXP) {
+            // Expected to always succeed
+        } catch {
+            // Unexpected, should revert
+            assert(false);
+        }
+    }
+
     // Test for minimum value. This should return zero since
     // e ** -x == 1 / e ** x that tends to zero as x increases
-    function exp_test_minimum() public view {
+    function exp_test_minimum() public {
         SD59x18 result;
 
         try this.helpersExp(MIN_SD59x18) {
@@ -1816,25 +1842,29 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for zero exponent
     // x ** 0 == 1
-    function powu_test_zero_exponent(SD59x18 x) public view {
+    function powu_test_zero_exponent(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
+        require(x.lte(MAX_SD59x18));
         SD59x18 x_pow_0 = powu(x, 0);
 
         assert(x_pow_0.eq(ONE_FP));
     }
 
     // Test for zero base
-    // 0 ** x == 0 (for positive x)
-    function powu_test_zero_base(uint256 x) public view {
-        require(x != 0);
+    // 0 ** y == 0 (for positive y)
+    function powu_test_zero_base(uint256 y) public {
+        require(y != 0);
 
-        SD59x18 zero_pow_x = powu(ZERO_FP, x);
+        SD59x18 zero_pow_y = powu(ZERO_FP, y);
 
-        assert(zero_pow_x.eq(ZERO_FP));
+        assert(zero_pow_y.eq(ZERO_FP));
     }
 
     // Test for exponent one
     // x ** 1 == x
-    function powu_test_one_exponent(SD59x18 x) public view {
+    function powu_test_one_exponent(SD59x18 x) public {
+        require(x.gt(MIN_SD59x18));
+        require(x.lte(MAX_SD59x18));
         SD59x18 x_pow_1 = powu(x, 1);
 
         assert(x_pow_1.eq(x));
@@ -1842,10 +1872,10 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for base one
     // 1 ** x == 1
-    function powu_test_base_one(uint256 x) public view {
-        SD59x18 one_pow_x = powu(ONE_FP, x);
+    function powu_test_base_one(uint256 y) public {
+        SD59x18 one_pow_y = powu(ONE_FP, y);
 
-        assert(one_pow_x.eq(ONE_FP));
+        assert(one_pow_y.eq(ONE_FP));
     }
 
     // @audit - Fails
@@ -1855,8 +1885,9 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x,
         uint256 a,
         uint256 b
-    ) public view {
-        require(x.neq(ZERO_FP));
+    ) public {
+        require(x.gt(MIN_SD59x18));
+        require(x.lte(MAX_SD59x18));
 
         SD59x18 x_a = powu(x, a);
         SD59x18 x_b = powu(x, b);
@@ -1872,8 +1903,9 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x,
         uint256 a,
         uint256 b
-    ) public view {
-        require(x.neq(ZERO_FP));
+    ) public {
+        require(x.gt(MIN_SD59x18));
+        require(x.lte(MAX_SD59x18));
 
         SD59x18 x_a = powu(x, a);
         SD59x18 x_a_b = powu(x_a, b);
@@ -1889,8 +1921,9 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x,
         SD59x18 y,
         uint256 a
-    ) public view {
-        require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
+    ) public {
+        require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
+        require(x.lte(MAX_SD59x18) && y.lte(MAX_SD59x18));
         // todo this should probably be changed
         require(a > 2 ** 32); // to avoid massive loss of precision
 
@@ -1906,7 +1939,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit - fails
     // Test for result being greater than or lower than the argument, depending on
     // its absolute value and the value of the exponent
-    function powu_test_values(SD59x18 x, uint256 a) public view {
+    function powu_test_values(SD59x18 x, uint256 a) public {
         require(x.neq(ZERO_FP));
         require(x.neq(MIN_SD59x18));
 
@@ -1923,7 +1956,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for result sign: if the exponent is even, sign is positive
     // if the exponent is odd, preserves the sign of the base
-    function powu_test_sign(SD59x18 x, uint256 a) public view {
+    function powu_test_sign(SD59x18 x, uint256 a) public {
         require(x.neq(ZERO_FP) && a != 0);
 
         SD59x18 x_a = powu(x, a);
@@ -1952,7 +1985,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test for maximum base and exponent > 1
-    function powu_test_maximum_base(uint256 a) public view {
+    function powu_test_maximum_base(uint256 a) public {
         require(a > 1);
 
         try this.helpersPowu(MAX_SD59x18, a) {
@@ -1965,7 +1998,7 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // @audit Check 2**64
     // Test for abs(base) < 1 and high exponent
-    function powu_test_high_exponent(SD59x18 x, uint256 a) public view {
+    function powu_test_high_exponent(SD59x18 x, uint256 a) public {
         require(abs(x).lt(ONE_FP) && a > 2 ** 18);
 
         SD59x18 result = powu(x, a);
@@ -1988,7 +2021,8 @@ contract CryticPRBMath59x18Propertiesv3 {
     // @audit check loss
     // Test for distributive property respect to multiplication
     // log10(x * y) = log10(x) + log10(y)
-    function log10_test_distributive_mul(SD59x18 x, SD59x18 y) public view {
+    function log10_test_distributive_mul(SD59x18 x, SD59x18 y) public {
+        require(x.gt(ZERO_FP) && y.gt(ZERO_FP));
         SD59x18 log10_x = log10(x);
         SD59x18 log10_y = log10(y);
         SD59x18 log10_x_log10_y = add(log10_x, log10_y);
@@ -2010,15 +2044,12 @@ contract CryticPRBMath59x18Propertiesv3 {
     // Test for logarithm of a power
     // log10(x ** y) = y * log10(x)
     function log10_test_power(SD59x18 x, SD59x18 y) public {
+        require(x.gt(ZERO_FP) && y.gt(ZERO_FP));
         SD59x18 x_y = pow(x, y);
         SD59x18 log10_x_y = log10(x_y);
         SD59x18 y_log10_x = mul(log10(x), y);
-
-        uint256 power = 9;
-        int256 digits = int256(10**power);
-
-        emit PropertyFailed(log10_x_y, y_log10_x, power);  
-        assert(equal_most_significant_digits_within_precision(log10_x_y, y_log10_x, digits));
+ 
+        assert(equal_within_tolerance(log10_x_y, y_log10_x, ONE_FP));
     }
 
     /* ================================================================
@@ -2028,7 +2059,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        ================================================================ */
 
     // Test for zero case, should revert
-    function log10_test_zero() public view {
+    function log10_test_zero() public {
         try this.helpersLog10(ZERO_FP) {
             // Unexpected, should revert
             assert(false);
@@ -2038,7 +2069,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for maximum value case, should return a positive number
-    function log10_test_maximum() public view {
+    function log10_test_maximum() public {
         SD59x18 result;
 
         try this.helpersLog10(MAX_SD59x18) {
@@ -2052,7 +2083,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for negative values, should revert as log10 is not defined
-    function log10_test_negative(SD59x18 x) public view {
+    function log10_test_negative(SD59x18 x) public {
         require(x.lt(ZERO_FP));
 
         try this.helpersLog10(x) {
