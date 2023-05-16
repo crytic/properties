@@ -118,7 +118,7 @@ If we correctly added our property the test should fail, indicating that Echidna
 
 **Creating an External Property**
 
-The steps for creating an external property and mostly the same, except that we will make the wrapper function `_prop_maxSupply` external and add it to the [IERC721Internal.sol](https://github.com/crytic/properties/blob/main/contracts/ERC721/util/IERC721Internal.sol) file.
+The steps for creating an external property are mostly the same, except that we will make the wrapper function `_prop_maxSupply` external and add it to the [IERC721Internal.sol](https://github.com/crytic/properties/blob/main/contracts/ERC721/util/IERC721Internal.sol) file.
 ```
 /// file: contracts/ERC721/external/properties/ERC721ExternalMintableProperties.sol
 
