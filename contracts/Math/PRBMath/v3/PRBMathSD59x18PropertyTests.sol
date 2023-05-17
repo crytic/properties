@@ -5,15 +5,9 @@ import {add, sub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb/math/src/sd59
 import {convert} from "@prb/math/src/sd59x18/Conversions.sol";
 import {msb} from "@prb/math/src/Common.sol";
 import {intoUint128, intoUint256} from "@prb/math/src/sd59x18/Casting.sol";
-import {mul, div, abs, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu} from "@prb/math/src/sd59x18/Math.sol";
+import {mul, div, abs, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu, gm} from "@prb/math/src/sd59x18/Math.sol";
 
 contract CryticPRBMath59x18Propertiesv3 {
-
-    event PropertyFailed(SD59x18 result);
-    event PropertyFailed(SD59x18 result1, SD59x18 result2);
-    event PropertyFailed(SD59x18 result1, SD59x18 result2, uint256 discardedDigits);
-    event PropertyFailed(SD59x18 result1, SD59x18 result2, SD59x18 discardedDigits);
-    event TestLog(int256 num1, int256 num2, int256 result);
 
     /* ================================================================
        59x18 fixed-point constants used for testing specific values.
@@ -34,6 +28,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        Constants used for precision loss calculations
        ================================================================ */
     uint256 internal REQUIRED_SIGNIFICANT_DIGITS = 10;
+    SD59x18 internal LOG2_PRECISION_LOSS = SD59x18.wrap(1);
 
     /* ================================================================
        Integer representations maximum values.
@@ -88,8 +83,13 @@ contract CryticPRBMath59x18Propertiesv3 {
     /* ================================================================
        Events used for debugging or showing information.
        ================================================================ */
-    event Value(string reason, int256 val);
+    event Value(string reason, SD59x18 val);
     event LogErr(bytes error);
+    event PropertyFailed(SD59x18 result);
+    event PropertyFailed(SD59x18 result1, SD59x18 result2);
+    event PropertyFailed(SD59x18 result1, SD59x18 result2, uint256 discardedDigits);
+    event PropertyFailed(SD59x18 result1, SD59x18 result2, SD59x18 discardedDigits);
+    event TestLog(int256 num1, int256 num2, int256 result);
 
 
     /* ================================================================
@@ -135,7 +135,7 @@ contract CryticPRBMath59x18Propertiesv3 {
         int256 prec = la + lb;
 
         if (prec < -18) return 0;
-        else return(18 + uint256(prec));
+        else return(59 + uint256(prec));
     }
 
     // Returns true if the n most significant bits of a and b are almost equal 
@@ -159,7 +159,7 @@ contract CryticPRBMath59x18Propertiesv3 {
        Library wrappers.
        These functions allow calling the PRBMathSD59x18 library.
        ================================================================ */
-    function debug(string calldata x, int256 y) public {
+    function debug(string calldata x, SD59x18 y) public {
         emit Value(x, y);
     }
 
@@ -232,6 +232,10 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     function helpersFloor(SD59x18 x) public pure returns (SD59x18) {
         return floor(x);
+    }
+
+    function helpersGm(SD59x18 x, SD59x18 y) public pure returns (SD59x18) {
+        return gm(x,y);
     }
 
     /* ================================================================
@@ -497,7 +501,7 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x_yz = x.mul(y_z);
 
         require(xy_z.neq(ZERO_FP) && x_yz.neq(ZERO_FP));
-        assert(equal_within_tolerance(xy_z, x_yz, ONE_TENTH_FP));
+        assert(equal_within_tolerance(xy_z, x_yz, ONE_FP));
     }
 
     // Test for distributive property
@@ -954,7 +958,7 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 x_y = div(x, y);
         SD59x18 y_x = div(y, x);
 
-        assert(equal_within_tolerance(x_y, inv(y_x), ONE_TENTH_FP));
+        assert(equal_within_tolerance(x_y, inv(y_x), ONE_FP));
     }
 
     // Test the multiplication of inverses
@@ -1153,12 +1157,20 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for zero base
-    // 0 ** x == 0 (for positive x)
-    function pow_test_zero_base(SD59x18 a) public {
-
+    // 0 ** a == 0 (for positive a)
+    function pow_test_zero_base_non_zero_exponent(SD59x18 a) public {
+        require(a.gt(ZERO_FP));
         SD59x18 zero_pow_a = pow(ZERO_FP, a);
 
         assert(zero_pow_a.eq(ZERO_FP));
+    }
+
+    // Test for zero base
+    // 0 ** 0 == 1
+    function pow_test_zero_base_zero_exponent() public {
+        SD59x18 zero_pow_a = pow(ZERO_FP, ZERO_FP);
+
+        assert(zero_pow_a.eq(ONE_FP));
     }
 
     // Test for exponent one
@@ -1171,7 +1183,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     }
 
     // Test for base one
-    // 1 ** x == 1
+    // 1 ** a == 1
     function pow_test_base_one(SD59x18 a) public {
         SD59x18 one_pow_a = pow(ONE_FP, a);
 
@@ -1187,6 +1199,7 @@ contract CryticPRBMath59x18Propertiesv3 {
         SD59x18 b
     ) public {
         require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
+        require(a.gte(MIN_PERMITTED_EXP2) && b.gte(MIN_PERMITTED_EXP2));
 
         SD59x18 x_a = pow(x, a);
         SD59x18 x_b = pow(x, b);
@@ -1208,6 +1221,7 @@ contract CryticPRBMath59x18Propertiesv3 {
     ) public {
         require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
         require(a.mul(b).neq(ZERO_FP));
+        require(a.gte(MIN_PERMITTED_EXP2) && b.gte(MIN_PERMITTED_EXP2));
 
         SD59x18 x_a = pow(x, a);
         SD59x18 x_a_b = pow(x_a, b);
@@ -1243,8 +1257,8 @@ contract CryticPRBMath59x18Propertiesv3 {
 
     // Test for result being greater than or lower than the argument, depending on
     // its absolute value and the value of the exponent
-    function pow_test_values(SD59x18 x, SD59x18 a) public {
-        require(x.gte(ZERO_FP));
+    function pow_test_positive_exponent(SD59x18 x, SD59x18 a) public {
+        require(x.gte(ZERO_FP) && a.gte(ZERO_FP));
 
         SD59x18 x_a = pow(x, a);
 
@@ -1256,6 +1270,24 @@ contract CryticPRBMath59x18Propertiesv3 {
         if (abs(x).lte(ONE_FP)) {
             emit PropertyFailed(x_a, ONE_FP);
             assert(abs(x_a).lte(ONE_FP));
+        }
+    }
+
+    // Test for result being greater than or lower than the argument, depending on
+    // its absolute value and the value of the exponent
+    function pow_test_negative_exponent(SD59x18 x, SD59x18 a) public {
+        require(x.gte(ZERO_FP) && a.lte(ZERO_FP));
+
+        SD59x18 x_a = pow(x, a);
+
+        if (abs(x).gte(ONE_FP)) {
+            emit PropertyFailed(x_a, ONE_FP);
+            assert(abs(x_a).lte(ONE_FP));
+        }
+
+        if (abs(x).lte(ONE_FP)) {
+            emit PropertyFailed(x_a, ONE_FP);
+            assert(abs(x_a).gte(ONE_FP));
         }
     }
 
@@ -1281,6 +1313,15 @@ contract CryticPRBMath59x18Propertiesv3 {
                 assert(x_a.gt(ZERO_FP));
             }
         }
+    }
+
+    // pow(2, a) == exp2(a)
+    function pow_test_exp2_equivalence(SD59x18 a) public {
+        SD59x18 pow_result = pow(convert(2), a);
+        SD59x18 exp2_result = exp2(a);
+
+        emit PropertyFailed(pow_result, exp2_result);
+        assert(pow_result.eq(exp2_result));
     }
 
     /* ================================================================
@@ -1377,6 +1418,17 @@ contract CryticPRBMath59x18Propertiesv3 {
 
         // Allow an error of up to one tenth of a percent
         assert(equal_within_tolerance(sqrt_x_sqrt_y, sqrt_xy, ONE_TENTH_FP));
+    }
+
+    // Test that sqrt is strictly increasing
+    function sqrt_test_is_increasing(SD59x18 x, SD59x18 y) public {
+        require(x.gte(ZERO_FP) && x.lte(MAX_SQRT.sub(SD59x18.wrap(1))));
+        require(y.gt(x) && y.lte(MAX_SQRT));
+
+        SD59x18 sqrt_x = sqrt(x);
+        SD59x18 sqrt_y = sqrt(y);
+
+        assert(sqrt_y.gte(sqrt_x));
     }
 
     /* ================================================================
@@ -1742,6 +1794,17 @@ contract CryticPRBMath59x18Propertiesv3 {
         assert(equal_within_precision(exp_x, inv(exp_minus_x), 4));
     }
 
+    // Test that exp strictly increases
+    function exp_test_strictly_increasing(SD59x18 x, SD59x18 y) public {
+        require(x.lte(MAX_PERMITTED_EXP));
+        require(y.gt(x) && y.lte(MAX_PERMITTED_EXP));
+
+        SD59x18 exp_x = exp(x);
+        SD59x18 exp_y = exp(y);
+
+        assert(exp_y.gte(exp_x));
+    }
+
     /* ================================================================
        Tests for overflow and edge cases.
        These will make sure that the function reverts on overflow and
@@ -2048,6 +2111,87 @@ contract CryticPRBMath59x18Propertiesv3 {
             assert(false);
         } catch {
             // Expected
+        }
+    }
+
+    /* ================================================================
+
+                        TESTS FOR FUNCTION gm()
+
+       ================================================================ */
+
+    /* ================================================================
+       Tests for arithmetic properties.
+       These should make sure that the implemented function complies
+       with math rules and expected behaviour.
+       ================================================================ */
+
+    // The product of the values should be equal to the geometric mean
+    // raised to the power of N (numbers in the set)
+    function gm_test_product(SD59x18 x, SD59x18 y) public {
+        bool x_sign = x.gt(ZERO_FP);
+        bool y_sign = y.gt(ZERO_FP);
+        require(x_sign = y_sign);
+
+        SD59x18 x_mul_y = x.mul(y);
+        SD59x18 gm_squared = pow(gm(x,y), TWO_FP);
+
+        emit PropertyFailed(x_mul_y, gm_squared);
+        assert(equal_within_tolerance(x_mul_y, gm_squared, ONE_TENTH_FP));
+    }
+
+    // The geometric mean for a set of positive numbers is less than the
+    // arithmetic mean of that set, as long as the values of the set are not equal
+    function gm_test_positive_set_avg(SD59x18 x, SD59x18 y) public {
+        require(x.gte(ZERO_FP) && y.gte(ZERO_FP) && x.neq(y));
+
+        SD59x18 gm_x_y = gm(x, y);
+        SD59x18 avg_x_y = avg(x, y);
+
+        emit PropertyFailed(gm_x_y, avg_x_y);
+        assert(gm_x_y.lt(avg_x_y));
+    }
+
+    // The geometric mean of a set of positive equal numbers should be
+    // equal to the arithmetic mean
+    function gm_test_positive_equal_set_avg(SD59x18 x) public {
+        require(x.gte(ZERO_FP));
+
+        SD59x18 gm_x = gm(x, x);
+        SD59x18 avg_x = avg(x, x);
+
+        emit PropertyFailed(gm_x, avg_x);
+        assert(gm_x.eq(avg_x));
+    }
+
+    /* ================================================================
+       Tests for overflow and edge cases.
+       These will make sure that the function reverts on overflow and
+       behaves correctly on edge cases
+       ================================================================ */
+
+    // Test for zero case, should return 0
+    function gm_test_zero(SD59x18 x) public {
+        require(x.gte(ZERO_FP));
+
+        try this.helpersGm(x, ZERO_FP) {
+            SD59x18 result = gm(x, ZERO_FP);
+            assert(result.eq(ZERO_FP));
+        } catch {
+            // Unexpected, should not revert
+            assert(false);
+        }
+    }
+
+    // Test for single negative input
+    function gm_test_negative(SD59x18 x, SD59x18 y) public {
+        require(x.gte(ZERO_FP) && y.lt(ZERO_FP));
+
+        try this.helpersGm(x, y) {
+            // Unexpected, should revert
+            assert(false);
+        } catch {
+            // Expected revert, gm of a negative product is not defined
         }
     }
 

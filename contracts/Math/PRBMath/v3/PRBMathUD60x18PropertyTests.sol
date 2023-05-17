@@ -5,15 +5,9 @@ import {add, sub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb/math/src/ud60
 import {convert} from "@prb/math/src/ud60x18/Conversions.sol";
 import {msb} from "@prb/math/src/Common.sol";
 import {intoUint128, intoUint256} from "@prb/math/src/ud60x18/Casting.sol";
-import {mul, div, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu} from "@prb/math/src/ud60x18/Math.sol";
+import {mul, div, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu, gm} from "@prb/math/src/ud60x18/Math.sol";
 
 contract CryticPRBMath60x18Propertiesv3 {
-
-    event PropertyFailed(UD60x18 result);
-    event PropertyFailed(UD60x18 result1, UD60x18 result2);
-    event PropertyFailed(UD60x18 result1, UD60x18 result2, uint256 discardedDigits);
-    event PropertyFailed(UD60x18 result1, UD60x18 result2, UD60x18 percentage);
-    event TestLog(uint256 num1, uint256 num2, uint256 result);
 
     /* ================================================================
        59x18 fixed-point constants used for testing specific values.
@@ -79,8 +73,13 @@ contract CryticPRBMath60x18Propertiesv3 {
     /* ================================================================
        Events used for debugging or showing information.
        ================================================================ */
-    event Value(string reason, int256 val);
+    event Value(string reason, UD60x18 val);
     event LogErr(bytes error);
+    event PropertyFailed(UD60x18 result);
+    event PropertyFailed(UD60x18 result1, UD60x18 result2);
+    event PropertyFailed(UD60x18 result1, UD60x18 result2, uint256 discardedDigits);
+    event PropertyFailed(UD60x18 result1, UD60x18 result2, UD60x18 percentage);
+    event TestLog(uint256 num1, uint256 num2, uint256 result);
 
     /* ================================================================
        Helper functions.
@@ -117,7 +116,7 @@ contract CryticPRBMath60x18Propertiesv3 {
         uint256 prec = la + lb;
 
         if (prec < 18) return 0;
-        else return(18 + uint256(prec));
+        else return(60 + uint256(prec));
     }
 
     // Returns true if the n most significant bits of a and b are almost equal 
@@ -141,7 +140,7 @@ contract CryticPRBMath60x18Propertiesv3 {
        Library wrappers.
        These functions allow calling the PRBMathUD60x18 library.
        ================================================================ */
-    function debug(string calldata x, int256 y) public {
+    function debug(string calldata x, UD60x18 y) public {
         emit Value(x, y);
     }
 
@@ -206,6 +205,10 @@ contract CryticPRBMath60x18Propertiesv3 {
 
     function helpersFloor(UD60x18 x) public pure returns (UD60x18) {
         return floor(x);
+    }
+
+    function helpersGm(UD60x18 x, UD60x18 y) public pure returns (UD60x18) {
+        return gm(x, y);
     }
 
     /* ================================================================
@@ -1569,6 +1572,69 @@ contract CryticPRBMath60x18Propertiesv3 {
             assert(false);
         } catch {
             // Expected
+        }
+    }
+
+        /* ================================================================
+
+                        TESTS FOR FUNCTION gm()
+
+       ================================================================ */
+
+    /* ================================================================
+       Tests for arithmetic properties.
+       These should make sure that the implemented function complies
+       with math rules and expected behaviour.
+       ================================================================ */
+
+    // The product of the values should be equal to the geometric mean
+    // raised to the power of N (numbers in the set)
+    function gm_test_product(UD60x18 x, UD60x18 y) public {
+        UD60x18 x_mul_y = x.mul(y);
+        UD60x18 gm_squared = pow(gm(x,y), TWO_FP);
+
+        emit PropertyFailed(x_mul_y, gm_squared);
+        assert(equal_within_tolerance(x_mul_y, gm_squared, ONE_TENTH_FP));
+    }
+
+    // The geometric mean for a set of positive numbers is less than the
+    // arithmetic mean of that set, as long as the values of the set are not equal
+    function gm_test_positive_set_avg(UD60x18 x, UD60x18 y) public {
+        require(x.neq(y));
+
+        UD60x18 gm_x_y = gm(x, y);
+        UD60x18 avg_x_y = avg(x, y);
+
+        emit PropertyFailed(gm_x_y, avg_x_y);
+        assert(gm_x_y.lt(avg_x_y));
+    }
+
+    // The geometric mean of a set of positive equal numbers should be
+    // equal to the arithmetic mean
+    function gm_test_positive_equal_set_avg(UD60x18 x) public {
+        UD60x18 gm_x = gm(x, x);
+        UD60x18 avg_x = avg(x, x);
+
+        emit PropertyFailed(gm_x, avg_x);
+        assert(gm_x.eq(avg_x));
+    }
+
+    /* ================================================================
+       Tests for overflow and edge cases.
+       These will make sure that the function reverts on overflow and
+       behaves correctly on edge cases
+       ================================================================ */
+
+    // Test for zero case, should return 0
+    function gm_test_zero(UD60x18 x) public {
+        require(x.gte(ZERO_FP));
+
+        try this.helpersGm(x, ZERO_FP) {
+            UD60x18 result = gm(x, ZERO_FP);
+            assert(result.eq(ZERO_FP));
+        } catch {
+            // Unexpected, should not revert
+            assert(false);
         }
     }
 }
