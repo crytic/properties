@@ -5,6 +5,6 @@
     "@crytic/properties": "file:../../.."
   },
   "scripts": {
-    "echidna4626": "echidna-test . --contract Echidna4626Harness --config ./echidna.yaml"
+    "echidna4626": "echidna . --contract Echidna4626Harness --config ./echidna.yaml"
   }
 }
