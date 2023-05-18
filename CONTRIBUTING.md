@@ -39,6 +39,15 @@ Below is a rough outline of the directory structure:
 │   │   └── internal                            # Internal testing
 │   │       ├── properties
 │   │       └── util
+│   ├── ERC721                                  # Properties for ERC-721 contracts
+│   │   ├── external                            # External testing
+│   │   │   ├── properties
+│   │   │   ├── test
+│   │   │   └── util
+│   │   └── internal                            # Internal testing
+│   │       ├── properties
+│   │       ├── test
+│   │       └── util
 │   ├── ERC4626                                 # Properties for ERC-4626 tokenized vaults
 │   │   ├── properties
 │   │   ├── test
@@ -55,6 +64,9 @@ Below is a rough outline of the directory structure:
     ├── ERC20
     │   ├── foundry
     │   └── hardhat
+    ├── ERC721
+    │   ├── foundry
+    │   └── hardhat
     ├── ERC4626
     │   ├── foundry
     │   └── hardhat
@@ -64,6 +76,68 @@ Below is a rough outline of the directory structure:
 ```
 
 Please follow this structure in your collaborations.
+
+## How to add a property
+
+Whenever you're adding a property to an existing properties set (e.g., ERC20, ERC721) we recommend to follow the below guidelines:
+1. If a property is related to an existing property group, it should be added there. E.g., an ERC721 property *"totalSupply should never be larger than the maxSupply"* could probably be added to the `Mintable` property files. If the property is not related to any existing property group a new file should be created.
+2. If the directory structure contains an `internal` and `external` directory, the property should be added to both.
+3. If the directory structure contains a `test` directory, we recommmend adding a test for the property to ensure it works as expected. Once the test is added, you can add the property to the corresponding README.md file.
+4. We keep a table of all the properties in [PROPERTIES.md](https://github.com/crytic/properties/blob/main/PROPERTIES.md), this should be updated whenever a new property is added.
+
+As an example, we can illustrate the addition of the previously mentioned ERC721 property: *"totalSupply should never be larger than the maxSupply"*.
+
+### Example
+Since the ERC721 properties are split into `internal` and `external` properties we will be adding our new property to both, and since the property is related to minting we will add it to the [ERC721ExternalMintableProperties](https://github.com/crytic/properties/blob/main/contracts/ERC721/external/properties/ERC721ExternalMintableProperties.sol) and [ERC721MintableProperties](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/properties/ERC721MintableProperties.sol) files. The directory also contains a `test` folder and a [README.md](https://github.com/crytic/properties/blob/main/contracts/ERC721/README.md) with a list of all the tested properties, so we will add a test and update the README once the property is created.
+
+**Creating an internal property.**
+
+Since the state variable `maxSupply` isn't a universal naming convention we can create a `_prop_maxSupply` wrapper function that returns the corresponding state variable. This function can be left unimplemented since we will rely on the parent test harness to override and implement it.
+
+```solidity
+/// file: contracts/ERC721/internal/properties/ERC721MintableProperties.sol
+
+// Should be implemented in the parent test harness
+function _prop_maxSupply() internal virtual returns (uint256); 
+
+function test_ERC721_cannotMintMoreThanMaxSupply() public virtual {
+  require(isMintableOrBurnable);
+  uint256 max = _prop_maxSupply();
+  uint256 total = totalSupply();
+
+  assertWithMsg(total <= max, "Total supply exceeds max supply!");
+}
+```
+
+Now that the property is defined we will modify the [ERC721MintableTests.sol](https://github.com/crytic/properties/blob/main/contracts/ERC721/internal/test/standard/ERC721MintableTests.sol) contract to break the property. An easy way to do this would be to create a public minting function that does not validate the condition we are testing. The test can be executed using the following command:
+```
+echidna ./contracts/ERC721/internal/test/standard/ERC721MintableTests.sol --contract TestHarness --config ./contracts/ERC721/internal/test/echidna.config.yaml
+```
+
+If we correctly added our property the test should fail, indicating that Echidna has found the issue.
+
+**Creating an External Property**
+
+The steps for creating an external property are mostly the same, except that we will make the wrapper function `_prop_maxSupply` external and add it to the [IERC721Internal.sol](https://github.com/crytic/properties/blob/main/contracts/ERC721/util/IERC721Internal.sol) file.
+```
+/// file: contracts/ERC721/external/properties/ERC721ExternalMintableProperties.sol
+
+function test_ERC721_cannotMintMoreThanMaxSupply() public virtual {
+  require(token.isMintableOrBurnable);
+  uint256 max = token._prop_maxSupply();
+  uint256 total = token.totalSupply();
+
+  assertWithMsg(total <= max, "Total supply exceeds max supply!");
+}
+```
+
+To add a test we will modify the [ERC721IncorrectMintable](https://github.com/crytic/properties/blob/main/contracts/ERC721/external/util/ERC721IncorrectMintable.sol) contract so the property fails, and run it with the following command:
+
+```
+echidna ./contracts/ERC721/external/test/standard/ERC721MintableTests.sol --contract TestHarness --config ./contracts/ERC721/external/test/echidna.config.yaml
+```
+
+Now we can add the new property to the [README](https://github.com/crytic/properties/blob/main/contracts/ERC721/README.md) and to the [properties list](https://github.com/crytic/properties/blob/main/PROPERTIES.md).
 
 ## Linting and formatting
 
