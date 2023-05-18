@@ -22,3 +22,6 @@
 	path = lib/prb-math
 	url = https://github.com/PaulRBerg/prb-math
 	branch = v3
+[submodule "contracts/Math/PRBMath/v4/prb-math-library"]
+	path = contracts/Math/PRBMath/v4/prb-math-library
+	url = https://github.com/PaulRBerg/prb-math
