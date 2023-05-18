@@ -7,6 +7,7 @@
     - [ERC721 Tests](#erc721-tests)
     - [ERC4626 Tests](#erc4626-tests)
     - [ABDKMath64x64 tests](#abdkmath64x64-tests)
+    - [PRBMath tests](#prbmath-tests)
   - [Additional resources](#additional-resources)
 - [Helper functions](#helper-functions)
   - [Usage examples](#usage-examples)
@@ -26,6 +27,7 @@ This repository contains 168 code properties for:
 - [ERC721](https://ethereum.org/en/developers/docs/standards/tokens/erc-721/) token: mintable, burnable, and transferable invariants ([19 properties](PROPERTIES.md#erc721)).
 - [ERC4626](https://ethereum.org/en/developers/docs/standards/tokens/erc-4626/) vaults: strict specification and additional security invariants ([37 properties](PROPERTIES.md#erc4626)).
 - [ABDKMath64x64](https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.md) fixed-point library invariants ([106 properties](PROPERTIES.md#abdkmath64x64)).
+- [PRBMath](https://github.com/PaulRBerg/prb-math/blob/main/README.md) fixed-point library invariants ([132 properties](PROPERTIES.md#prbmath-sd59x18)) for SD59x18, and ([96 properties](PROPERTIES.md#prbmath-ud60x18)) for UD60x18.
 
 The goals of these properties are to:
 
@@ -47,6 +49,7 @@ The properties can be used through unit tests or through fuzzing with [Echidna](
    - [ERC20 tests](#erc20-tests)
    - [ERC4626 test](#erc4626-tests)
    - [ABDKMath64x64 tests](#abdkmath64x64-tests)
+   - [PRBMath tests](#prbmath-tests)
 
 ### ERC20 tests
 
@@ -413,6 +416,44 @@ contract CryticABDKMath64x64Harness is CryticABDKMath64x64PropertyTests {
 #### Run
 
 Run the test suite using `echidna-test . --contract CryticABDKMath64x64Harness --seq-len 1 --test-mode assertion --corpus-dir tests/echidna-corpus` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
+
+### PRBMath tests
+
+The Solidity smart contract programming language does not have any inbuilt feature for working with decimal numbers, so for contracts dealing with non-integer values, a third party solution is needed. [PRBMath](https://github.com/PaulRBerg/prb-math) is Solidity library for advanced fixed-point math that operates with signed 59.18-decimal fixed-point and unsigned 60.18-decimal fixed-point numbers
+
+SD59x18 library implements [19 arithmetic operations](https://github.com/PaulRBerg/prb-math/blob/main/README.md#mathematical-functions "19 arithmetic operations") using fixed-point numbers and [11 conversion functions](https://github.com/PaulRBerg/prb-math/blob/main/README.md#mathematical-functions "6 conversion functions") between integer types and fixed-point types.
+
+We provide a number of tests related with fundamental mathematical properties of the floating point numbers. To include these tests into your repository, follow these steps:
+
+1. [Integration](#integration-4)
+2. [Run](#run-4)
+
+
+#### Integration
+
+Create a new Solidity file containing the `PRBMathSD59x18Harness` or `PRBMath60x18Harness` contract:
+
+```Solidity
+pragma solidity ^0.8.0;
+import "@crytic/properties/contracts/Math/PRBMath/v3/PRBMathSD59x18PropertyTests.sol;
+
+contract CryticPRBMath59x18Harness is CryticPRBMath59x18Propertiesv3 {
+    /* Any additional test can be added here */
+}
+```
+
+```Solidity
+pragma solidity ^0.8.0;
+import "@crytic/properties/contracts/Math/PRBMath/v3/PRBMathSD60x18PropertyTests.sol;
+
+contract CryticPRBMath60x18Harness is CryticPRBMath60x18Propertiesv3 {
+    /* Any additional test can be added here */
+}
+```
+
+#### Run
+
+Run the test suite using `echidna-test . --contract CryticPRBMath59x18Harness --seq-len 1 --test-mode assertion --corpus-dir tests/echidna-corpus` and inspect the coverage report in `tests/echidna-corpus` when it finishes.
 
 ## Additional resources
 
