@@ -14,12 +14,12 @@
 ## Consuming
 
 ### Initial setup
-To use these properties to test a given vault implementation, see the readme in the project root.
+To use these properties to test a given ERC721 implementation, see the readme in the project root.
 
 ### Adding internal test methods to an ERC721
 Some properties of the ERC721 spec cannot be tested externally because testing them requires interactions between the test suite & functionality that is not defined in the spec. 
 
-To compensate for this limitation, a vault under test may optionally implement a set of methods that allow such properties to be tested. See [IERC721Internal](util/IERC721Internal.sol) for the list of methods.
+To compensate for this limitation, a contract under test may optionally implement a set of methods that allow such properties to be tested. See [IERC721Internal](util/IERC721Internal.sol) for the list of methods.
 
 These methods should be added to the ERC721 contract by a derived, test-environment-only contract to minimize changes to the production contract.
 
