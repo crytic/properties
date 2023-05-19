@@ -1,14 +1,14 @@
 pragma solidity ^0.8.19;
 
-import { UD60x18 } from "@prb-math-v3/UD60x18.sol";
-import {add, sub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb-math-v3/ud60x18/Helpers.sol";
-import {convert} from "@prb-math-v3/ud60x18/Conversions.sol";
-import {msb} from "@prb-math-v3/Common.sol";
-import {intoUint128, intoUint256} from "@prb-math-v3/ud60x18/Casting.sol";
-import {mul, div, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu, gm} from "@prb-math-v3/ud60x18/Math.sol";
+import { UD60x18 } from "@prb/math/UD60x18.sol";
+import {add, sub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb/math/ud60x18/Helpers.sol";
+import {convert} from "@prb/math/ud60x18/Conversions.sol";
+import {msb} from "@prb/math/Common.sol";
+import {intoUint128, intoUint256} from "@prb/math/ud60x18/Casting.sol";
+import {mul, div, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu, gm} from "@prb/math/ud60x18/Math.sol";
 import "./utils/AssertionHelperUD.sol";
 
-contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
+contract CryticPRBMath60x18Propertiesv4 is AssertionHelperUD {
 
     /* ================================================================
        59x18 fixed-point constants used for testing specific values.

@@ -11,8 +11,10 @@
     "lint": "npm run lint-check-format && npm run lint-check-links",
     "lint-check-format": "prettier --check .",
     "lint-check-links": "find . -name '*.md' -not -path './node_modules/*' -print0 | xargs -0 -n1 markdown-link-check",
-    "echidna-prb-ud": "echidna . --contract CryticPRBMath60x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml --corpus-dir corpus-prb-ud",
-    "echidna-prb-sd": "echidna . --contract CryticPRBMath59x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml --corpus-dir corpus-prb-sd",
+    "echidna-prb-ud-v3": "echidna . --contract CryticPRBMath60x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml --corpus-dir corpus-prb-ud-v3",
+    "echidna-prb-sd-v3": "echidna . --contract CryticPRBMath59x18Propertiesv3 --config ./contracts/Math/echidna-config.yaml --corpus-dir corpus-prb-sd-v3 --workers 4",
+    "echidna-prb-ud-v4": "echidna . --contract CryticPRBMath60x18Propertiesv4 --config ./contracts/Math/echidna-config.yaml --corpus-dir corpus-prb-ud-v4",
+    "echidna-prb-sd-v4": "echidna . --contract CryticPRBMath59x18Propertiesv4 --config ./contracts/Math/echidna-config.yaml --corpus-dir corpus-prb-sd-v4",
     "echidna-abdk": "echidna . --contract CryticABDKMath64x64Properties --config ./contracts/Math/echidna-config.yaml --corpus-dir corpus-abdk-64"
   },
   "repository": {
