@@ -170,6 +170,7 @@ contract CryticERC4626PropertyBase is PropertiesAsserts {
         uint256 clampedTokens = vault.previewRedeem(sharesToRedeem);
         require(clampedTokens <= maxWithdraw);
         // should this be a configured setting?
+        sharesToRedeem = vault.previewWithdraw(clampedTokens);
         require(sharesToRedeem > 0);
 
         // we don't need to check for unreasonably large withdraws because previewWithdraw would have reverted.
