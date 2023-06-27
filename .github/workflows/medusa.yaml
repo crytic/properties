@@ -50,3 +50,8 @@ jobs:
         working-directory: tests/ERC20/hardhat
         run: |
           medusa fuzz --target . --deployment-order CryticERC20InternalHarness --config medusa-config.json
+
+      - name: Run Medusa for External tests
+        working-directory: tests/ERC20/hardhat
+        run: |
+          medusa fuzz --target . --deployment-order CryticERC20ExternalHarness --config medusa-config.json
