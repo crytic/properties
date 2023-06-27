@@ -32,6 +32,12 @@ jobs:
           npm ci
           npx hardhat compile --force
 
+      - name: Install dependencies and compile ERC4626 example
+        working-directory: tests/ERC4626/hardhat
+        run: |
+          npm ci
+          npx hardhat compile --force
+
       - name: Go setup
         uses: actions/setup-go@v4
         with:
