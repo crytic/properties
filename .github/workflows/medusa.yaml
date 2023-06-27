@@ -1,0 +1,38 @@
+name: Test examples
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+ hardhat:
+    name: Test Hardhat examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up Nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies and compile ERC20 example
+        working-directory: tests/ERC20/hardhat
+        run: |
+          npm ci
+          npx hardhat compile --force
+
+      - name: Run Echidna for Internal tests
+        working-directory: tests/ERC20/hardhat
+        run: |
+          medusa fuzz --target . --deployment-order CryticERC20InternalHarness --config medusa-config.json
