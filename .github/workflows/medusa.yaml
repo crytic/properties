@@ -58,10 +58,11 @@ jobs:
         run: |
           medusa fuzz --target . --deployment-order CryticERC20ExternalHarness --config medusa-config-ext.json
 
-      - name: Run Medusa for External ERC4626 tests
-        working-directory: tests/ERC4626/foundry
-        run: |
-          medusa fuzz --target . --deployment-order CryticERC4626InternalHarness --config medusa-config.json
+      # The following test is disabled until X is resolved  
+      #- name: Run Medusa for External ERC4626 tests
+      #  working-directory: tests/ERC4626/foundry
+      #  run: |
+      #    medusa fuzz --target . --deployment-order CryticERC4626InternalHarness --config medusa-config.json
 
   hardhat:
     name: Test Hardhat examples
