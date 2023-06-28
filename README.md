@@ -417,7 +417,7 @@ Run the test suite using `echidna . --contract CryticABDKMath64x64Harness --seq-
 ## Additional resources
 
 - [Building secure contracts](https://secure-contracts.com/program-analysis/index.html)
-- Our [EmpireSlacking](https:://slack.empirehacking.nyc) slack server, channel #ethereum
+- Our [EmpireSlacking](https://slack.empirehacking.nyc) slack server, channel #ethereum
 - Watch our [fuzzing workshop](https://www.youtube.com/watch?v=QofNQxW_K08&list=PLciHOL_J7Iwqdja9UH4ZzE8dP1IxtsBXI)
 
 # Helper functions
