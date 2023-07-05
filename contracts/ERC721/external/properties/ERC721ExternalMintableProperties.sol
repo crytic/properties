@@ -7,7 +7,7 @@ abstract contract CryticERC721ExternalMintableProperties is CryticERC721External
 
     ////////////////////////////////////////
     // Properties
-    // mint increases the total supply
+    // mint increases the total supply. Amount limited to 100 in order to improve performance
     function test_ERC721_external_mintIncreasesSupply(uint256 amount) public virtual {
         require(token.isMintableOrBurnable());
         amount = clampBetween(amount, 1, 100);
@@ -23,7 +23,7 @@ abstract contract CryticERC721ExternalMintableProperties is CryticERC721External
         }
     }
 
-    // mint creates a fresh token
+    // mint creates a fresh token. Amount limited to 100 in order to improve performance
     function test_ERC721_external_mintCreatesFreshToken(uint256 amount) public virtual {
         require(token.isMintableOrBurnable());
         amount = clampBetween(amount, 1, 100);
