@@ -24,6 +24,8 @@
   "homepage": "https://github.com/crytic/properties#readme",
   "dependencies": {
     "@openzeppelin/contracts": "^4.7.3",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "markdown-link-check": "^3.11.0",
     "prettier": "^2.8.7",
     "prettier-plugin-solidity": "^1.1.3",
