@@ -1,9 +1,9 @@
-pragma solidity >=0.5.16;
+pragma solidity ^0.6.0;
 
-import "@uniswap/v2-core/contracts/UniswapV2ERC20.sol";
-import "@uniswap/v2-core/contracts/UniswapV2Pair.sol";
-import "@uniswap/v2-core/contracts/UniswapV2Factory.sol";
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
+import "./uni-v2/UniswapV2ERC20.sol";
+import "./uni-v2/UniswapV2Pair.sol";
+import "./uni-v2/UniswapV2Factory.sol";
+import "./libraries/UniswapV2Library.sol";
 
 contract Users {
     function proxy(

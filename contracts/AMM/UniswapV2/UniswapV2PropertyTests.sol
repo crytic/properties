@@ -1,7 +1,7 @@
-pragma solidity >=0.5.0;
+pragma solidity ^0.6.0;
 
 import "./Setup.sol";
-import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
+import "./libraries/UniswapV2Library.sol";
 
 contract CryticUniswapV2PropertyTests is Setup {
     event AmountsIn(uint amount0, uint amount1);
