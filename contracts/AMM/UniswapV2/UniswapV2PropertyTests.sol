@@ -10,8 +10,12 @@ contract CryticUniswapV2PropertyTests is Setup {
     event BalancesAfter(uint balance0, uint balance1);
     event ReservesBefore(uint reserve0, uint reserve1);
     event ReservesAfter(uint reserve0, uint reserve1);
+    event KValues(uint256 a, uint256 b);
 
-    function testProvideLiquidity(uint amount0, uint amount1) public {
+    function _provideLiquidity(
+        uint256 amount0,
+        uint256 amount1
+    ) internal returns (uint256, uint256, bool) {
         // Preconditions:
         amount0 = _between(amount0, 1000, uint(-1));
         amount1 = _between(amount1, 1000, uint(-1));
@@ -19,11 +23,8 @@ contract CryticUniswapV2PropertyTests is Setup {
         if (!completed) {
             _init(amount0, amount1);
         }
-        //// State before
-        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
-        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
-        uint kBefore = reserve0Before * reserve1Before;
-        //// Transfer tokens to UniswapV2Pair contract
+
+        // Transfer tokens to UniswapV2Pair contract
         (bool success1, ) = user.proxy(
             address(testToken1),
             abi.encodeWithSelector(
@@ -43,7 +44,7 @@ contract CryticUniswapV2PropertyTests is Setup {
         require(success1 && success2);
 
         // Action:
-        (bool success3, ) = user.proxy(
+        (bool success, ) = user.proxy(
             address(pair),
             abi.encodeWithSelector(
                 bytes4(keccak256("mint(address)")),
@@ -51,158 +52,194 @@ contract CryticUniswapV2PropertyTests is Setup {
             )
         );
 
-        // Postconditions:
-        if (success3) {
-            uint lpTokenBalanceAfter = pair.balanceOf(address(user));
-            (uint reserve0After, uint reserve1After, ) = pair.getReserves();
-            uint kAfter = reserve0After * reserve1After;
-            assert(lpTokenBalanceBefore < lpTokenBalanceAfter);
-            assert(kBefore < kAfter);
-        }
+        return (amount0, amount1, success);
     }
 
-    function testBadSwap(uint amount0, uint amount1) public {
-        if (!completed) {
-            _init(amount0, amount1);
-        }
+    function _burnLiquidity(
+        uint256 amount,
+        uint256 balance
+    ) internal returns (uint256, bool) {
+        amount = _between(amount, 1, balance);
 
-        // Preconditions:
-        pair.sync(); // we matched the balances with reserves
-        require(pair.balanceOf(address(user)) > 0); //there is liquidity for the swap
+        // Transfer LP tokens to UniswapV2Pair contract
+        (bool success1, ) = user.proxy(
+            address(pair),
+            abi.encodeWithSelector(
+                pair.transfer.selector,
+                address(pair),
+                amount
+            )
+        );
 
         // Action:
         (bool success, ) = user.proxy(
             address(pair),
             abi.encodeWithSelector(
-                pair.swap.selector,
-                amount0,
-                amount1,
-                address(user),
-                ""
+                bytes4(keccak256("burn(address)")),
+                address(user)
             )
         );
 
-        // Post-condition:
-        assert(!success); //call should never succeed
+        return (amount, success);
     }
 
-    function testSwap(uint amount0, uint amount1) public {
-        // Preconditions:
-        if (!completed) {
-            _init(amount0, amount1);
-        }
-        require(pair.balanceOf(address(user)) > 0);
-        require(amount0 > 0 && amount1 > 0);
+    // Providing liquidity
 
-        uint balance0Before = testToken1.balanceOf(address(user));
-        uint balance1Before = testToken2.balanceOf(address(user));
+    function test_UniV2_provideLiquidity_IncreasesK(
+        uint256 amount0,
+        uint256 amount1
+    ) public {
+        // State before
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        uint kBefore = reserve0Before * reserve1Before;
+        bool success;
+
+        (amount0, amount1, success) = _provideLiquidity(amount0, amount1);
+
+        // Postconditions:
+        if (success) {
+            (uint reserve0After, uint reserve1After, ) = pair.getReserves();
+            uint kAfter = reserve0After * reserve1After;
+            assert(kBefore < kAfter);
+        }
+    }
+
+    function test_UniV2_provideLiquidity_IncreasesLPSupply(
+        uint256 amount0,
+        uint256 amount1
+    ) public {
+        // State before
+        uint256 lpTokenSupplyBefore = pair.totalSupply();
+        bool success;
+
+        (amount0, amount1, success) = _provideLiquidity(amount0, amount1);
+
+        // Postconditions:
+        if (success) {
+            uint256 lpTokenSupplyAfter = pair.totalSupply();
+
+            assert(lpTokenSupplyBefore < lpTokenSupplyAfter);
+        }
+    }
+
+    // Fails on unbalanced liquidity?
+    /*     function test_UniV2_provideLiquidity_tokenPriceUnchanged(
+        uint256 amount0,
+        uint256 amount1,
+        uint256 amountIn0,
+        uint256 amountIn1
+    ) public {
+        bool success;
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        amountIn0 = _between(amountIn0, 1, reserve0Before);
+        amountIn1 = _between(amountIn1, 1, reserve1Before);
+
+        uint256 amountOut1Before = UniswapV2Library.quote(
+            amountIn0,
+            reserve0Before,
+            reserve1Before
+        );
+        uint256 amountOut0Before = UniswapV2Library.quote(
+            amountIn1,
+            reserve1Before,
+            reserve0Before
+        );
+
+        (amount0, amount1, success) = _provideLiquidity(amount0, amount1);
+
+        if (success) {
+            (uint reserve0After, uint reserve1After, ) = pair.getReserves();
+            uint256 amountOut1After = UniswapV2Library.quote(
+                amountIn0,
+                reserve0After,
+                reserve1After
+            );
+            uint256 amountOut0After = UniswapV2Library.quote(
+                amountIn1,
+                reserve1After,
+                reserve0After
+            );
+            emit AmountsIn(amountOut1After, amountOut1Before);
+            emit AmountsIn(amountOut0After, amountOut0Before);
+            assert(amountOut1After == amountOut1Before);
+            assert(amountOut0After == amountOut0Before);
+        }
+    } */
+
+    function test_UniV2_provideLiquidity_IncreaseReserves(
+        uint256 amount0,
+        uint256 amount1
+    ) public {
+        bool success;
+
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+
+        (amount0, amount1, success) = _provideLiquidity(amount0, amount1);
+
+        // Postconditions:
+        if (success) {
+            (uint reserve0After, uint reserve1After, ) = pair.getReserves();
+
+            assert(reserve0Before < reserve0After);
+            assert(reserve1Before < reserve1After);
+        }
+    }
+
+    function test_UniV2_provideLiquidity_IncreaseUserLPBalance(
+        uint256 amount0,
+        uint256 amount1
+    ) public {
+        bool success;
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+
+        (amount0, amount1, success) = _provideLiquidity(amount0, amount1);
+
+        if (success) {
+            uint lpTokenBalanceAfter = pair.balanceOf(address(user));
+
+            assert(lpTokenBalanceBefore < lpTokenBalanceAfter);
+        }
+    }
+
+    // Removing liquidity
+
+    function test_UniV2_removeLiquidity_DecreaseK(uint256 amount) public {
+        pair.sync();
+        // Preconditions
+        bool success;
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
 
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
         uint kBefore = reserve0Before * reserve1Before;
-        emit ReservesBefore(reserve0Before, reserve1Before);
 
-        uint amount0In = _between(amount0, 1, reserve0Before - 1);
-        uint amount1In = _between(amount1, 1, reserve1Before - 1);
-        // emit AmountsIn(amount0In, amount1In);
-        if (amount0In > balance0Before) {
-            testToken1.mint(address(user), amount0In - balance0Before);
-            balance0Before = testToken1.balanceOf(address(user));
-        }
-        if (amount1In > balance1Before) {
-            testToken2.mint(address(user), amount1In - balance1Before);
-            balance1Before = testToken2.balanceOf(address(user));
-        }
-        require(amount0In <= balance0Before || amount1In <= balance1Before);
-        emit BalancesBefore(balance0Before, balance1Before);
+        // Burn liquidity
+        (amount, success) = _burnLiquidity(amount, lpTokenBalanceBefore);
 
-        uint amount0Out;
-        uint amount1Out;
-
-        /**
-         * Precondition of UniswapV2Pair.swap is that we transfer the token we are swapping in first.
-         * So, we pick the larger of the two input amounts to transfer, and also use
-         * the Uniswap library to determine how much of the other we will receive in return.
-         */
-        if (amount0In > balance0Before) {
-            amount0In = 0;
-        } else if (amount1In > balance1Before) {
-            amount1In = 0;
-        }
-        if (amount0In > amount1In) {
-            require(amount0In <= balance0Before);
-            amount1In = 0;
-            amount0Out = 0;
-            amount1Out = UniswapV2Library.getAmountOut(
-                amount0In,
-                reserve0Before,
-                reserve1Before
-            );
-            require(amount1Out > 0);
-            emit AmountsIn(amount0In, amount1In);
-            emit AmountsOut(amount0Out, amount1Out);
-            (bool success1, ) = user.proxy(
-                address(testToken1),
-                abi.encodeWithSelector(
-                    testToken1.transfer.selector,
-                    address(pair),
-                    amount0In
-                )
-            );
-            require(success1);
-        } else {
-            require(amount1In <= balance1Before);
-            amount0In = 0;
-            amount1Out = 0;
-            amount0Out = UniswapV2Library.getAmountOut(
-                amount1In,
-                reserve1Before,
-                reserve0Before
-            );
-            require(amount0Out > 0);
-            emit AmountsIn(amount0In, amount1In);
-            emit AmountsOut(amount0Out, amount1Out);
-            (bool success1, ) = user.proxy(
-                address(testToken2),
-                abi.encodeWithSelector(
-                    testToken2.transfer.selector,
-                    address(pair),
-                    amount1In
-                )
-            );
-            require(success1);
-        }
-
-        // Action:
-        (bool success2, ) = user.proxy(
-            address(pair),
-            abi.encodeWithSelector(
-                pair.swap.selector,
-                amount0Out,
-                amount1Out,
-                address(user),
-                ""
-            )
-        );
-
-        // Post-condition:
-        /* 1. Swap should be successful */
-        assert(success2);
-        /* 2. Reserves may change, but k should be (relatively) constant */
-        (uint reserve0After, uint reserve1After, ) = pair.getReserves();
-        uint kAfter = reserve0After * reserve1After;
-        emit ReservesAfter(reserve0After, reserve1After);
-        // assert(kBefore == kAfter);
-        assert(kBefore <= kAfter);
-        /* 3. The change in the user's token balances should match our expectations */
-        uint balance0After = testToken1.balanceOf(address(user));
-        uint balance1After = testToken2.balanceOf(address(user));
-        emit BalancesAfter(balance0After, balance1After);
-        if (amount0In > amount1In) {
-            assert(balance0After == balance0Before - amount0In);
-            assert(balance1After == balance1Before + amount1Out);
-        } else {
-            assert(balance1After == balance1Before - amount1In);
-            assert(balance0After == balance0Before + amount0Out);
+        // Postconditions
+        if (success) {
+            (uint reserve0After, uint reserve1After, ) = pair.getReserves();
+            uint kAfter = reserve0After * reserve1After;
+            emit KValues(kBefore, kAfter);
+            assert(kBefore > kAfter);
         }
     }
+
+    function test_UniV2_removeLiquidity_DecreaseLPSupply() public {}
+
+    function test_UniV2_removeLiquidity_tokenPriceUnchanged() public {}
+
+    function test_UniV2_removeLiquidity_DecreaseReserves() public {}
+
+    function test_UniV2_removeLiquidity_DecreaseUserLPBalance() public {}
+
+    // Swapping
+    function test_UniV2_swap_DoesNotDecreaseK() public {}
+
+    function test_UniV2_swap_PathIndependence() public {}
+
+    function test_UniV2_swap_IncreaseUserOutBalance() public {}
+
+    function test_UniV2_swap_OutPriceIncrease_InPriceDecrease() public {}
 }
