@@ -83,6 +83,19 @@ contract CryticUniswapV2PropertyTests is Setup {
         return (amount, success);
     }
 
+    function _swap(uint256 amount0, uint256 amount1) internal {
+        if (!completed) {
+            _init(amount0, amount1);
+        }
+
+        require(amount0 > 0 && amount1 > 0);
+
+        (uint reserve0Before, uint reserve1Before,) = pair.getReserves();
+
+        uint amount0In = _between(amount0, 1, reserve0Before - 1);
+        uint amount1In = _between(amount1, 1, reserve1Before - 1);
+    }
+
     // Providing liquidity
 
     function test_UniV2_provideLiquidity_IncreasesK(
@@ -123,7 +136,7 @@ contract CryticUniswapV2PropertyTests is Setup {
         }
     }
 
-    // Fails on unbalanced liquidity?
+    // Fails on unbalanced liquidity? TODO
     /*     function test_UniV2_provideLiquidity_tokenPriceUnchanged(
         uint256 amount0,
         uint256 amount1,
@@ -226,13 +239,67 @@ contract CryticUniswapV2PropertyTests is Setup {
         }
     }
 
-    function test_UniV2_removeLiquidity_DecreaseLPSupply() public {}
+    function test_UniV2_removeLiquidity_DecreaseLPSupply(uint256 amount) public {
+        pair.sync();
+        // Preconditions
+        bool success;
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
 
-    function test_UniV2_removeLiquidity_tokenPriceUnchanged() public {}
+        uint256 supplyBefore = pair.totalSupply();
 
-    function test_UniV2_removeLiquidity_DecreaseReserves() public {}
+        // Burn liquidity
+        (amount, success) = _burnLiquidity(amount, lpTokenBalanceBefore);
 
-    function test_UniV2_removeLiquidity_DecreaseUserLPBalance() public {}
+        // Postconditions
+        if (success) {
+            uint256 supplyAfter = pair.totalSupply();
+
+            assert(supplyAfter < supplyBefore);
+        }
+    }
+    // TODO
+    function test_UniV2_removeLiquidity_tokenPriceUnchanged(uint256 amount) public {}
+
+    function test_UniV2_removeLiquidity_DecreaseReserves(uint256 amount) public {
+        pair.sync();
+
+        // Preconditions
+        bool success;
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
+
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+
+        // Burn liquidity
+        (amount, success) = _burnLiquidity(amount, lpTokenBalanceBefore);
+
+        // Postconditions
+        if (success) {
+            (uint reserve0After, uint reserve1After, ) = pair.getReserves();
+            assert(reserve0Before > reserve0After);
+            assert(reserve1Before > reserve1After);
+        }
+    }
+
+    function test_UniV2_removeLiquidity_DecreaseUserLPBalance(uint256 amount) public {
+        pair.sync();
+
+        // Preconditions
+        bool success;
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
+
+        // Burn liquidity
+        (amount, success) = _burnLiquidity(amount, lpTokenBalanceBefore);
+
+        // Postconditions
+        if (success) {
+            uint lpTokenBalanceAfter = pair.balanceOf(address(user));
+
+            assert(lpTokenBalanceBefore > lpTokenBalanceAfter);
+        }
+    }
 
     // Swapping
     function test_UniV2_swap_DoesNotDecreaseK() public {}
