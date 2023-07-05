@@ -48,6 +48,7 @@ abstract contract CryticERC721ExternalBasicProperties is CryticERC721ExternalTes
         require(selfBalance > 0);  
         require(target != address(this));
         require(target != msg.sender);
+        require(target != address(0));
 
         uint tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
 
