@@ -7,5 +7,5 @@ interface IERC721Internal is IERC721, IERC721Enumerable {
     function isMintableOrBurnable() external returns (bool);
     function burn(uint256 tokenId) external;
     function usedId(uint256 tokenId) external view returns (bool);
-    function _customMint(address to) external;
+    function _customMint(address to, uint256 amount) external;
 }

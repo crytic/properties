@@ -41,7 +41,9 @@ contract ERC721Compliant is CryticERC721InternalPropertyTests {
         return super.supportsInterface(interfaceId);
     }
 
-    function _customMint(address to) internal virtual override {
-        mint(to);
+    function _customMint(address to, uint256 amount) internal virtual override {
+        for(uint256 i; i < amount; i++) {
+            mint(to);
+        }
     }
 }

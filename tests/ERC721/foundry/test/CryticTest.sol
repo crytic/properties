@@ -11,8 +11,8 @@ contract CryticERC721InternalHarness is ExampleToken, CryticERC721BasicPropertie
         unsafeReceiver = new MockReceiver(false);
     }
 
-    function _customMint(address to) internal virtual {
-        mint(to, 1);
+    function _customMint(address to, uint256 amount) internal virtual {
+        mint(to, amount);
     }
 
         // The following functions are overrides required by Solidity.

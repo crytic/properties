@@ -88,8 +88,10 @@ contract ERC721MintableTestsInternal is CryticERC721MintableProperties {
         return super.supportsInterface(interfaceId);
     }
 
-    function _customMint(address to) internal virtual override {
-        mint(to);
+    function _customMint(address to, uint256 amount) internal virtual override {
+        for(uint256 i; i < amount; i++) {
+            mint(to);
+        }
     }
 }
 
