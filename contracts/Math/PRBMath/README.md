@@ -24,10 +24,10 @@ The next step, creating the tests, means to implement Solidity functions that ve
 // Test for commutative property
 // x + y == y + x
 function add_test_commutative(SD59x18 x, SD59x18 y) public pure {
-    SD59x18 x_y = x.add(y);
-    SD59x18 y_x = y.add(x);
+  SD59x18 x_y = x.add(y);
+  SD59x18 y_x = y.add(x);
 
-    assert(x_y.eq(y_x));
+  assert(x_y.eq(y_x));
 }
 ```
 

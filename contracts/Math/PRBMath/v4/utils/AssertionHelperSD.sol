@@ -1,10 +1,10 @@
 pragma solidity ^0.8.0;
 
-import { SD59x18 } from "@prb/math/SD59x18.sol";
+import {SD59x18} from "@prb/math/SD59x18.sol";
 
-import { convert } from "@prb/math/sd59x18/Conversions.sol";
-import { add, sub, eq, gt, gte, lt, lte, rshift } from "@prb/math/sd59x18/Helpers.sol";
-import { mul, div, abs } from "@prb/math/sd59x18/Math.sol";
+import {convert} from "@prb/math/sd59x18/Conversions.sol";
+import {add, sub, eq, gt, gte, lt, lte, rshift} from "@prb/math/sd59x18/Helpers.sol";
+import {mul, div, abs} from "@prb/math/sd59x18/Math.sol";
 
 abstract contract AssertionHelperSD {
     event AssertEqFailure(string);
@@ -30,11 +30,15 @@ abstract contract AssertionHelperSD {
         }
     }
 
-    function assertEqWithinBitPrecision(SD59x18 a, SD59x18 b, uint256 precision_bits) internal {
-        SD59x18 max = gt(a , b) ? a : b;
-        SD59x18 min = gt(a , b) ? b : a;
+    function assertEqWithinBitPrecision(
+        SD59x18 a,
+        SD59x18 b,
+        uint256 precision_bits
+    ) internal {
+        SD59x18 max = gt(a, b) ? a : b;
+        SD59x18 min = gt(a, b) ? b : a;
         SD59x18 r = rshift(sub(max, min), precision_bits);
-        
+
         if (!eq(r, convert(0))) {
             string memory str_a = toString(SD59x18.unwrap(a));
             string memory str_b = toString(SD59x18.unwrap(b));
@@ -54,7 +58,12 @@ abstract contract AssertionHelperSD {
         }
     }
 
-    function assertEqWithinTolerance(SD59x18 a, SD59x18 b, SD59x18 error_percent, string memory str_percent) internal {
+    function assertEqWithinTolerance(
+        SD59x18 a,
+        SD59x18 b,
+        SD59x18 error_percent,
+        string memory str_percent
+    ) internal {
         SD59x18 tol_value = mul(a, div(error_percent, convert(100)));
 
         require(tol_value.neq(convert(0)));
@@ -78,22 +87,30 @@ abstract contract AssertionHelperSD {
         }
     }
 
-    // Returns true if the n most significant bits of a and b are almost equal 
+    // Returns true if the n most significant bits of a and b are almost equal
     // Uses functions from the library under test!
-    function assertEqWithinDecimalPrecision(SD59x18 a, SD59x18 b, uint256 digits) internal {
-       // Divide both number by digits to truncate the unimportant digits
-       int256 a_int = SD59x18.unwrap(a);
-       int256 b_int = SD59x18.unwrap(b);
+    function assertEqWithinDecimalPrecision(
+        SD59x18 a,
+        SD59x18 b,
+        uint256 digits
+    ) internal {
+        // Divide both number by digits to truncate the unimportant digits
+        int256 a_int = SD59x18.unwrap(a);
+        int256 b_int = SD59x18.unwrap(b);
 
-       int256 denominator = int256(10 ** digits);
+        int256 denominator = int256(10 ** digits);
 
-       int256 a_significant = a_int / denominator;
-       int256 b_significant = b_int / denominator;
+        int256 a_significant = a_int / denominator;
+        int256 b_significant = b_int / denominator;
 
-       int256 larger = a_significant > b_significant ? a_significant : b_significant;
-       int256 smaller = a_significant > b_significant ? b_significant : a_significant;
-       
-       if (!((larger - smaller) <= 1)) {
+        int256 larger = a_significant > b_significant
+            ? a_significant
+            : b_significant;
+        int256 smaller = a_significant > b_significant
+            ? b_significant
+            : a_significant;
+
+        if (!((larger - smaller) <= 1)) {
             string memory str_a = toString(a_int);
             string memory str_b = toString(b_int);
             string memory str_larger = toString(larger);
@@ -117,7 +134,7 @@ abstract contract AssertionHelperSD {
             );
             emit AssertEqFailure(string(assertMsg));
             assert(false);
-       }
+        }
     }
 
     function assertGt(SD59x18 a, SD59x18 b, string memory reason) internal {

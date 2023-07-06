@@ -1,6 +1,6 @@
 pragma solidity ^0.8.19;
 
-import { SD59x18 } from "@prb-math-v3/SD59x18.sol";
+import {SD59x18} from "@prb-math-v3/SD59x18.sol";
 import {add, sub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb-math-v3/sd59x18/Helpers.sol";
 import {convert} from "@prb-math-v3/sd59x18/Conversions.sol";
 import {msb} from "@prb-math-v3/Common.sol";
@@ -9,7 +9,6 @@ import {mul, div, abs, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, p
 import "./utils/AssertionHelperSD.sol";
 
 contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
-
     /* ================================================================
        59x18 fixed-point constants used for testing specific values.
        This assumes that PRBMath library's convert(x) works as expected.
@@ -41,11 +40,13 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     SD59x18 constant UNIT = SD59x18.wrap(1e18);
 
     /// @dev The minimum value an SD59x18 number can have.
-    int256 constant uMIN_SD59x18 = -57896044618658097711785492504343953926634992332820282019728_792003956564819968;
+    int256 constant uMIN_SD59x18 =
+        -57896044618658097711785492504343953926634992332820282019728_792003956564819968;
     SD59x18 constant MIN_SD59x18 = SD59x18.wrap(uMIN_SD59x18);
 
     /// @dev The maximum value an SD59x18 number can have.
-    int256 constant uMAX_SD59x18 = 57896044618658097711785492504343953926634992332820282019728_792003956564819967;
+    int256 constant uMAX_SD59x18 =
+        57896044618658097711785492504343953926634992332820282019728_792003956564819967;
     SD59x18 constant MAX_SD59x18 = SD59x18.wrap(uMAX_SD59x18);
 
     /// @dev The maximum input permitted in {exp2}.
@@ -63,12 +64,16 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     SD59x18 constant MAX_SQRT = SD59x18.wrap(uMAX_SQRT);
 
     SD59x18 internal constant MAX_PERMITTED_EXP2 = SD59x18.wrap(192e18 - 1);
-    SD59x18 internal constant MIN_PERMITTED_EXP2 = SD59x18.wrap(-59_794705707972522261);
+    SD59x18 internal constant MIN_PERMITTED_EXP2 =
+        SD59x18.wrap(-59_794705707972522261);
 
-    SD59x18 internal constant MAX_PERMITTED_EXP = SD59x18.wrap(133_084258667509499440);
-    SD59x18 internal constant MIN_PERMITTED_EXP = SD59x18.wrap(-41_446531673892822322);
-    
-    SD59x18 internal constant MAX_PERMITTED_POW = SD59x18.wrap(2 ** 192 * 10 ** 18 - 1);
+    SD59x18 internal constant MAX_PERMITTED_EXP =
+        SD59x18.wrap(133_084258667509499440);
+    SD59x18 internal constant MIN_PERMITTED_EXP =
+        SD59x18.wrap(-41_446531673892822322);
+
+    SD59x18 internal constant MAX_PERMITTED_POW =
+        SD59x18.wrap(2 ** 192 * 10 ** 18 - 1);
     /// @dev Half the UNIT number.
     int256 constant uHALF_UNIT = 0.5e18;
     SD59x18 constant HALF_UNIT = SD59x18.wrap(uHALF_UNIT);
@@ -87,34 +92,42 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     event Value(string reason, SD59x18 val);
     event LogErr(bytes error);
 
-
     /* ================================================================
        Helper functions.
        ================================================================ */
 
     // Check that there are remaining significant digits after a multiplication
     // Uses functions from the library under test!
-    function significant_digits_are_lost_in_mult(SD59x18 a, SD59x18 b) public pure returns (bool) {
+    function significant_digits_are_lost_in_mult(
+        SD59x18 a,
+        SD59x18 b
+    ) public pure returns (bool) {
         int256 la = convert(floor(log10(abs(a))));
         int256 lb = convert(floor(log10(abs(b))));
 
-        return(la + lb < -18);
+        return (la + lb < -18);
     }
 
     // Return how many significant digits will remain after multiplying a and b
     // Uses functions from the library under test!
-    function significant_digits_after_mult(SD59x18 a, SD59x18 b) public pure returns (uint256) {
+    function significant_digits_after_mult(
+        SD59x18 a,
+        SD59x18 b
+    ) public pure returns (uint256) {
         int256 la = convert(floor(log10(abs(a))));
         int256 lb = convert(floor(log10(abs(b))));
         int256 prec = la + lb;
 
         if (prec < -18) return 0;
-        else return(18 + absInt(prec));
+        else return (18 + absInt(prec));
     }
 
     // Return how many significant digits will be lost after multiplying a and b
     // Uses functions from the library under test!
-    function significant_digits_lost_in_mult(SD59x18 a, SD59x18 b) public pure returns (uint256) {
+    function significant_digits_lost_in_mult(
+        SD59x18 a,
+        SD59x18 b
+    ) public pure returns (uint256) {
         int256 la = convert(floor(log10(abs(a))));
         int256 lb = convert(floor(log10(abs(b))));
 
@@ -140,25 +153,25 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
     // Wrapper for external try/catch calls
     function helpersAdd(SD59x18 x, SD59x18 y) public pure returns (SD59x18) {
-       return add(x,y);
+        return add(x, y);
     }
 
     // Wrapper for external try/catch calls
     function helpersSub(SD59x18 x, SD59x18 y) public pure returns (SD59x18) {
-       return sub(x,y);
+        return sub(x, y);
     }
 
     // Wrapper for external try/catch calls
     function helpersMul(SD59x18 x, SD59x18 y) public pure returns (SD59x18) {
-       return mul(x,y);
+        return mul(x, y);
     }
 
     function helpersDiv(SD59x18 x, SD59x18 y) public pure returns (SD59x18) {
-        return div(x,y);
+        return div(x, y);
     }
 
     function neg(SD59x18 x) public pure returns (SD59x18) {
-       return SD59x18.wrap(-SD59x18.unwrap(x));
+        return SD59x18.wrap(-SD59x18.unwrap(x));
     }
 
     function helpersAbs(SD59x18 x) public pure returns (SD59x18) {
@@ -210,7 +223,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     }
 
     function helpersGm(SD59x18 x, SD59x18 y) public pure returns (SD59x18) {
-        return gm(x,y);
+        return gm(x, y);
     }
 
     /* ================================================================
@@ -350,7 +363,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     function sub_test_non_commutative(SD59x18 x, SD59x18 y) public {
         SD59x18 x_y = x.sub(y);
         SD59x18 y_x = y.sub(x);
-        
+
         assertEq(x_y, neg(y_x));
     }
 
@@ -371,7 +384,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
         SD59x18 x_minus_y_plus_y = x_minus_y.add(y);
         SD59x18 x_plus_y_minus_y = x_plus_y.sub(y);
-        
+
         assertEq(x_minus_y_plus_y, x_plus_y_minus_y);
         assertEq(x_minus_y_plus_y, x);
     }
@@ -416,7 +429,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         }
     }
 
-    // Subtracting minus one from the maximum value should revert, 
+    // Subtracting minus one from the maximum value should revert,
     // as it is out of range
     function sub_test_maximum_value_minus_neg_one() public {
         try this.helpersSub(MAX_SD59x18, MINUS_ONE_FP) {
@@ -480,14 +493,22 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         require(xy_z.neq(ZERO_FP) && x_yz.neq(ZERO_FP));
 
         // Checks that at least 9 digits of precision are left after multiplication
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(y, z) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(x_y, z) > REQUIRED_SIGNIFICANT_DIGITS);
-        require(significant_digits_after_mult(x, y_z) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(
+            significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS
+        );
+        require(
+            significant_digits_after_mult(y, z) > REQUIRED_SIGNIFICANT_DIGITS
+        );
+        require(
+            significant_digits_after_mult(x_y, z) > REQUIRED_SIGNIFICANT_DIGITS
+        );
+        require(
+            significant_digits_after_mult(x, y_z) > REQUIRED_SIGNIFICANT_DIGITS
+        );
 
         uint256 digitsLost = significant_digits_lost_in_mult(x, y);
         digitsLost += significant_digits_lost_in_mult(x, z);
-        
+
         assertEqWithinDecimalPrecision(xy_z, x_yz, digitsLost);
     }
 
@@ -501,10 +522,17 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 x_times_y = x.mul(y);
         SD59x18 x_times_z = x.mul(z);
 
-        require(add(x_times_y, x_times_z).neq(ZERO_FP) && x_times_y_plus_z.neq(ZERO_FP));
-        assertEqWithinTolerance(add(x_times_y, x_times_z), x_times_y_plus_z, ONE_TENTH_FP, "0.1%");
+        require(
+            add(x_times_y, x_times_z).neq(ZERO_FP) &&
+                x_times_y_plus_z.neq(ZERO_FP)
+        );
+        assertEqWithinTolerance(
+            add(x_times_y, x_times_z),
+            x_times_y_plus_z,
+            ONE_TENTH_FP,
+            "0.1%"
+        );
     }
-
 
     // Test for identity operation
     // x * 1 == x  (also check that x * 0 == 0)
@@ -516,7 +544,6 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         assertEq(x_0, ZERO_FP);
         assertEq(x_1, x);
     }
-
 
     // If x is positive and y is >= 1, the result should be larger than or equal to x
     // If x is positive and y is < 1, the result should be smaller than x
@@ -545,7 +572,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
             assertGte(x_y, x);
         }
     }
-    
+
     /* ================================================================
        Tests for overflow and edge cases.
        These will make sure that the function reverts on overflow and
@@ -557,7 +584,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     function mul_test_range(SD59x18 x, SD59x18 y) public {
         require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
 
-        try this.helpersMul(x, y) returns(SD59x18 result) {
+        try this.helpersMul(x, y) returns (SD59x18 result) {
             assertLte(result, MAX_SD59x18);
             assertGte(result, MIN_SD59x18);
         } catch {
@@ -579,7 +606,9 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     // Multiplying the minimum value times one shouldn't revert, as it is valid
     // Moreover, the result must be MIN_SD59x18
     function mul_test_minimum_value() public {
-        try this.helpersMul(MIN_SD59x18.add(ONE_FP), ONE_FP) returns (SD59x18 result) {
+        try this.helpersMul(MIN_SD59x18.add(ONE_FP), ONE_FP) returns (
+            SD59x18 result
+        ) {
             // Expected behaviour, does not revert
             assertEq(result, MIN_SD59x18.add(ONE_FP));
         } catch {
@@ -669,7 +698,6 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
        These will make sure that the function reverts on overflow and
        behaves correctly on edge cases
        ================================================================ */
-
 
     // Test for division by zero
     function div_test_div_by_zero(SD59x18 x) public {
@@ -793,7 +821,6 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
        These should make sure that the implemented function complies
        with math rules and expected behaviour.
        ================================================================ */
-
 
     // Test that the absolute value is always positive
     function abs_test_positive(SD59x18 x) public {
@@ -921,7 +948,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 double_inv_x = inv(inv(x));
 
         // The maximum loss of precision will be 2 * log10(x) digits rounded up
-        uint256 loss = 2 * significant_digits_lost_in_mult(x, inv(x))+ 2;
+        uint256 loss = 2 * significant_digits_lost_in_mult(x, inv(x)) + 2;
 
         assertEqWithinDecimalPrecision(x, double_inv_x, loss);
     }
@@ -938,10 +965,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
     // Test the anticommutativity of the division
     // x / y == 1 / (y / x)
-    function inv_test_division_noncommutativity(
-        SD59x18 x,
-        SD59x18 y
-    ) public {
+    function inv_test_division_noncommutativity(SD59x18 x, SD59x18 y) public {
         require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
 
         SD59x18 x_y = div(x, y);
@@ -1177,7 +1201,6 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         assertEq(one_pow_a, ONE_FP);
     }
 
-
     // Test for product of powers of the same base
     // x ** a * x ** b == x ** (a + b)
     function pow_test_product_same_base(
@@ -1216,11 +1239,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function pow_test_product_power(
-        SD59x18 x,
-        SD59x18 y,
-        SD59x18 a
-    ) public {
+    function pow_test_product_power(SD59x18 x, SD59x18 y, SD59x18 a) public {
         require(x.gte(ZERO_FP) && x.lte(MAX_PERMITTED_POW));
         require(y.gte(ZERO_FP) && y.lte(MAX_PERMITTED_POW));
 
@@ -1301,7 +1320,11 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
     // Power is strictly increasing
     // x > y && a >= 0 --> pow(x, a) >= pow(y, a)
-    function pow_test_strictly_increasing(SD59x18 x, SD59x18 y, SD59x18 a) public {
+    function pow_test_strictly_increasing(
+        SD59x18 x,
+        SD59x18 y,
+        SD59x18 a
+    ) public {
         require(x.gt(y) && x.lte(MAX_PERMITTED_POW));
         require(a.gte(ZERO_FP));
 
@@ -1359,7 +1382,11 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 sqrt_x_squared = mul(sqrt_x, sqrt_x);
 
         // Precision loss is at most half the bits of the operand
-        assertEqWithinBitPrecision(sqrt_x_squared, x, (intoUint256(log2(x)) >> 1) + 2);
+        assertEqWithinBitPrecision(
+            sqrt_x_squared,
+            x,
+            (intoUint256(log2(x)) >> 1) + 2
+        );
     }
 
     // Test for the inverse operation
@@ -1371,7 +1398,11 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 sqrt_x_squared = pow(sqrt_x, convert(2));
 
         // Precision loss is at most half the bits of the operand
-        assertEqWithinBitPrecision(sqrt_x_squared, x, (intoUint256(log2(x)) >> 1) + 2);
+        assertEqWithinBitPrecision(
+            sqrt_x_squared,
+            x,
+            (intoUint256(log2(x)) >> 1) + 2
+        );
     }
 
     // Test for distributive property respect to the multiplication
@@ -1385,7 +1416,9 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 sqrt_xy = sqrt(mul(x, y));
 
         // Ensure we have enough significant digits for the result to be meaningful
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(
+            significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS
+        );
         require(
             significant_digits_after_mult(sqrt_x, sqrt_y) >
                 REQUIRED_SIGNIFICANT_DIGITS
@@ -1425,7 +1458,6 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
        These will make sure that the function reverts on overflow and
        behaves correctly on edge cases
        ================================================================ */
-
 
     // Test for zero case
     function sqrt_test_zero() public {
@@ -1489,7 +1521,9 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 log2_xy = log2(xy);
 
         // Ensure we have enough significant digits for the result to be meaningful
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(
+            significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS
+        );
 
         // The maximum loss of precision is given by the formula:
         // | log10(x) + log10(y) |
@@ -1514,10 +1548,10 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     // y > 0 && x > y --> log2(x) > log2(y)
     function log2_test_strictly_increasing(SD59x18 x, SD59x18 y) public {
         require(y.gt(ZERO_FP) && x.gt(y));
-        
+
         SD59x18 log2_x = log2(x);
         SD59x18 log2_y = log2(y);
-        
+
         assertGte(log2_x, log2_y);
     }
 
@@ -1587,7 +1621,9 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 xy = mul(x, y);
         SD59x18 ln_xy = ln(xy);
 
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(
+            significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS
+        );
 
         // The maximum loss of precision is given by the formula:
         // | log2(x) + log2(y) |
@@ -1605,7 +1641,10 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
         SD59x18 y_ln_x = mul(ln(x), y);
 
-        require(significant_digits_after_mult(ln(x), y) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(
+            significant_digits_after_mult(ln(x), y) >
+                REQUIRED_SIGNIFICANT_DIGITS
+        );
 
         assertEqWithinTolerance(ln_x_y, y_ln_x, ONE_FP, "1%");
     }
@@ -1614,7 +1653,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     // y > 0 && x > y --> log2(x) > log2(y)
     function ln_test_strictly_increasing(SD59x18 x, SD59x18 y) public {
         require(y.gt(ZERO_FP) && x.gt(y));
-        
+
         SD59x18 log2_x = ln(x);
         SD59x18 log2_y = ln(y);
 
@@ -1730,7 +1769,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         }
     }
 
-        // Test for maximum value. This should overflow as it won't fit
+    // Test for maximum value. This should overflow as it won't fit
     // in the data type
     function exp2_test_maximum_permitted() public {
         try this.helpersExp2(MAX_PERMITTED_EXP2) {
@@ -1938,11 +1977,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function powu_test_product_power(
-        SD59x18 x,
-        SD59x18 y,
-        uint256 a
-    ) public {
+    function powu_test_product_power(SD59x18 x, SD59x18 y, uint256 a) public {
         require(x.gt(MIN_SD59x18) && y.gt(MIN_SD59x18));
         require(x.lte(MAX_SD59x18) && y.lte(MAX_SD59x18));
 
@@ -2011,7 +2046,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
         SD59x18 x_a = powu(x, a);
         SD59x18 y_a = powu(y, a);
-        
+
         assertGte(x_a, y_a);
     }
 
@@ -2066,7 +2101,9 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 log10_xy = log10(xy);
 
         // Ensure we have enough significant digits for the result to be meaningful
-        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(
+            significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS
+        );
 
         assertEqWithinTolerance(log10_x_log10_y, log10_xy, ONE_FP, "1%");
     }
@@ -2078,7 +2115,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         SD59x18 x_y = pow(x, y);
         SD59x18 log10_x_y = log10(x_y);
         SD59x18 y_log10_x = mul(log10(x), y);
- 
+
         assertEqWithinTolerance(log10_x_y, y_log10_x, ONE_FP, "1%");
     }
 
@@ -2086,7 +2123,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
     // x > y && y > 0 --> log10(x) > log10(y)
     function log10_is_increasing(SD59x18 x, SD59x18 y) public {
         require(y.gt(ZERO_FP) && x.gt(y));
-        
+
         SD59x18 log2_x = log10(x);
         SD59x18 log2_y = log10(y);
 
@@ -2155,7 +2192,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
         require(x_sign = y_sign);
 
         SD59x18 x_mul_y = x.mul(y);
-        SD59x18 gm_squared = pow(gm(x,y), TWO_FP);
+        SD59x18 gm_squared = pow(gm(x, y), TWO_FP);
 
         assertEqWithinTolerance(x_mul_y, gm_squared, ONE_TENTH_FP, "0.1%");
     }
@@ -2212,5 +2249,4 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
             // Expected revert, gm of a negative product is not defined
         }
     }
-
 }

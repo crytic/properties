@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import { UD60x18 } from "@prb-math-v3/UD60x18.sol";
+import {UD60x18} from "@prb-math-v3/UD60x18.sol";
 
 import {convert} from "@prb-math-v3/ud60x18/Conversions.sol";
 import {add, sub, eq, gt, gte, lt, lte, rshift} from "@prb-math-v3/ud60x18/Helpers.sol";
@@ -30,11 +30,15 @@ abstract contract AssertionHelperUD {
         }
     }
 
-    function assertEqWithinBitPrecision(UD60x18 a, UD60x18 b, uint256 precision_bits) internal {
-        UD60x18 max = gt(a , b) ? a : b;
-        UD60x18 min = gt(a , b) ? b : a;
+    function assertEqWithinBitPrecision(
+        UD60x18 a,
+        UD60x18 b,
+        uint256 precision_bits
+    ) internal {
+        UD60x18 max = gt(a, b) ? a : b;
+        UD60x18 min = gt(a, b) ? b : a;
         UD60x18 r = rshift(sub(max, min), precision_bits);
-        
+
         if (!eq(r, convert(0))) {
             string memory str_a = toString(UD60x18.unwrap(a));
             string memory str_b = toString(UD60x18.unwrap(b));
@@ -54,7 +58,12 @@ abstract contract AssertionHelperUD {
         }
     }
 
-    function assertEqWithinTolerance(UD60x18 a, UD60x18 b, UD60x18 error_percent, string memory str_percent) internal {
+    function assertEqWithinTolerance(
+        UD60x18 a,
+        UD60x18 b,
+        UD60x18 error_percent,
+        string memory str_percent
+    ) internal {
         UD60x18 tol_value = mul(a, div(error_percent, convert(100)));
 
         require(tol_value.neq(convert(0)));
@@ -78,20 +87,28 @@ abstract contract AssertionHelperUD {
         }
     }
 
-    // Returns true if the n most significant bits of a and b are almost equal 
+    // Returns true if the n most significant bits of a and b are almost equal
     // Uses functions from the library under test!
-    function assertEqWithinDecimalPrecision(UD60x18 a, UD60x18 b, uint256 digits) internal {
-       // Divide both number by digits to truncate the unimportant digits
-       uint256 a_uint = UD60x18.unwrap(a);
-       uint256 b_uint = UD60x18.unwrap(b);
+    function assertEqWithinDecimalPrecision(
+        UD60x18 a,
+        UD60x18 b,
+        uint256 digits
+    ) internal {
+        // Divide both number by digits to truncate the unimportant digits
+        uint256 a_uint = UD60x18.unwrap(a);
+        uint256 b_uint = UD60x18.unwrap(b);
 
-       uint256 a_significant = a_uint / 10 ** digits;
-       uint256 b_significant = b_uint / 10 ** digits;
+        uint256 a_significant = a_uint / 10 ** digits;
+        uint256 b_significant = b_uint / 10 ** digits;
 
-       uint256 larger = a_significant > b_significant ? a_significant : b_significant;
-       uint256 smaller = a_significant > b_significant ? b_significant : a_significant;
-       
-       if (!((larger - smaller) <= 1)) {
+        uint256 larger = a_significant > b_significant
+            ? a_significant
+            : b_significant;
+        uint256 smaller = a_significant > b_significant
+            ? b_significant
+            : a_significant;
+
+        if (!((larger - smaller) <= 1)) {
             string memory str_a = toString(a_uint);
             string memory str_b = toString(b_uint);
             string memory str_digits = toString(digits);
@@ -115,7 +132,7 @@ abstract contract AssertionHelperUD {
             );
             emit AssertEqFailure(string(assertMsg));
             assert(false);
-       }
+        }
     }
 
     function assertGt(UD60x18 a, UD60x18 b, string memory reason) internal {
@@ -135,6 +152,7 @@ abstract contract AssertionHelperUD {
             assert(false);
         }
     }
+
     function assertGt(UD60x18 a, UD60x18 b) internal {
         if (!a.gt(b)) {
             string memory str_a = toString(UD60x18.unwrap(a));

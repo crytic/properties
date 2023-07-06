@@ -1,6 +1,6 @@
 pragma solidity ^0.8.19;
 
-import { UD60x18 } from "@prb-math-v3/UD60x18.sol";
+import {UD60x18} from "@prb-math-v3/UD60x18.sol";
 import {add, sub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb-math-v3/ud60x18/Helpers.sol";
 import {convert} from "@prb-math-v3/ud60x18/Conversions.sol";
 import {msb} from "@prb-math-v3/Common.sol";
@@ -9,7 +9,6 @@ import {mul, div, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu, 
 import "./utils/AssertionHelperUD.sol";
 
 contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
-
     /* ================================================================
        59x18 fixed-point constants used for testing specific values.
        This assumes that PRBMath library's convert(x) works as expected.
@@ -49,11 +48,13 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     UD60x18 constant LOG2_E = UD60x18.wrap(uLOG2_E);
 
     /// @dev The maximum value an UD60x18 number can have.
-    uint256 constant uMAX_UD60x18 = 115792089237316195423570985008687907853269984665640564039457_584007913129639935;
+    uint256 constant uMAX_UD60x18 =
+        115792089237316195423570985008687907853269984665640564039457_584007913129639935;
     UD60x18 constant MAX_UD60x18 = UD60x18.wrap(uMAX_UD60x18);
 
     /// @dev The maximum whole value an UD60x18 number can have.
-    uint256 constant uMAX_WHOLE_UD60x18 = 115792089237316195423570985008687907853269984665640564039457_000000000000000000;
+    uint256 constant uMAX_WHOLE_UD60x18 =
+        115792089237316195423570985008687907853269984665640564039457_000000000000000000;
     UD60x18 constant MAX_WHOLE_UD60x18 = UD60x18.wrap(uMAX_WHOLE_UD60x18);
 
     /// @dev PI as an UD60x18 number.
@@ -67,9 +68,14 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     UD60x18 constant ZERO = UD60x18.wrap(0);
 
     UD60x18 internal constant MAX_PERMITTED_EXP2 = UD60x18.wrap(192e18 - 1);
-    UD60x18 internal constant MAX_PERMITTED_EXP = UD60x18.wrap(133_084258667509499440);
-    UD60x18 internal constant MAX_PERMITTED_POW = UD60x18.wrap(2 ** 192 * 10 ** 18 - 1);
-    UD60x18 internal constant MAX_PERMITTED_SQRT = UD60x18.wrap(115792089237316195423570985008687907853269_984665640564039457);
+    UD60x18 internal constant MAX_PERMITTED_EXP =
+        UD60x18.wrap(133_084258667509499440);
+    UD60x18 internal constant MAX_PERMITTED_POW =
+        UD60x18.wrap(2 ** 192 * 10 ** 18 - 1);
+    UD60x18 internal constant MAX_PERMITTED_SQRT =
+        UD60x18.wrap(
+            115792089237316195423570985008687907853269_984665640564039457
+        );
 
     /* ================================================================
        Events used for debugging or showing information.
@@ -87,21 +93,21 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
     // Wrapper for external try/catch calls
     function helpersAdd(UD60x18 x, UD60x18 y) public pure returns (UD60x18) {
-       return add(x,y);
+        return add(x, y);
     }
 
     // Wrapper for external try/catch calls
     function helpersSub(UD60x18 x, UD60x18 y) public pure returns (UD60x18) {
-       return sub(x,y);
+        return sub(x, y);
     }
 
     // Wrapper for external try/catch calls
     function helpersMul(UD60x18 x, UD60x18 y) public pure returns (UD60x18) {
-       return mul(x,y);
+        return mul(x, y);
     }
 
     function helpersDiv(UD60x18 x, UD60x18 y) public pure returns (UD60x18) {
-        return div(x,y);
+        return div(x, y);
     }
 
     function helpersLn(UD60x18 x) public pure returns (UD60x18) {
@@ -277,7 +283,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
         UD60x18 x_minus_y_plus_y = x_minus_y.add(y);
         UD60x18 x_plus_y_minus_y = x_plus_y.sub(y);
-        
+
         assertEq(x_minus_y_plus_y, x_plus_y_minus_y);
         assertEq(x_minus_y_plus_y, x);
     }
@@ -378,7 +384,12 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 x_times_y = x.mul(y);
         UD60x18 x_times_z = x.mul(z);
 
-        assertEqWithinTolerance(add(x_times_y, x_times_z), x_times_y_plus_z, ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(
+            add(x_times_y, x_times_z),
+            x_times_y_plus_z,
+            ONE_TENTH_FP,
+            "0.1%"
+        );
     }
 
     // Test for identity operation
@@ -402,7 +413,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
             assertLte(x_y, x);
         }
     }
-    
+
     /* ================================================================
        Tests for overflow and edge cases.
        These will make sure that the function reverts on overflow and
@@ -412,7 +423,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     // The result of the multiplication must be between the maximum
     // and minimum allowed values for UD60x18
     function mul_test_range(UD60x18 x, UD60x18 y) public {
-        try this.helpersMul(x, y) returns(UD60x18 result) {
+        try this.helpersMul(x, y) returns (UD60x18 result) {
             assertLte(result, MAX_UD60x18);
         } catch {
             // If it reverts, just ignore
@@ -446,7 +457,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     // x / 1 == x (equivalent to x / x == 1)
     function div_test_division_identity_x_div_1(UD60x18 x) public {
         UD60x18 div_1 = div(x, ONE_FP);
-        
+
         assertEq(x, div_1);
     }
 
@@ -576,10 +587,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
     // Test the anticommutativity of the division
     // x / y == 1 / (y / x)
-    function inv_test_division_noncommutativity(
-        UD60x18 x,
-        UD60x18 y
-    ) public {
+    function inv_test_division_noncommutativity(UD60x18 x, UD60x18 y) public {
         require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
 
         UD60x18 x_y = div(x, y);
@@ -819,11 +827,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function pow_test_product_power(
-        UD60x18 x,
-        UD60x18 y,
-        UD60x18 a
-    ) public {
+    function pow_test_product_power(UD60x18 x, UD60x18 y, UD60x18 a) public {
         require(x.lte(MAX_PERMITTED_POW));
         require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
         require(a.gt(UD60x18.wrap(1e9))); // to avoid massive loss of precision
@@ -856,7 +860,11 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
     // Power is strictly increasing
     // x > y && a >= 0 --> pow(x) >= pow(y)
-    function pow_test_strictly_increasing(UD60x18 x, UD60x18 y, UD60x18 a) public {
+    function pow_test_strictly_increasing(
+        UD60x18 x,
+        UD60x18 y,
+        UD60x18 a
+    ) public {
         require(x.gt(y) && x.lte(MAX_PERMITTED_POW));
         require(a.gte(ZERO_FP));
 
@@ -926,7 +934,11 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 sqrt_x_squared = mul(sqrt_x, sqrt_x);
 
         // Precision loss is at most half the bits of the operand
-        assertEqWithinBitPrecision(sqrt_x_squared, x, (intoUint256(log2(x)) >> 1) + 2);
+        assertEqWithinBitPrecision(
+            sqrt_x_squared,
+            x,
+            (intoUint256(log2(x)) >> 1) + 2
+        );
     }
 
     // Test for the inverse operation
@@ -937,7 +949,11 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 sqrt_x_squared = pow(sqrt_x, convert(2));
 
         // Precision loss is at most half the bits of the operand
-        assertEqWithinBitPrecision(sqrt_x_squared, x, (intoUint256(log2(x)) >> 1) + 2);
+        assertEqWithinBitPrecision(
+            sqrt_x_squared,
+            x,
+            (intoUint256(log2(x)) >> 1) + 2
+        );
     }
 
     // Test for distributive property respect to the multiplication
@@ -1013,7 +1029,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     // log2(x * y) = log2(x) + log2(y)
     function log2_test_distributive_mul(UD60x18 x, UD60x18 y) public {
         require(x.gte(UNIT) && y.gte(UNIT));
-        
+
         UD60x18 log2_x = log2(x);
         UD60x18 log2_y = log2(y);
         UD60x18 log2_x_log2_y = add(log2_x, log2_y);
@@ -1040,7 +1056,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     // y > 0 && x > y --> log2(x) > log2(y)
     function log2_test_strictly_increasing(UD60x18 x, UD60x18 y) public {
         require(y.gt(ZERO_FP) && x.gt(y));
-        
+
         UD60x18 log2_x = log2(x);
         UD60x18 log2_y = log2(y);
 
@@ -1131,7 +1147,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     // y > 0 && x > y --> log2(x) > log2(y)
     function ln_test_strictly_increasing(UD60x18 x, UD60x18 y) public {
         require(y.gt(ZERO_FP) && x.gt(y));
-        
+
         UD60x18 ln_x = ln(x);
         UD60x18 ln_y = ln(y);
 
@@ -1387,11 +1403,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
     // Test for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function powu_test_product_power(
-        UD60x18 x,
-        UD60x18 y,
-        uint256 a
-    ) public {
+    function powu_test_product_power(UD60x18 x, UD60x18 y, uint256 a) public {
         require(x.neq(ZERO_FP) && y.neq(ZERO_FP));
 
         require(a > 1e9); // to avoid massive loss of precision
@@ -1434,7 +1446,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
         UD60x18 x_a = powu(x, a);
         UD60x18 y_a = powu(y, a);
-        
+
         assertGte(x_a, y_a);
     }
 
@@ -1506,7 +1518,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     // x > y && y > 0 --> log10(x) > log10(y)
     function log10_test_strictly_increasing(UD60x18 x, UD60x18 y) public {
         require(y.gt(ZERO_FP) && x.gt(y));
-        
+
         UD60x18 log10_x = log10(x);
         UD60x18 log10_y = log10(y);
 
@@ -1555,7 +1567,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         }
     }
 
-        /* ================================================================
+    /* ================================================================
 
                         TESTS FOR FUNCTION gm()
 
@@ -1571,7 +1583,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
     // raised to the power of N (numbers in the set)
     function gm_test_product(UD60x18 x, UD60x18 y) public {
         UD60x18 x_mul_y = x.mul(y);
-        UD60x18 gm_squared = pow(gm(x,y), TWO_FP);
+        UD60x18 gm_squared = pow(gm(x, y), TWO_FP);
 
         assertEqWithinTolerance(x_mul_y, gm_squared, ONE_TENTH_FP, "0.1%");
     }
