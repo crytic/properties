@@ -7,29 +7,31 @@ abstract contract CryticERC721ExternalMintableProperties is CryticERC721External
 
     ////////////////////////////////////////
     // Properties
-    // mint increases the total supply
-    function test_ERC721_external_mintIncreasesSupply() public virtual {
+    // mint increases the total supply.
+    function test_ERC721_external_mintIncreasesSupply(uint256 amount) public virtual {
         require(token.isMintableOrBurnable());
+        
         uint256 selfBalance = token.balanceOf(address(this));
         uint256 oldTotalSupply = token.totalSupply();
 
-        try token._customMint(address(this)) {
-            assertEq(oldTotalSupply + 1, token.totalSupply(), "Total supply was not correctly increased");
-            assertEq(selfBalance + 1, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
+        try token._customMint(address(this), amount) {
+            assertEq(oldTotalSupply + amount, token.totalSupply(), "Total supply was not correctly increased");
+            assertEq(selfBalance + amount, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
         } catch {
             assertWithMsg(false, "Minting unexpectedly reverted");
         }
     }
 
-    // mint creates a fresh token
-    function test_ERC721_external_mintCreatesFreshToken() public virtual {
+    // mint creates a fresh token.
+    function test_ERC721_external_mintCreatesFreshToken(uint256 amount) public virtual {
         require(token.isMintableOrBurnable());
+
         uint256 selfBalance = token.balanceOf(address(this));
-        try token._customMint(address(this)) {
+        try token._customMint(address(this), amount) {
             uint256 tokenId = token.tokenOfOwnerByIndex(address(this), selfBalance);
             assertWithMsg(token.ownerOf(tokenId) == address(this), "Token ID was not minted to receiver");
             assertWithMsg(!token.usedId(tokenId), "Token ID minted is not new");
-            assertEq(selfBalance + 1, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
+            assertEq(selfBalance + amount, token.balanceOf(address(this)), "Receiver supply was not correctly increased");
         } catch {
             assertWithMsg(false, "Minting unexpectedly reverted");
         }

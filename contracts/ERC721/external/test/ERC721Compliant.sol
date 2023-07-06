@@ -18,8 +18,10 @@ contract ERC721Compliant is ERC721, ERC721Enumerable, IERC721Internal {
         _burn(tokenId);
     }
 
-    function _customMint(address to) public virtual {
-        _mint(to, counter++);
+    function _customMint(address to, uint256 amount) public virtual {
+        for(uint256 i; i < amount; i++) {
+            _mint(to, counter++);
+        }
     }
     
     // The following functions are overrides required by Solidity.

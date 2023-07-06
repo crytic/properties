@@ -1,8 +1,8 @@
 pragma solidity ^0.8.0;
 import "./ExampleToken.sol";
-import {IERC721Internal} from "@crytic/properties/ERC721/util/IERC721Internal.sol";
-import {CryticERC721ExternalBasicProperties} from "@crytic/properties/ERC721/external/properties/ERC721xternalBasicProperties.sol";
-import {MockReceiver} from "properties/ERC721/external/util/MockReceiver.sol";
+import {IERC721Internal} from "@crytic/properties/contracts/ERC721/util/IERC721Internal.sol";
+import {CryticERC721ExternalBasicProperties} from "@crytic/properties/contracts/ERC721/external/properties/ERC721ExternalBasicProperties.sol";
+import {MockReceiver} from "@crytic/properties/contracts/ERC721/external/util/MockReceiver.sol";
 
 contract CryticERC721ExternalHarness is CryticERC721ExternalBasicProperties {
         
