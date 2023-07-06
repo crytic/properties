@@ -83,17 +83,59 @@ contract CryticUniswapV2PropertyTests is Setup {
         return (amount, success);
     }
 
-    function _swap(uint256 amount0, uint256 amount1) internal {
+    function _swap(bool zeroForOne, uint256 amount0, uint256 amount1) internal returns(bool) {
         if (!completed) {
             _init(amount0, amount1);
         }
 
-        require(amount0 > 0 && amount1 > 0);
+        uint balance0Before = testToken1.balanceOf(address(user));
+        uint balance1Before = testToken2.balanceOf(address(user));
+
+        require(zeroForOne ? amount0 > 0 : amount1 > 0);
 
         (uint reserve0Before, uint reserve1Before,) = pair.getReserves();
 
         uint amount0In = _between(amount0, 1, reserve0Before - 1);
         uint amount1In = _between(amount1, 1, reserve1Before - 1);
+
+        if (amount0In > balance0Before) {
+            testToken1.mint(address(user), amount0In - balance0Before);
+            balance0Before = testToken1.balanceOf(address(user));
+        }
+        if (amount1In > balance1Before) {
+            testToken2.mint(address(user), amount1In - balance1Before);
+            balance1Before = testToken2.balanceOf(address(user));
+        }
+        require(zeroForOne ? amount0In <= balance0Before : amount1In <= balance1Before);
+        emit BalancesBefore(balance0Before, balance1Before);
+        
+        uint amount0Out;
+        uint amount1Out;
+
+        /**
+         * Precondition of UniswapV2Pair.swap is that we transfer the token we are swapping in first.
+         * So, we pick the larger of the two input amounts to transfer, and also use
+         * the Uniswap library to determine how much of the other we will receive in return.
+         */
+        if (zeroForOne) {
+            amount1In = 0;
+            amount1Out = UniswapV2Library.getAmountOut(amount0In, reserve0Before, reserve1Before);
+            require(amount1Out > 0);
+            
+            (bool success1,) = user.proxy(address(testToken1), abi.encodeWithSelector(testToken1.transfer.selector, address(pair), amount0In));
+            require(success1);
+        } else {
+            amount0In = 0;
+            amount0Out = UniswapV2Library.getAmountOut(amount1In, reserve1Before, reserve0Before);
+            require(amount0Out > 0);
+
+            (bool success1,) = user.proxy(address(testToken2), abi.encodeWithSelector(testToken2.transfer.selector, address(pair), amount1In));
+            require(success1);
+        }
+
+        // Action:
+        (bool success2,) = user.proxy(address(pair), abi.encodeWithSelector(pair.swap.selector, amount0Out, amount1Out, address(user), ""));
+        return success2;
     }
 
     // Providing liquidity
@@ -302,7 +344,22 @@ contract CryticUniswapV2PropertyTests is Setup {
     }
 
     // Swapping
-    function test_UniV2_swap_DoesNotDecreaseK() public {}
+    function test_UniV2_swap_DoesNotDecreaseK(bool zeroForOne, uint256 amount0, uint256 amount1) public {
+        pair.skim(address(this));
+
+        require(zeroForOne ? amount0 > 0 : amount1 > 0);
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        require(reserve0Before > 0 && reserve1Before > 0);
+        uint kBefore = reserve0Before * reserve1Before;
+
+        bool success = _swap(zeroForOne, amount0, amount1);
+
+        if (success) {
+            (uint reserve0After, uint reserve1After, ) = pair.getReserves();
+            uint kAfter = reserve0After * reserve1After;
+            assert(kAfter >= kBefore);
+        }
+    }
 
     function test_UniV2_swap_PathIndependence() public {}
 
