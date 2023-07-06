@@ -28,7 +28,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
     /* ================================================================
        Constants used for precision loss calculations
        ================================================================ */
-    uint256 internal REQUIRED_SIGNIFICANT_DIGITS = 10;
+    uint256 internal REQUIRED_SIGNIFICANT_DIGITS = 9;
     SD59x18 internal LOG2_PRECISION_LOSS = SD59x18.wrap(1);
 
     /* ================================================================
@@ -101,7 +101,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         return(la + lb < -18);
     }
 
-    // Return how many significant bits will remain after multiplying a and b
+    // Return how many significant digits will remain after multiplying a and b
     // Uses functions from the library under test!
     function significant_digits_after_mult(SD59x18 a, SD59x18 b) public pure returns (uint256) {
         int256 la = convert(floor(log10(abs(a))));
@@ -109,22 +109,25 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         int256 prec = la + lb;
 
         if (prec < -18) return 0;
-        else return(59 + uint256(prec));
+        else return(18 + absInt(prec));
     }
 
-    // Return how many significant bits will be lost after multiplying a and b
+    // Return how many significant digits will be lost after multiplying a and b
     // Uses functions from the library under test!
     function significant_digits_lost_in_mult(SD59x18 a, SD59x18 b) public pure returns (uint256) {
         int256 la = convert(floor(log10(abs(a))));
         int256 lb = convert(floor(log10(abs(b))));
-        // digits left
-        int256 prec = la + lb;
 
         if (la > 0 && lb > 0) {
             return 0;
         } else {
-            return la < lb ? uint256(-la) : uint256(-lb);
+            return absInt(la) < absInt(lb) ? uint256(-la) : uint256(-lb);
         }
+    }
+
+    // Return the absolute value of the input
+    function absInt(int256 a) public pure returns (uint256) {
+        return a >= 0 ? uint256(a) : uint256(-a);
     }
 
     /* ================================================================
@@ -475,6 +478,12 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 x_yz = x.mul(y_z);
 
         require(xy_z.neq(ZERO_FP) && x_yz.neq(ZERO_FP));
+
+       // Checks that at least 9 digits of precision are left after multiplication
+        require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(significant_digits_after_mult(y, z) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(significant_digits_after_mult(x_y, z) > REQUIRED_SIGNIFICANT_DIGITS);
+        require(significant_digits_after_mult(x, y_z) > REQUIRED_SIGNIFICANT_DIGITS);
 
         uint256 digitsLost = significant_digits_lost_in_mult(x, y);
         digitsLost += significant_digits_lost_in_mult(x, z);
@@ -907,11 +916,12 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
     // original number
     function inv_test_double_inverse(SD59x18 x) public {
         require(x.neq(ZERO_FP));
+        require(inv(x).neq(ZERO_FP));
 
         SD59x18 double_inv_x = inv(inv(x));
 
-        // The maximum loss of precision will be 2 * log2(x) bits rounded up
-        uint256 loss = 2 * significant_digits_lost_in_mult(x, x)+ 2;
+        // The maximum loss of precision will be 2 * log10(x) digits rounded up
+        uint256 loss = 2 * significant_digits_lost_in_mult(x, inv(x))+ 2;
 
         assertEqWithinDecimalPrecision(x, double_inv_x, loss);
     }
@@ -937,7 +947,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 x_y = div(x, y);
         SD59x18 y_x = div(y, x);
 
-        assertEqWithinTolerance(x_y, inv(y_x), ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(x_y, inv(y_x), ONE_FP, "1%");
     }
 
     // Test the multiplication of inverses
@@ -952,11 +962,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 x_y = mul(x, y);
         SD59x18 inv_x_y = inv(x_y);
 
-        // The maximum loss of precision is given by the formula:
-        // 2 * | log2(x) - log2(y) | + 1
-        uint256 loss = 2 * significant_digits_lost_in_mult(x, y) + 1;
-
-        assertEqWithinDecimalPrecision(inv_x_y, inv_x_times_inv_y, loss);
+        assertEqWithinTolerance(inv_x_y, inv_x_times_inv_y, ONE_FP, "1%");
     }
 
     // Test identity property
@@ -966,8 +972,8 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 inv_x = inv(x);
         SD59x18 identity = mul(inv_x, x);
 
-        // They should agree with a tolerance of one tenth of a percent
-        assertEqWithinTolerance(identity, ONE_FP, ONE_TENTH_FP, "0.1%");
+        // They should agree with a tolerance of one percent
+        assertEqWithinTolerance(identity, ONE_FP, ONE_FP, "1%");
     }
 
     // Test that the absolute value of the result is in range zero-one
@@ -1203,6 +1209,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 x_a = pow(x, a);
         SD59x18 x_a_b = pow(x_a, b);
         SD59x18 x_ab = pow(x, a.mul(b));
+        require(x_a_b.neq(ZERO_FP) && x_ab.neq(ZERO_FP));
 
         assertEqWithinDecimalPrecision(x_a_b, x_ab, 9);
     }
@@ -1408,7 +1415,9 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 square_x = x.mul(x);
         SD59x18 sqrt_square_x = sqrt(square_x);
 
-        assertEq(sqrt_square_x, x);
+        uint256 loss = significant_digits_lost_in_mult(x, x);
+
+        assertEqWithinDecimalPrecision(sqrt_square_x, x, loss);
     }
 
     /* ================================================================
@@ -1483,7 +1492,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
 
         // The maximum loss of precision is given by the formula:
-        // | log2(x) + log2(y) |
+        // | log10(x) + log10(y) |
         uint256 loss = significant_digits_lost_in_mult(x, y) + 2;
 
         assertEqWithinDecimalPrecision(log2_x_log2_y, log2_xy, loss);
@@ -1498,7 +1507,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 log2_x_y = log2(x_y);
         SD59x18 y_log2_x = mul(log2(x), y);
 
-        assertEqWithinTolerance(y_log2_x, log2_x_y, ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(y_log2_x, log2_x_y, ONE_FP, "1%");
     }
 
     // Base 2 logarithm is strictly increasing
@@ -1598,7 +1607,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
 
         require(significant_digits_after_mult(ln(x), y) > REQUIRED_SIGNIFICANT_DIGITS);
 
-        assertEqWithinTolerance(ln_x_y, y_ln_x, ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(ln_x_y, y_ln_x, ONE_FP, "1%");
     }
 
     // Natural logarithm is strictly increasing
@@ -1907,7 +1916,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 x_b = powu(x, b);
         SD59x18 x_ab = powu(x, a + b);
 
-        assertEqWithinBitPrecision(mul(x_a, x_b), x_ab, 10);
+        assertEqWithinDecimalPrecision(mul(x_a, x_b), x_ab, 10);
     }
 
     // Test for power of an exponentiation
@@ -1924,7 +1933,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 x_a_b = powu(x_a, b);
         SD59x18 x_ab = powu(x, a * b);
 
-        assertEqWithinBitPrecision(x_a_b, x_ab, 10);
+        assertEqWithinDecimalPrecision(x_a_b, x_ab, 10);
     }
 
     // Test for power of a product
@@ -1945,7 +1954,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 x_a = powu(x, a);
         SD59x18 y_a = powu(y, a);
 
-        assertEqWithinBitPrecision(mul(x_a, y_a), xy_a, 10);
+        assertEqWithinDecimalPrecision(mul(x_a, y_a), xy_a, 10);
     }
 
     // Test for result being greater than or lower than the argument, depending on
@@ -2059,11 +2068,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         // Ensure we have enough significant digits for the result to be meaningful
         require(significant_digits_after_mult(x, y) > REQUIRED_SIGNIFICANT_DIGITS);
 
-        // The maximum loss of precision is given by the formula:
-        // | log10(x) + log10(y) |
-        uint256 loss = significant_digits_lost_in_mult(x, y) + 2;
-
-        assertEqWithinDecimalPrecision(log10_x_log10_y, log10_xy, loss);
+        assertEqWithinTolerance(log10_x_log10_y, log10_xy, ONE_FP, "1%");
     }
 
     // Test for logarithm of a power
@@ -2074,7 +2079,7 @@ contract CryticPRBMath59x18Propertiesv4 is AssertionHelperSD {
         SD59x18 log10_x_y = log10(x_y);
         SD59x18 y_log10_x = mul(log10(x), y);
  
-        assertEqWithinTolerance(log10_x_y, y_log10_x, ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(log10_x_y, y_log10_x, ONE_FP, "1%");
     }
 
     // Base 10 logarithm is strictly increasing

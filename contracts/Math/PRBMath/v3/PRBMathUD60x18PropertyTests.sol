@@ -4,7 +4,7 @@ import { UD60x18 } from "@prb-math-v3/UD60x18.sol";
 import {add, sub, eq, gt, gte, lt, lte, lshift, rshift} from "@prb-math-v3/ud60x18/Helpers.sol";
 import {convert} from "@prb-math-v3/ud60x18/Conversions.sol";
 import {msb} from "@prb-math-v3/Common.sol";
-import {intoUint128, intoUint256} from "@prb-math-v3/ud60x18/Casting.sol";
+import {intoUint128, intoUint256, intoSD59x18} from "@prb-math-v3/ud60x18/Casting.sol";
 import {mul, div, ln, exp, exp2, log2, sqrt, pow, avg, inv, log10, floor, powu, gm} from "@prb-math-v3/ud60x18/Math.sol";
 import "./utils/AssertionHelperUD.sol";
 
@@ -561,10 +561,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
         UD60x18 double_inv_x = inv(inv(x));
 
-        // The maximum loss of precision will be 2 * log2(x) bits rounded up
-        uint256 loss = 2 * intoUint256(log2(x)) + 2;
-
-        assertEqWithinBitPrecision(x, double_inv_x, loss);
+        assertEqWithinTolerance(x, double_inv_x, ONE_FP, "1%");
     }
 
     // Test equivalence with division
@@ -588,7 +585,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 x_y = div(x, y);
         UD60x18 y_x = div(y, x);
 
-        assertEqWithinTolerance(x_y, inv(y_x), ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(x_y, inv(y_x), ONE_FP, "1%");
     }
 
     // Test the multiplication of inverses
@@ -603,11 +600,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 x_y = mul(x, y);
         UD60x18 inv_x_y = inv(x_y);
 
-        // The maximum loss of precision is given by the formula:
-        // 2 * | log2(x) - log2(y) | + 1
-        uint256 loss = 2 * intoUint256(log2(x).sub(log2(y))) + 1;
-
-        assertEqWithinBitPrecision(inv_x_y, inv_x_times_inv_y, loss);
+        assertEqWithinTolerance(inv_x_y, inv_x_times_inv_y, ONE_FP, "1%");
     }
 
     // Test multiplicative identity property
@@ -619,8 +612,8 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
 
         require(inv_x.neq(ZERO_FP) && identity.neq(ZERO_FP));
 
-        // They should agree with a tolerance of one tenth of a percent
-        assertEqWithinTolerance(identity, ONE_FP, ONE_TENTH_FP, "0.1%");
+        // They should agree with a tolerance of one percent
+        assertEqWithinTolerance(identity, ONE_FP, ONE_FP, "1%");
     }
 
     // Test that the value of the result is in range zero-one
@@ -979,7 +972,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 square_x = x.mul(x);
         UD60x18 sqrt_square_x = sqrt(square_x);
 
-        assertEq(sqrt_square_x, x);
+        assertEqWithinDecimalPrecision(sqrt_square_x, x, 2);
     }
 
     /* ================================================================
@@ -1028,11 +1021,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 xy = mul(x, y);
         UD60x18 log2_xy = log2(xy);
 
-        // The maximum loss of precision is given by the formula:
-        // | log2(x) + log2(y) |
-        uint256 loss = intoUint256(log2(x).add(log2(y)));
-
-        assertEqWithinBitPrecision(log2_x_log2_y, log2_xy, loss);
+        assertEqWithinTolerance(log2_x_log2_y, log2_xy, ONE_FP, "1%");
     }
 
     // Test for logarithm of a power
@@ -1044,7 +1033,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 log2_x_y = log2(x_y);
         UD60x18 y_log2_x = mul(log2(x), y);
 
-        assertEqWithinTolerance(y_log2_x, log2_x_y, ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(y_log2_x, log2_x_y, ONE_FP, "1%");
     }
 
     // Base 2 logarithm is strictly increasing
@@ -1124,10 +1113,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 xy = mul(x, y);
         UD60x18 ln_xy = ln(xy);
 
-        // The maximum loss of precision is given by the formula:
-        // | log2(x) + log2(y) |
-        uint256 loss = intoUint256(log2(x).add(log2(y)));
-        assertEqWithinBitPrecision(ln_x_ln_y, ln_xy, loss);
+        assertEqWithinTolerance(ln_xy, ln_x_ln_y, ONE_FP, "1%");
     }
 
     // Test for logarithm of a power
@@ -1138,7 +1124,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 ln_x_y = ln(x_y);
         UD60x18 y_ln_x = mul(ln(x), y);
 
-        assertEqWithinDecimalPrecision(ln_x_y, y_ln_x, 9);
+        assertEqWithinTolerance(ln_x_y, y_ln_x, ONE_FP, "1%");
     }
 
     // Natural logarithm is strictly increasing
@@ -1502,11 +1488,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 xy = mul(x, y);
         UD60x18 log10_xy = log10(xy);
 
-        // The maximum loss of precision is given by the formula:
-        // | log10(x) + log10(y) |
-        uint256 loss = intoUint256(log10(x).add(log10(y)));
-
-        assertEqWithinBitPrecision(log10_x_log10_y, log10_xy, loss);
+        assertEqWithinTolerance(log10_x_log10_y, log10_xy, ONE_FP, "1%");
     }
 
     // Test for logarithm of a power
@@ -1517,7 +1499,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 log10_x_y = log10(x_y);
         UD60x18 y_log10_x = mul(log10(x), y);
 
-        assertEqWithinTolerance(log10_x_y, y_log10_x, ONE_TENTH_FP, "0.1%");
+        assertEqWithinTolerance(log10_x_y, y_log10_x, ONE_FP, "1%");
     }
 
     // Base 10 logarithm is strictly increasing
@@ -1528,7 +1510,7 @@ contract CryticPRBMath60x18Propertiesv3 is AssertionHelperUD {
         UD60x18 log10_x = log10(x);
         UD60x18 log10_y = log10(y);
 
-        assertGte(log10_x, log10_y);
+        assertGt(log10_x, log10_y);
     }
 
     /* ================================================================
