@@ -1079,8 +1079,8 @@ contract CryticABDKMath64x64Properties {
     function inv_test_minimum() public view {
         int128 inv_minimum;
 
-        try this.inv(MAX_64x64) {
-            inv_minimum = this.inv(MAX_64x64);
+        try this.inv(MIN_64x64) {
+            inv_minimum = this.inv(MIN_64x64);
             assert(equal_within_precision(abs(inv_minimum), ZERO_FP, 10));
         } catch {
             // Unexpected, the function must not revert
