@@ -48,6 +48,28 @@ jobs:
           crytic-args: --ignore-compile
           contract: CryticERC20ExternalHarness
 
+      - name: Compile ERC721 Foundry example
+        working-directory: tests/ERC721/foundry
+        run: forge build --build-info
+
+      - name: Run Echidna against ERC721 Internal Foundry example
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC721/foundry
+          files: .
+          config: ./echidna-config.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC721InternalHarness
+
+      - name: Run Echidna against ERC721 External Foundry example
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC721/foundry
+          files: .
+          config: ./echidna-config-ext.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC721ExternalHarness
+
       - name: Compile ERC4646 Foundry example
         working-directory: tests/ERC4626/foundry
         run: forge build --build-info
@@ -98,6 +120,30 @@ jobs:
           config: ./tests/echidna-config-ext.yaml
           crytic-args: --ignore-compile
           contract: CryticERC20ExternalHarness
+
+      - name: Install dependencies and compile ERC721 example
+        working-directory: tests/ERC721/hardhat
+        run: |
+          npm ci
+          npx hardhat compile --force
+
+      - name: Run Echidna for Internal tests
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC721/hardhat
+          files: .
+          config: ./tests/echidna-config.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC721InternalHarness
+
+      - name: Run Echidna for External tests
+        uses: crytic/echidna-action@v2
+        with:
+          echidna-workdir: ./tests/ERC721/hardhat
+          files: .
+          config: ./tests/echidna-config-ext.yaml
+          crytic-args: --ignore-compile
+          contract: CryticERC721ExternalHarness
 
       - name: Install dependencies and compile ERC4626 example
         working-directory: tests/ERC4626/hardhat
