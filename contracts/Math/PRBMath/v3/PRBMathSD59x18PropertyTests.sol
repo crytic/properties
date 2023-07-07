@@ -508,6 +508,7 @@ contract CryticPRBMath59x18Propertiesv3 is AssertionHelperSD {
 
         uint256 digitsLost = significant_digits_lost_in_mult(x, y);
         digitsLost += significant_digits_lost_in_mult(x, z);
+        digitsLost += significant_digits_lost_in_mult(y, z);
 
         assertEqWithinDecimalPrecision(xy_z, x_yz, digitsLost);
     }
