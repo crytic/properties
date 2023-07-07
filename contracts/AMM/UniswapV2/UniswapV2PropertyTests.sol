@@ -86,8 +86,9 @@ contract CryticUniswapV2PropertyTests is Setup {
     function _swap(
         bool zeroForOne,
         uint256 amount0,
-        uint256 amount1
-    ) internal returns (bool) {
+        uint256 amount1,
+        bool exact
+    ) internal returns (bool, uint256) {
         if (!completed) {
             _init(amount0, amount1);
         }
@@ -96,9 +97,13 @@ contract CryticUniswapV2PropertyTests is Setup {
         uint balance1Before = testToken2.balanceOf(address(user));
 
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        uint amount0In = amount0;
+        uint amount1In = amount1;
 
-        uint amount0In = _between(amount0, 1, balance0Before);
-        uint amount1In = _between(amount1, 1, balance1Before);
+        if (!exact) {
+            amount0In = _between(amount0, 1, balance0Before);
+            amount1In = _between(amount1, 1, balance1Before);
+        }
 
         uint amount0Out;
         uint amount1Out;
@@ -157,7 +162,7 @@ contract CryticUniswapV2PropertyTests is Setup {
                 ""
             )
         );
-        return success2;
+        return (success2, zeroForOne ? amount1Out : amount0Out);
     }
 
     function _getTokenPrice(
@@ -402,7 +407,7 @@ contract CryticUniswapV2PropertyTests is Setup {
         require(reserve0Before > 0 && reserve1Before > 0);
         uint kBefore = reserve0Before * reserve1Before;
 
-        bool success = _swap(zeroForOne, amount0, amount1);
+        (bool success, ) = _swap(zeroForOne, amount0, amount1, false);
 
         if (success) {
             (uint reserve0After, uint reserve1After, ) = pair.getReserves();
@@ -411,13 +416,27 @@ contract CryticUniswapV2PropertyTests is Setup {
         }
     }
 
-    function test_UniV2_swap_PathIndependence(
+    function test_UniV2_swap_TwoWaySwapDoesNotResultInProfit(
         bool zeroForOne,
-        uint256 amount0,
-        uint256 amount1
+        uint256 amountIn
     ) public {
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
         require(reserve0Before > 0 && reserve1Before > 0);
+
+        uint256 balanceBefore0 = testToken1.balanceOf(address(user));
+        uint256 balanceBefore1 = testToken2.balanceOf(address(user));
+        uint realAmountIn = _between(amountIn, 1, zeroForOne ? balanceBefore0 : balanceBefore1);
+
+        (bool success1, uint256 amountOut) = _swap(zeroForOne, amountIn, amountIn, false);
+        (bool success2, ) = _swap(!zeroForOne, amountOut, amountOut, true);
+
+        if (success1 && success2) {
+            uint256 balanceAfter0 = testToken1.balanceOf(address(user));
+            uint256 balanceAfter1 = testToken2.balanceOf(address(user));
+
+            assert(balanceAfter0 <= balanceBefore0);
+            assert(balanceAfter1 <= balanceBefore1);
+        }
     }
 
     function test_UniV2_swap_IncreaseUserOutBalance(
@@ -432,7 +451,7 @@ contract CryticUniswapV2PropertyTests is Setup {
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
         require(reserve0Before > 0 && reserve1Before > 0);
 
-        bool success = _swap(zeroForOne, amount0, amount1);
+        (bool success, ) = _swap(zeroForOne, amount0, amount1, false);
 
         if (success) {
             uint256 outBalanceAfter = outToken.balanceOf(address(user));
@@ -466,7 +485,7 @@ contract CryticUniswapV2PropertyTests is Setup {
         uint256 amountOut1Before = _getTokenPrice(zeroForOne, actualAmountIn0);
         uint256 amountOut0Before = _getTokenPrice(!zeroForOne, actualAmountIn1);
 
-        bool success = _swap(zeroForOne, amountIn, amountIn);
+        (bool success, ) = _swap(zeroForOne, amountIn, amountIn, false);
 
         uint256 amountOut1After = _getTokenPrice(zeroForOne, actualAmountIn0);
         uint256 amountOut0After = _getTokenPrice(!zeroForOne, actualAmountIn1);

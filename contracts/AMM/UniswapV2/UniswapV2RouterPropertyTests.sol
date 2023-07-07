@@ -320,7 +320,7 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         }
     }
 
-    function test_UniV2_swapExactTokensForTokens_PathIndependence(
+    function test_UniV2_swapExactTokensForTokens_TwoWaySwapDoesNotResultInProfit(
         bool zeroForOne,
         uint256 amountIn,
         uint256 amountOutMin
