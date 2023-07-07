@@ -324,6 +324,7 @@ contract CryticUniswapV2PropertyTests is Setup {
     ) public {
         bool success;
         uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
 
         UniswapV2ERC20 inToken = zeroForOne ? testToken1 : testToken2;
         uint256 actualAmountIn = _between(
@@ -414,7 +415,10 @@ contract CryticUniswapV2PropertyTests is Setup {
         bool zeroForOne,
         uint256 amount0,
         uint256 amount1
-    ) public {}
+    ) public {
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        require(reserve0Before > 0 && reserve1Before > 0);
+    }
 
     function test_UniV2_swap_IncreaseUserOutBalance(
         bool zeroForOne,
@@ -443,7 +447,9 @@ contract CryticUniswapV2PropertyTests is Setup {
         bool zeroForOne,
         uint256 amountIn
     ) public {
-        bool success;
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        require(reserve0Before > 0 && reserve1Before > 0);
+
         UniswapV2ERC20 inToken = zeroForOne ? testToken1 : testToken2;
         UniswapV2ERC20 outToken = zeroForOne ? testToken2 : testToken1;
 

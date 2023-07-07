@@ -209,6 +209,9 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amount0Min,
         uint256 amount1Min
     ) public {
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
+
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
         uint kBefore = reserve0Before.mul(reserve1Before);
 
@@ -226,6 +229,9 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amount0Min,
         uint256 amount1Min
     ) public {
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
+
         // State before
         uint256 lpTokenSupplyBefore = pair.totalSupply();
 
@@ -243,6 +249,9 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         bool zeroForOne,
         uint256 amountIn
     ) public {
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
+
         UniswapV2ERC20 inToken = zeroForOne ? testToken1 : testToken2;
         uint256 actualAmountIn = _between(
             amountIn,
@@ -264,6 +273,9 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amount0Min,
         uint256 amount1Min
     ) public {
+        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
+
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
 
         _burnLiquidity(amount, amount0Min, amount1Min);
@@ -281,6 +293,7 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amount1Min
     ) public {
         uint lpTokenBalanceBefore = pair.balanceOf(address(user));
+        require(lpTokenBalanceBefore > 0);
 
         _burnLiquidity(amount, amount0Min, amount1Min);
 
@@ -295,6 +308,7 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amountOutMin
     ) public {
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        require(reserve0Before > 0 && reserve1Before > 0);
         uint kBefore = reserve0Before.mul(reserve1Before);
 
         _swapExactTokensForTokens(zeroForOne, amountIn, amountOutMin);
@@ -311,6 +325,9 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amountIn,
         uint256 amountOutMin
     ) public {
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        require(reserve0Before > 0 && reserve1Before > 0);
+
         uint256 balanceBefore0 = testToken1.balanceOf(address(user));
         uint256 balanceBefore1 = testToken2.balanceOf(address(user));
         uint256[] memory amounts = new uint256[](2);
@@ -330,6 +347,9 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amountIn,
         uint256 amountOutMin
     ) public {
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        require(reserve0Before > 0 && reserve1Before > 0);
+
         UniswapV2ERC20 outToken = zeroForOne ? testToken2 : testToken1;
         uint256 balanceBefore = outToken.balanceOf(address(user));
 
@@ -344,6 +364,9 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
         uint256 amountIn,
         uint256 amountOutMin
     ) public {
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        require(reserve0Before > 0 && reserve1Before > 0);
+        
         UniswapV2ERC20 inToken = zeroForOne ? testToken1 : testToken2;
         UniswapV2ERC20 outToken = zeroForOne ? testToken2 : testToken1;
 
