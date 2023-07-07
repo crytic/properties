@@ -11,7 +11,8 @@
     "lint": "npm run lint-check-format && npm run lint-check-links",
     "lint-check-format": "prettier --check .",
     "lint-check-links": "find . -name '*.md' -not -path './node_modules/*' -print0 | xargs -0 -n1 markdown-link-check",
-    "echidna-univ2": "echidna . --contract CryticUniswapV2PropertyTests --config ./contracts/AMM/UniswapV2/echidna-config.yaml"
+    "echidna-univ2": "echidna . --contract CryticUniswapV2PropertyTests --config ./contracts/AMM/UniswapV2/echidna-config.yaml",
+    "echidna-univ2-router": "echidna . --contract CryticUniswapV2RouterPropertyTests --config ./contracts/AMM/UniswapV2/echidna-config.yaml"
   },
   "repository": {
     "type": "git",

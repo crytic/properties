@@ -11,12 +11,25 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
     event ReservesBefore(uint reserve0, uint reserve1);
     event ReservesAfter(uint reserve0, uint reserve1);
     event KValues(uint256 a, uint256 b);
+    event AssertionFailed(uint256 a, uint256 b, string reason);
 
     function _provideLiquidity(
         uint256 amount0,
-        uint256 amount1
+        uint256 amount1,
+        uint256 amount0Min,
+        uint256 amount1Min
     ) internal returns (uint256, uint256, bool) {
+        amount0 = _between(amount0, 1000, uint(-1));
+        amount1 = _between(amount1, 1000, uint(-1));
+        amount0Min = _between(amount0Min, 0, amount0);
+        amount1Min = _between(amount1Min, 0, amount1);
+        uint256 deadline = block.timestamp + 1000;
 
+        if (!completed) {
+            _init(amount0, amount1);
+        }
+
+        router.addLiquidity(address(testToken1), address(testToken2), amount0, amount1, amount0Min, amount1Min, address(user), deadline);
     }
 
     function _burnLiquidity(
@@ -34,16 +47,27 @@ contract CryticUniswapV2RouterPropertyTests is Setup {
 
     function test_UniV2_provideLiquidity_IncreasesK(
         uint256 amount0,
-        uint256 amount1
+        uint256 amount1,
+        uint256 amount0Min,
+        uint256 amount1Min
     ) public {
- 
+        (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
+        uint kBefore = reserve0Before * reserve1Before;
+
+        _provideLiquidity(amount0, amount1, amount0Min, amount1Min);
+
+        (uint reserve0After, uint reserve1After, ) = pair.getReserves();
+        uint kAfter = reserve0After * reserve1After;
+        if (kBefore >= kAfter) {
+            emit AssertionFailed(kBefore, kAfter, "kBefore is >= kAfter");
+        }
     }
 
     function test_UniV2_provideLiquidity_IncreasesLPSupply(
         uint256 amount0,
         uint256 amount1
     ) public {
-
+        emit AssertionFailed(0, 9, "Test");
     }
 
     // Fails on unbalanced liquidity? TODO

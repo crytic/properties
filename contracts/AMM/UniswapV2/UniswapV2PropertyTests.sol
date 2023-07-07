@@ -145,7 +145,6 @@ contract CryticUniswapV2PropertyTests is Setup {
         uint256 amount1
     ) public {
         // State before
-        uint lpTokenBalanceBefore = pair.balanceOf(address(user));
         (uint reserve0Before, uint reserve1Before, ) = pair.getReserves();
         uint kBefore = reserve0Before * reserve1Before;
         bool success;
