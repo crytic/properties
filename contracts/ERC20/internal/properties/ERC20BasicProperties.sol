@@ -294,23 +294,23 @@ abstract contract CryticERC20BasicProperties is CryticERC20Base {
     function test_ERC20_transferFromMoreThanAllowance(
         address target
     ) public {
-        uint256 balance_sender = token.balanceOf(msg.sender);
-        uint256 balance_receiver = token.balanceOf(target);
-        uint256 allowance = token.allowance(msg.sender, address(this));
+        uint256 balance_sender = balanceOf(msg.sender);
+        uint256 balance_receiver = balanceOf(target);
+        uint256 allowance = allowance(msg.sender, address(this));
         require(balance_sender > 0 && allowance < balance_sender);
 
-        bool r = token.transferFrom(msg.sender, target, allowance + 1);
+        bool r = this.transferFrom(msg.sender, target, allowance + 1);
         assertWithMsg(
             r == false,
             "Successful transferFrom for more than allowance"
         );
         assertEq(
-            token.balanceOf(msg.sender),
+            balanceOf(msg.sender),
             balance_sender,
             "TransferFrom for more than amount approved source allowance"
         );
         assertEq(
-            token.balanceOf(target),
+            balanceOf(target),
             balance_receiver,
             "TransferFrom for more than amount approved target allowance"
         );
