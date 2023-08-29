@@ -317,4 +317,30 @@ abstract contract CryticERC20ExternalBasicProperties is
             );
         }
     }
+
+    // Transfers for more than allowance should not be allowed
+    function test_ERC20external_transferFromMoreThanAllowance(
+        address target
+    ) public {
+        uint256 balance_sender = token.balanceOf(msg.sender);
+        uint256 balance_receiver = token.balanceOf(target);
+        uint256 allowance = token.allowance(msg.sender, address(this));
+        require(balance_sender > 0 && allowance < balance_sender);
+
+        bool r = token.transferFrom(msg.sender, target, allowance + 1);
+        assertWithMsg(
+            r == false,
+            "Successful transferFrom for more than allowance"
+        );
+        assertEq(
+            token.balanceOf(msg.sender),
+            balance_sender,
+            "TransferFrom for more than amount approved source allowance"
+        );
+        assertEq(
+            token.balanceOf(target),
+            balance_receiver,
+            "TransferFrom for more than amount approved target allowance"
+        );
+    }
 }
