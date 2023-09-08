@@ -307,12 +307,12 @@ abstract contract CryticERC20BasicProperties is CryticERC20Base {
         assertEq(
             balanceOf(msg.sender),
             balance_sender,
-            "TransferFrom for more than amount approved source allowance"
+            "TransferFrom for more than approval affected source balance"
         );
         assertEq(
             balanceOf(target),
             balance_receiver,
-            "TransferFrom for more than amount approved target allowance"
+            "TransferFrom for more than approval affected target balance"
         );
     }
 }

@@ -335,12 +335,12 @@ abstract contract CryticERC20ExternalBasicProperties is
         assertEq(
             token.balanceOf(msg.sender),
             balance_sender,
-            "TransferFrom for more than amount approved source allowance"
+            "TransferFrom for more than approval affected source balance"
         );
         assertEq(
             token.balanceOf(target),
             balance_receiver,
-            "TransferFrom for more than amount approved target allowance"
+            "TransferFrom for more than approval affected target balance"
         );
     }
 }
