@@ -1312,9 +1312,9 @@ contract CryticABDKMath64x64Properties {
         assert(equal_within_precision(x_a_b, x_ab, 2));
     }
 
-    // Test for power of a product
+    // Test for distributive property for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function pow_test_product_same_base(
+    function pow_test_distributive(
         int128 x,
         int128 y,
         uint256 a
