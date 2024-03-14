@@ -8,6 +8,13 @@ interface IHevm {
     // Set block.number to newNumber
     function roll(uint256 newNumber) external;
 
+    // Add the condition b to the assumption base for the current branch
+    // This function is almost identical to require
+    function assume(bool b) external;
+
+    // Sets the eth balance of usr to amt
+    function deal(uint256 usr, uint256 amt) external;
+
     // Loads a storage slot from an address
     function load(address where, bytes32 slot) external returns (bytes32);
 
@@ -30,6 +37,18 @@ interface IHevm {
 
     // Performs the next smart contract call with specified `msg.sender`
     function prank(address newSender) external;
+
+    // Creates a new fork with the given endpoint and the latest block and returns the identifier of the fork
+    function createFork(string calldata urlOrAlias) external returns (uint256);
+
+    // Takes a fork identifier created by createFork and sets the corresponding forked state as active
+    function selectFork(uint256 forkId) external;
+
+    // Returns the identifier of the current fork
+    function activeFork() external returns (uint256);
+
+    // Labels the address in traces
+    function label(address addr, string calldata label) external;
 }
 
 IHevm constant hevm = IHevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
