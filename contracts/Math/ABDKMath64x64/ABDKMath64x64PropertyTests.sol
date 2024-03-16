@@ -368,7 +368,7 @@ contract CryticABDKMath64x64Properties {
         }
     }
 
-    // Adding minus one to the maximum value should revert, as it is out of range
+    // Adding minus one to the minimum value should revert, as it is out of range
     function add_test_minimum_value_plus_negative_one() public view {
         try this.add(MIN_64x64, MINUS_ONE_FP) {
             assert(false);
