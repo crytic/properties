@@ -13,7 +13,7 @@ interface IHevm {
     function assume(bool b) external;
 
     // Sets the eth balance of usr to amt
-    function deal(uint256 usr, uint256 amt) external;
+    function deal(address usr, uint256 amt) external;
 
     // Loads a storage slot from an address
     function load(address where, bytes32 slot) external returns (bytes32);
