@@ -21,11 +21,11 @@ interface IHevm {
     // Stores a value to an address' storage slot
     function store(address where, bytes32 slot, bytes32 value) external;
 
-    // Signs data (privateKey, digest) => (r, v, s)
+    // Signs data (privateKey, digest) => (v, r, s)
     function sign(
         uint256 privateKey,
         bytes32 digest
-    ) external returns (uint8 r, bytes32 v, bytes32 s);
+    ) external returns (uint8 v, bytes32 r, bytes32 s);
 
     // Gets address for a given private key
     function addr(uint256 privateKey) external returns (address addr);
