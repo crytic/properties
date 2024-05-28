@@ -7,7 +7,8 @@
 		"callSequenceLength": 100,
 		"corpusDirectory": "tests/medusa-corpus",
 		"coverageEnabled": true,
-		"deploymentOrder": [],
+		"targetContracts": [],
+		"targetContractsBalances": [],
 		"constructorArgs": {},
 		"deployerAddress": "0x10000",
 		"senderAddresses": [
@@ -24,16 +25,27 @@
 			"stopOnFailedContractMatching": true,
 			"stopOnNoTests": true,
 			"testAllContracts": false,
-			"onlyCallFromDeploymentOrder": false,
 			"traceAll": false,
 			"assertionTesting": {
 				"enabled": true,
-				"testViewMethods": false
+				"testViewMethods": false,
+				"panicCodeConfig": {
+					"failOnCompilerInsertedPanic": false,
+					"failOnAssertion": true,
+					"failOnArithmeticUnderflow": false,
+					"failOnDivideByZero": false,
+					"failOnEnumTypeConversionOutOfBounds": false,
+					"failOnIncorrectStorageAccess": false,
+					"failOnPopEmptyArray": false,
+					"failOnOutOfBoundsArrayAccess": false,
+					"failOnAllocateTooMuchMemory": false,
+					"failOnCallUninitializedVariable": false
+				}
 			},
 			"propertyTesting": {
 				"enabled": false,
 				"testPrefixes": [
-					"fuzz_"
+					"property_"
 				]
 			},
 			"optimizationTesting": {
@@ -59,5 +71,10 @@
 			"exportDirectory": "",
 			"args": []
 		}
+	},
+	"logging": {
+		"level": "info",
+		"logDirectory": "",
+		"noColor": false
 	}
 }
