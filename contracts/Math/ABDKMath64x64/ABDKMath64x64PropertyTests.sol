@@ -1079,8 +1079,8 @@ contract CryticABDKMath64x64Properties {
     function inv_test_minimum() public view {
         int128 inv_minimum;
 
-        try this.inv(MAX_64x64) {
-            inv_minimum = this.inv(MAX_64x64);
+        try this.inv(MIN_64x64) {
+            inv_minimum = this.inv(MIN_64x64);
             assert(equal_within_precision(abs(inv_minimum), ZERO_FP, 10));
         } catch {
             // Unexpected, the function must not revert
@@ -1312,9 +1312,9 @@ contract CryticABDKMath64x64Properties {
         assert(equal_within_precision(x_a_b, x_ab, 2));
     }
 
-    // Test for power of a product
+    // Test for distributive property for power of a product
     // (x * y) ** a == x ** a * y ** a
-    function pow_test_product_same_base(
+    function pow_test_distributive(
         int128 x,
         int128 y,
         uint256 a

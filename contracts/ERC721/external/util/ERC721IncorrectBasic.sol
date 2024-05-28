@@ -66,8 +66,10 @@ contract ERC721IncorrectBasic is Context, ERC165, IERC721, IERC721Metadata {
         _mint(to, counter++);
     }
 
-    function _customMint(address to) external {
-        mint(to);
+    function _customMint(address to, uint256 amount) external {
+        for(uint256 i; i < amount; i++) {
+            mint(to);
+        }
     }
 
     /**

@@ -50,6 +50,7 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(selfBalance > 0);  
         require(target != address(this));
         require(target != msg.sender);
+        require(target != address(0));
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
 
         hevm.prank(msg.sender);
@@ -67,6 +68,7 @@ abstract contract CryticERC721BasicProperties is CryticERC721TestBase {
         require(selfBalance > 0);  
         require(target != address(this));
         require(target != msg.sender);
+        require(target != address(0));
         uint tokenId = tokenOfOwnerByIndex(msg.sender, 0);
 
         hevm.prank(msg.sender);

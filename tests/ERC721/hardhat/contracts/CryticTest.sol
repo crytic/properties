@@ -1,24 +1,18 @@
 pragma solidity ^0.8.0;
-import "@crytic/properties/ERC721/internal/properties/ERC721BasicProperties.sol";
+import "@crytic/properties/contracts/ERC721/internal/properties/ERC721BasicProperties.sol";
 import "./ExampleToken.sol";
 
 contract CryticERC721InternalHarness is ExampleToken, CryticERC721BasicProperties {
     using Address for address;
 
     constructor() {
-        maxSupply = 100;
         isMintableOrBurnable = true;
-        hasMaxSupply = false;
         safeReceiver = new MockReceiver(true);
         unsafeReceiver = new MockReceiver(false);
     }
 
-    function _customMint(uint256 amount) internal virtual {
-        mint(msg.sender, amount);
-    }
-
-    function _customMaxSupply() internal virtual view returns (uint256) {
-        return maxSupply;
+    function _customMint(address to, uint256 amount) internal virtual {
+        mint(to, amount);
     }
 
         // The following functions are overrides required by Solidity.

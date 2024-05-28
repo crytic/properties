@@ -7,24 +7,26 @@ abstract contract CryticERC721MintableProperties is CryticERC721TestBase {
 
     ////////////////////////////////////////
     // Properties
-    // mint increases the total supply
-    function test_ERC721_mintIncreasesSupply() public virtual {
+    // mint increases the total supply.
+    function test_ERC721_mintIncreasesSupply(uint256 amount) public virtual {
         require(isMintableOrBurnable);
+
         uint256 selfBalance = balanceOf(msg.sender);
         uint256 oldTotalSupply = totalSupply();
-        _customMint(msg.sender);
+        _customMint(msg.sender, amount);
         
-        assertEq(oldTotalSupply + 1, totalSupply(), "Total supply was not correctly increased");
-        assertEq(selfBalance + 1, balanceOf(msg.sender), "Receiver supply was not correctly increased");
+        assertEq(oldTotalSupply + amount, totalSupply(), "Total supply was not correctly increased");
+        assertEq(selfBalance + amount, balanceOf(msg.sender), "Receiver supply was not correctly increased");
     }
 
-    // mint creates a fresh token
-    function test_ERC721_mintCreatesFreshToken() public virtual {
+    // mint creates a fresh token.
+    function test_ERC721_mintCreatesFreshToken(uint256 amount) public virtual {
         require(isMintableOrBurnable);
-        uint256 selfBalance = balanceOf(msg.sender);
-        _customMint(msg.sender);
 
-        assertEq(selfBalance + 1, balanceOf(msg.sender), "Receiver supply was not correctly increased");
+        uint256 selfBalance = balanceOf(msg.sender);
+        _customMint(msg.sender, amount);
+
+        assertEq(selfBalance + amount, balanceOf(msg.sender), "Receiver supply was not correctly increased");
 
         uint256 tokenId = tokenOfOwnerByIndex(msg.sender, selfBalance);
         assertWithMsg(ownerOf(tokenId) == msg.sender, "Token ID was not minted to receiver");
@@ -32,5 +34,5 @@ abstract contract CryticERC721MintableProperties is CryticERC721TestBase {
     }
 
     // Wrappers
-    function _customMint(address to) internal virtual;
+    function _customMint(address to, uint256 amount) internal virtual;
 }

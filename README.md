@@ -515,7 +515,7 @@ contract TestProperties is PropertiesAsserts {
 
 # HEVM cheat codes support
 
-Since version 2.0.5, Echidna supports [HEVM cheat codes](https://hevm.dev/controlling-the-unit-testing-environment.html#cheat-codes). This repository contains a [`Hevm.sol`](contracts/util/Hevm.sol) contract that exposes cheat codes for easy integration into contracts under test.
+Since version 2.0.5, Echidna supports [HEVM cheat codes](https://hevm.dev/ds-test-tutorial.html#supported-cheat-codes). This repository contains a [`Hevm.sol`](contracts/util/Hevm.sol) contract that exposes cheat codes for easy integration into contracts under test.
 
 Cheat codes should be used with care, since they can alter the execution environment in ways that are not expected, and may introduce false positives or false negatives.
 
