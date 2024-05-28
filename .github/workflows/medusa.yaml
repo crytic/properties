@@ -51,17 +51,17 @@ jobs:
       - name: Run Medusa for Internal ERC20 tests
         working-directory: tests/ERC20/foundry
         run: |
-          medusa fuzz --target . --deployment-order CryticERC20InternalHarness --config medusa-config.json
+          medusa fuzz --target-contracts CryticERC20InternalHarness --config medusa-config.json
 
       - name: Run Medusa for External ERC20 tests
         working-directory: tests/ERC20/foundry
         run: |
-          medusa fuzz --target . --deployment-order CryticERC20ExternalHarness --config medusa-config-ext.json
+          medusa fuzz --target-contracts CryticERC20ExternalHarness --config medusa-config-ext.json
 
       - name: Run Medusa for External ERC4626 tests
         working-directory: tests/ERC4626/foundry
         run: |
-          medusa fuzz --target . --deployment-order CryticERC4626InternalHarness --config medusa-config.json
+          medusa fuzz --target-contracts CryticERC4626InternalHarness --config medusa-config.json
 
   hardhat:
     name: Test Hardhat examples
@@ -106,14 +106,14 @@ jobs:
       - name: Run Medusa for Internal ERC20 tests
         working-directory: tests/ERC20/hardhat
         run: |
-          medusa fuzz --target . --deployment-order CryticERC20InternalHarness --config medusa-config.json
+          medusa fuzz --target-contracts CryticERC20InternalHarness --config medusa-config.json
 
       - name: Run Medusa for External ERC20 tests
         working-directory: tests/ERC20/hardhat
         run: |
-          medusa fuzz --target . --deployment-order CryticERC20ExternalHarness --config medusa-config-ext.json
+          medusa fuzz --target-contracts CryticERC20ExternalHarness --config medusa-config-ext.json
 
       - name: Run Medusa for External ERC4626 tests
         working-directory: tests/ERC4626/hardhat
         run: |
-          medusa fuzz --target . --deployment-order CryticERC4626Harness --config medusa-config.json
+          medusa fuzz --target-contracts CryticERC4626Harness --config medusa-config.json
