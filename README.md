@@ -33,11 +33,11 @@ The goals of these properties are to:
 - Ensure adherence to relevant standards
 - Provide educational guidance for writing invariants
 
-The properties can be used through unit tests or through fuzzing with [Echidna](https://github.com/crytic/echidna).
+The properties can be used through unit tests or through fuzzing with [Echidna](https://github.com/crytic/echidna) or [Medusa](https://github.com/crytic/medusa).
 
 ## Testing the properties with fuzzing
 
-1. Install [Echidna](https://github.com/crytic/echidna#installation).
+1. Install [Echidna](https://github.com/crytic/echidna#installation) or [Medusa](https://github.com/crytic/medusa/blob/master/docs/src/getting_started/installation.md#installation).
 2. Import the properties into to your project:
 
    - In case of using Hardhat, use: `npm install https://github.com/crytic/properties.git` or `yarn add https://github.com/crytic/properties.git`
@@ -118,6 +118,8 @@ contract CryticTokenMock is MyToken, PropertiesConstants {
 
 #### Configuration
 
+**Echidna**
+
 Create the following Echidna config file
 
 ```yaml
@@ -138,14 +140,56 @@ To perform more than one test, save the files with a descriptive path, to identi
 
 The above configuration will start Echidna in assertion mode. Contract will be deployed from address `0x10000`, and transactions will be sent from the owner and two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once Echidna finishes the fuzzing campaign, corpus and coverage results will be available in the `tests/crytic/erc20/echidna-corpus-internal` directory.
 
+**Medusa** 
+
+Create the following Medusa config file:
+
+```json
+{
+	"fuzzing": {
+		"corpusDirectory": "tests/medusa-corpus",
+		"deployerAddress": "0x10000",
+		"senderAddresses": [
+			"0x10000",
+			"0x20000",
+			"0x30000"
+		],
+		"assertionTesting": {
+			"enabled": true
+		},
+		"propertyTesting": {
+			"enabled": false
+		},
+    "optimizationTesting": {
+				"enabled": false,
+		},
+	},
+	"compilation": {
+		"platform": "crytic-compile",
+		"platformConfig": {
+			"target": ".",
+			"solcVersion": "",
+			"exportDirectory": "",
+			"args": []
+		}
+	}
+}
+```
+
 #### Run
 
-Run Echidna:
+**Echidna**
 
 - For internal testing: `echidna . --contract CryticERC20InternalHarness --config tests/crytic/erc20/echidna-internal.yaml`
 - For external testing: `echidna . --contract CryticERC20ExternalHarness --config tests/crytic/erc20/echidna-external.yaml`
 
 Finally, inspect the coverage report in `tests/crytic/erc20/echidna-corpus-internal` or `tests/crytic/erc20/echidna-corpus-external` when it finishes.
+
+**Medusa**
+
+- Go to the directory `cd tests/crytic/erc20`
+- For internal testing: `medusa fuzz --target-contracts CryticERC20InternalHarness --config medusa-internal.yaml`
+- For external testing: `medusa fuzz --target-contracts CryticERC20ExternalHarness --config medusa-external.yaml`
 
 #### Example: Output for a compliant token
 
