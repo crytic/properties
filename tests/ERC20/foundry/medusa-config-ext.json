@@ -24,7 +24,7 @@
 			"stopOnFailedTest": true,
 			"stopOnFailedContractMatching": false,
 			"stopOnNoTests": true,
-			"testAllContracts": false,
+			"testAllContracts": true,
 			"traceAll": false,
 			"assertionTesting": {
 				"enabled": true,

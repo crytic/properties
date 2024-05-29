@@ -128,17 +128,9 @@ testMode: assertion
 testLimit: 100000
 deployer: "0x10000"
 sender: ["0x10000", "0x20000", "0x30000"]
+# Uncomment the following line for external testing
+#allContracts: true
 ```
-
-If you're using external testing, you will also need to specify:
-
-```yaml
-allContracts: true
-```
-
-To perform more than one test, save the files with a descriptive path, to identify what test each file or corpus belongs to. For these examples, we use `tests/crytic/erc20/echidna-internal.yaml` and `tests/crytic/erc20/echidna-external.yaml` for the Echidna tests for ERC20. We recommended to modify the `corpusDir` for external tests accordingly.
-
-The above configuration will start Echidna in assertion mode. Contract will be deployed from address `0x10000`, and transactions will be sent from the owner and two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once Echidna finishes the fuzzing campaign, corpus and coverage results will be available in the `tests/crytic/erc20/echidna-corpus-internal` directory.
 
 **Medusa** 
 
@@ -147,6 +139,7 @@ Create the following Medusa config file:
 ```json
 {
 	"fuzzing": {
+    "testLimit": 100000,
 		"corpusDirectory": "tests/medusa-corpus",
 		"deployerAddress": "0x10000",
 		"senderAddresses": [
@@ -164,6 +157,10 @@ Create the following Medusa config file:
 				"enabled": false,
 		},
 	},
+// Uncomment the following lines for external testing
+//		"testing": {
+//			"testAllContracts": true
+//    },
 	"compilation": {
 		"platform": "crytic-compile",
 		"platformConfig": {
@@ -176,14 +173,16 @@ Create the following Medusa config file:
 }
 ```
 
+To perform more than one test, save the files with a descriptive path, to identify what test each file or corpus belongs to. For instace, for these examples, we use `tests/crytic/erc20/echidna-internal.yaml` and `tests/crytic/erc20/echidna-external.yaml` for the Echidna tests for ERC20. We recommended to modify the corpus directory config opction for external tests accordingly.
+
+The above configuration will start Echidna or Medusa in assertion mode. The target contract(s) will be deployed from address `0x10000`, and transactions will be sent from the owner as well as two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once our fuzzing tools finish the fuzzing campaign, corpus and coverage results will be available in the specified corpus directory.
+
 #### Run
 
 **Echidna**
 
 - For internal testing: `echidna . --contract CryticERC20InternalHarness --config tests/crytic/erc20/echidna-internal.yaml`
 - For external testing: `echidna . --contract CryticERC20ExternalHarness --config tests/crytic/erc20/echidna-external.yaml`
-
-Finally, inspect the coverage report in `tests/crytic/erc20/echidna-corpus-internal` or `tests/crytic/erc20/echidna-corpus-external` when it finishes.
 
 **Medusa**
 
