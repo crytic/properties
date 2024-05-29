@@ -53,7 +53,7 @@ jobs:
       - name: Run Medusa for External ERC20 tests
         working-directory: tests/ERC20/foundry
         run: |
-          crytic-compile .
+          crytic-compile . --foundry-compile-all
           ls out -R
           medusa fuzz --target-contracts CryticERC20ExternalHarness --config medusa-config-ext.json
 
