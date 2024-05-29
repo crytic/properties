@@ -170,7 +170,7 @@ Create the following Medusa config file:
 			"target": ".",
 			"solcVersion": "",
 			"exportDirectory": "",
-			"args": []
+			"args": ["--foundry-compile-all"]
 		}
 	}
 }
