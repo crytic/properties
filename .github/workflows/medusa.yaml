@@ -24,7 +24,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: 5be158ba6dc7c798a6f032026fe60fc01686b33b
 
       - name: Go setup
         uses: actions/setup-go@v4
