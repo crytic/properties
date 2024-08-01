@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
 import {CryticERC721ExternalBurnableProperties} from "../../properties/ERC721ExternalBurnableProperties.sol";

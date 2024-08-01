@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 import "@crytic/properties/contracts/ERC721/internal/properties/ERC721BasicProperties.sol";
 import "./ExampleToken.sol";

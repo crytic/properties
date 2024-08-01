@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
 /// @notice Developers may optionally implement these interfaces on their Vault contract to increase coverage/enable rounding tests.
