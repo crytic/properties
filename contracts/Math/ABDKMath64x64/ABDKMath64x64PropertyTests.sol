@@ -328,7 +328,8 @@ contract CryticABDKMath64x64Properties {
         int128 result;
         try this.add(x, y) {
             result = this.add(x, y);
-            assert(result <= MAX_64x64 && result >= MIN_64x64);
+            assert(!(x >= 0 && y >= 0)  || (result >= x && result >= y));
+            assert(!(x < 0 && y < 0)  || (result < y && result < x));
         } catch {
             // If it reverts, just ignore
         }
@@ -455,7 +456,8 @@ contract CryticABDKMath64x64Properties {
         int128 result;
         try this.sub(x, y) {
             result = this.sub(x, y);
-            assert(result <= MAX_64x64 && result >= MIN_64x64);
+            assert(!(x >= 0 && y <= 0)  || (result >= x && result >= neg (y)));
+            assert(!(x < 0 && y >= 0)  || (result < neg(y) && result <= x));
         } catch {
             // If it reverts, just ignore
         }
