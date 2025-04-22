@@ -42,6 +42,7 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
 | ERC20-BASE-015 | [test_ERC20_setAllowance](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20BasicProperties.sol#L160)                    | Allowances should be set correctly when `approve` is called.                   |
 | ERC20-BASE-016 | [test_ERC20_setAllowanceTwice](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20BasicProperties.sol#L167)               | Allowances should be updated correctly when `approve` is called twice.         |
 | ERC20-BASE-017 | [test_ERC20_spendAllowanceAfterTransfer](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20BasicProperties.sol#L178)     | After `transferFrom`, allowances should be updated correctly.                  |
+| ERC20-BASE-018 | [test_ERC20_transferFromMoreThanAllowance](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20BasicProperties.sol#L294)   | `transferFrom`s for more than allowance should not be allowed.                 |
 
 ### Tests for burnable tokens
 
