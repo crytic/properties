@@ -28,7 +28,7 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
     }
 
     // A burned token should not be transferrable
-    function test_ERC721_external_burnRevertOnTransfer(address target) public virtual {
+    function test_ERC721_external_burnRevertOnTransferFromPreviousOwner(address target) public virtual {
         require(token.isMintableOrBurnable());
         uint256 selfBalance = token.balanceOf(msg.sender);
         require(selfBalance > 0);
@@ -38,6 +38,18 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         token.burn(tokenId);
         hevm.prank(msg.sender);
         token.transferFrom(msg.sender, target, tokenId);
+        assertWithMsg(false, "Transferring a burned token didn't revert");
+    }
+
+    function test_ERC721_external_burnRevertOnTransferFromZeroAddress(address target) public virtual {
+        require(token.isMintableOrBurnable());
+        uint256 selfBalance = token.balanceOf(msg.sender);
+        require(selfBalance > 0);
+
+        uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+        hevm.prank(msg.sender);
+        token.burn(tokenId);
+        token.transferFrom(address(0), target, tokenId);
         assertWithMsg(false, "Transferring a burned token didn't revert");
     }
 
