@@ -278,7 +278,7 @@ In the `CryticERC721ExternalHarness` contract you can specify which properties t
 ```Solidity
 pragma solidity ^0.8.0;
 import "./MyToken.sol";
-import {ITokenMock} from "@crytic/properties/contracts/ERC721/external/util/ITokenMock.sol";
+import {IERC721Internal} from "@crytic/properties/contracts/ERC721/util/IERC721Internal.sol";
 import {CryticERC721ExternalBasicProperties} from "@crytic/properties/contracts/ERC721/external/properties/ERC721ExternalBasicProperties.sol";
 import {PropertiesConstants} from "@crytic/properties/contracts/util/PropertiesConstants.sol";
 
@@ -286,19 +286,17 @@ import {PropertiesConstants} from "@crytic/properties/contracts/util/PropertiesC
 contract CryticERC721ExternalHarness is CryticERC721ExternalBasicProperties {
     constructor() {
         // Deploy ERC721
-        token = ITokenMock(address(new CryticTokenMock()));
+        token = IERC721Internal(address(new CryticTokenMock()));
     }
 }
 
 contract CryticTokenMock is MyToken, PropertiesConstants {
-
+    uint256 public counter;
     bool public isMintableOrBurnable;
 
-    constructor () {
+    constructor() {
         isMintableOrBurnable = true;
     }
-<<<<<<< Updated upstream
-=======
 
     function burn(uint256 tokenId) public {
         _burn(tokenId);
@@ -309,7 +307,6 @@ contract CryticTokenMock is MyToken, PropertiesConstants {
             _mint(to, counter++);
         }
     }
->>>>>>> Stashed changes
 }
 ```
 
