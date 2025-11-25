@@ -28,7 +28,6 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     uint256 public counter;
     bool public isMintableOrBurnable;
     address excluded = address(0x10000);
-    mapping (uint256 => bool) public usedId;
 
     // Mapping from token ID to owner address
     mapping(uint256 => address) private _owners;
@@ -65,12 +64,11 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
 
     function mint(address to) public {
         uint256 id = counter++;
-        usedId[id] = true;
         _mint(to, id);
     }
 
     function _customMint(address to, uint256 amount) external {
-        for(uint256 i; i < amount; i++) {
+        for (uint256 i; i < amount; i++) {
             mint(to);
         }
     }
@@ -78,7 +76,9 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC165, IERC165) returns (bool) {
         return
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
@@ -88,15 +88,22 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC721-balanceOf}.
      */
-    function balanceOf(address owner) public view virtual override returns (uint256) {
-        require(owner != address(0), "ERC721: address zero is not a valid owner");
+    function balanceOf(
+        address owner
+    ) public view virtual override returns (uint256) {
+        require(
+            owner != address(0),
+            "ERC721: address zero is not a valid owner"
+        );
         return _balances[owner];
     }
 
     /**
      * @dev See {IERC721-ownerOf}.
      */
-    function ownerOf(uint256 tokenId) public view virtual override returns (address) {
+    function ownerOf(
+        uint256 tokenId
+    ) public view virtual override returns (address) {
         address owner = _ownerOf(tokenId);
         require(owner != address(0), "ERC721: invalid token ID");
         return owner;
@@ -119,11 +126,16 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
         _requireMinted(tokenId);
 
         string memory baseURI = _baseURI();
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : "";
+        return
+            bytes(baseURI).length > 0
+                ? string(abi.encodePacked(baseURI, tokenId.toString()))
+                : "";
     }
 
     /**
@@ -139,23 +151,23 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public virtual override {
+        address owner = ERC721IncorrectMintable.ownerOf(tokenId);
+        require(to != owner, "ERC721: approval to current owner");
 
-            address owner = ERC721IncorrectMintable.ownerOf(tokenId);
-            require(to != owner, "ERC721: approval to current owner");
+        require(
+            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+            "ERC721: approve caller is not token owner or approved for all"
+        );
 
-            require(
-                _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-                "ERC721: approve caller is not token owner or approved for all"
-            );
-
-            _approve(to, tokenId);
-        
+        _approve(to, tokenId);
     }
 
     /**
      * @dev See {IERC721-getApproved}.
      */
-    function getApproved(uint256 tokenId) public view virtual override returns (address) {
+    function getApproved(
+        uint256 tokenId
+    ) public view virtual override returns (address) {
         _requireMinted(tokenId);
 
         return _tokenApprovals[tokenId];
@@ -164,23 +176,36 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC721-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public virtual override {
         _setApprovalForAll(_msgSender(), operator, approved);
     }
 
     /**
      * @dev See {IERC721-isApprovedForAll}.
      */
-    function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) public view virtual override returns (bool) {
         return _operatorApprovals[owner][operator];
     }
 
     /**
      * @dev See {IERC721-transferFrom}.
      */
-    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
         //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: caller is not token owner or approved"
+        );
 
         _transfer(from, to, tokenId);
     }
@@ -188,15 +213,27 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
         safeTransferFrom(from, to, tokenId, "");
     }
 
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public virtual override {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public virtual override {
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: caller is not token owner or approved"
+        );
         _safeTransfer(from, to, tokenId, data);
     }
 
@@ -218,7 +255,12 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      *
      * Emits a {Transfer} event.
      */
-    function _safeTransfer(address from, address to, uint256 tokenId, bytes memory data) internal virtual {
+    function _safeTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) internal virtual {
         _transfer(from, to, tokenId);
         //require(_checkOnERC721Received(from, to, tokenId, data), "ERC721: transfer to non ERC721Receiver implementer");
     }
@@ -249,9 +291,14 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      *
      * - `tokenId` must exist.
      */
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
+    function _isApprovedOrOwner(
+        address spender,
+        uint256 tokenId
+    ) internal view virtual returns (bool) {
         address owner = ERC721IncorrectMintable.ownerOf(tokenId);
-        return (spender == owner || isApprovedForAll(owner, spender) || getApproved(tokenId) == spender);
+        return (spender == owner ||
+            isApprovedForAll(owner, spender) ||
+            getApproved(tokenId) == spender);
     }
 
     /**
@@ -272,7 +319,11 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      * @dev Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
      * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
      */
-    function _safeMint(address to, uint256 tokenId, bytes memory data) internal virtual {
+    function _safeMint(
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) internal virtual {
         _mint(to, tokenId);
         /* require(
             _checkOnERC721Received(address(0), to, tokenId, data),
@@ -362,31 +413,38 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      *
      * Emits a {Transfer} event.
      */
-    function _transfer(address from, address to, uint256 tokenId) internal virtual {
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual {
+        require(
+            ERC721IncorrectMintable.ownerOf(tokenId) == from,
+            "ERC721: transfer from incorrect owner"
+        );
+        //require(to != address(0), "ERC721: transfer to the zero address");
 
-            require(ERC721IncorrectMintable.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
-            //require(to != address(0), "ERC721: transfer to the zero address");
+        _beforeTokenTransfer(from, to, tokenId, 1);
 
-            _beforeTokenTransfer(from, to, tokenId, 1);
+        // Check that tokenId was not transferred by `_beforeTokenTransfer` hook
+        require(
+            ERC721IncorrectMintable.ownerOf(tokenId) == from,
+            "ERC721: transfer from incorrect owner"
+        );
 
-            // Check that tokenId was not transferred by `_beforeTokenTransfer` hook
-            require(ERC721IncorrectMintable.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
+        // Clear approvals from the previous owner
+        delete _tokenApprovals[tokenId];
+        uint256 balanceFrom = _balances[from] - 1;
+        uint256 balanceTo = _balances[to] + 1;
 
-            // Clear approvals from the previous owner
-            delete _tokenApprovals[tokenId];
-            uint256 balanceFrom = _balances[from] - 1;
-            uint256 balanceTo = _balances[to] + 1;
+        _balances[from] = balanceFrom;
+        _balances[to] = balanceTo;
 
-            _balances[from] = balanceFrom;
-            _balances[to] = balanceTo;
+        _owners[tokenId] = to;
 
-            _owners[tokenId] = to;
+        emit Transfer(from, to, tokenId);
 
-            emit Transfer(from, to, tokenId);
-
-            _afterTokenTransfer(from, to, tokenId, 1);
-        
-
+        _afterTokenTransfer(from, to, tokenId, 1);
     }
 
     /**
@@ -404,7 +462,11 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      *
      * Emits an {ApprovalForAll} event.
      */
-    function _setApprovalForAll(address owner, address operator, bool approved) internal virtual {
+    function _setApprovalForAll(
+        address owner,
+        address operator,
+        bool approved
+    ) internal virtual {
         require(owner != operator, "ERC721: approve to caller");
         _operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
@@ -416,7 +478,6 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
     function _requireMinted(uint256 tokenId) internal view virtual {
         require(_exists(tokenId), "ERC721: invalid token ID");
     }
-
 
     /**
      * @dev Hook that is called after any token transfer. This includes minting and burning. If {ERC721Consecutive} is
@@ -432,13 +493,24 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _afterTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize) internal virtual {}
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize
+    ) internal virtual {}
 
     /**
      * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
      */
-    function tokenOfOwnerByIndex(address owner, uint256 index) public view virtual returns (uint256) {
-        require(index < balanceOf(owner), "ERC721Enumerable: owner index out of bounds");
+    function tokenOfOwnerByIndex(
+        address owner,
+        uint256 index
+    ) public view virtual returns (uint256) {
+        require(
+            index < balanceOf(owner),
+            "ERC721Enumerable: owner index out of bounds"
+        );
         return _ownedTokens[owner][index];
     }
 
@@ -453,7 +525,10 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      * @dev See {IERC721Enumerable-tokenByIndex}.
      */
     function tokenByIndex(uint256 index) public view virtual returns (uint256) {
-        require(index < totalSupply(), "ERC721Enumerable: global index out of bounds");
+        require(
+            index < totalSupply(),
+            "ERC721Enumerable: global index out of bounds"
+        );
         return _allTokens[index];
     }
 
@@ -522,7 +597,10 @@ contract ERC721IncorrectMintable is Context, ERC165, IERC721, IERC721Metadata {
      * @param from address representing the previous owner of the given token ID
      * @param tokenId uint256 ID of the token to be removed from the tokens list of the given address
      */
-    function _removeTokenFromOwnerEnumeration(address from, uint256 tokenId) private {
+    function _removeTokenFromOwnerEnumeration(
+        address from,
+        uint256 tokenId
+    ) private {
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 

@@ -6,12 +6,10 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {IERC721Internal} from "../../util/IERC721Internal.sol";
 
 contract ERC721Compliant is ERC721, ERC721Enumerable, IERC721Internal {
-    
     uint256 public counter;
     bool public isMintableOrBurnable;
-    mapping(uint256 => bool) public usedId;
 
-    constructor() ERC721("OZERC721","OZ") {
+    constructor() ERC721("OZERC721", "OZ") {
         isMintableOrBurnable = true;
     }
 
@@ -20,21 +18,24 @@ contract ERC721Compliant is ERC721, ERC721Enumerable, IERC721Internal {
     }
 
     function _customMint(address to, uint256 amount) public virtual {
-        for(uint256 i; i < amount; i++) {
+        for (uint256 i; i < amount; i++) {
             _mint(to, counter++);
         }
     }
-    
+
     // The following functions are overrides required by Solidity.
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
-        internal
-        virtual
-        override(ERC721, ERC721Enumerable)
-    {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 batchSize
+    ) internal virtual override(ERC721, ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
         virtual
