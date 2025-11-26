@@ -2,7 +2,11 @@ version: 2
 updates:
   # npm for JavaScript dependencies and Solidity tooling
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/"
+      - "/tests/ERC20/hardhat/"
+      - "/tests/ERC721/hardhat/"
+      - "/tests/ERC4626/hardhat/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
