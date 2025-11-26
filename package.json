@@ -27,7 +27,7 @@
     "markdown-link-check": "^3.11.0",
     "prettier": "^3.6.2",
     "prettier-plugin-solidity": "^2.2.0",
-    "solmate": "^6.6.1"
+    "solmate": "^6.8.0"
   },
   "devDependencies": {
     "hardhat": "^2.9.3"
