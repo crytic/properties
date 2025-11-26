@@ -55,7 +55,7 @@
 			"target": ".",
 			"solcVersion": "",
 			"exportDirectory": "",
-			"args": []
+			"args": ["--compile-force-framework", "hardhat"]
 		}
 	}
 }
