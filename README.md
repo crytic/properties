@@ -73,10 +73,9 @@ To test an ERC20 token, follow these steps:
 
 You can see the output for a [compliant token](#example-output-for-a-compliant-token), and [non compliant token](#example-output-for-a-non-compliant-token).
 
-
 #### Integration
 
-Decide if you want to do internal or external testing. Both approaches have advantages and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html). 
+Decide if you want to do internal or external testing. Both approaches have advantages and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html).
 
 For internal testing, create a new Solidity file containing the `CryticERC20InternalHarness` contract. `USER1`, `USER2` and `USER3` constants are initialized by default in `PropertiesConstants` contract to be the addresses from where echidna sends transactions, and `INITIAL_BALANCE` is by default `1000e18`:
 
@@ -147,44 +146,40 @@ sender: ["0x10000", "0x20000", "0x30000"]
 #allContracts: true
 ```
 
-**Medusa** 
+**Medusa**
 
 Create the following Medusa config file:
 
 ```json
 {
-	"fuzzing": {
+  "fuzzing": {
     "testLimit": 100000,
-		"corpusDirectory": "tests/medusa-corpus",
-		"deployerAddress": "0x10000",
-		"senderAddresses": [
-			"0x10000",
-			"0x20000",
-			"0x30000"
-		],
-		"assertionTesting": {
-			"enabled": true
-		},
-		"propertyTesting": {
-			"enabled": false
-		},
+    "corpusDirectory": "tests/medusa-corpus",
+    "deployerAddress": "0x10000",
+    "senderAddresses": ["0x10000", "0x20000", "0x30000"],
+    "assertionTesting": {
+      "enabled": true
+    },
+    "propertyTesting": {
+      "enabled": false
+    },
     "optimizationTesting": {
-				"enabled": false,
-		},
-	},
-// Uncomment the following lines for external testing
-//		"testing": {
-//			"testAllContracts": true
-//    },
-	"compilation": {
-		"platform": "crytic-compile",
-		"platformConfig": {
-			"target": ".",
-			"solcVersion": "",
-			"exportDirectory": "",
-			"args": ["--foundry-compile-all"]
-		}
-	}
+      "enabled": false
+    }
+  },
+  // Uncomment the following lines for external testing
+  //		"testing": {
+  //			"testAllContracts": true
+  //    },
+  "compilation": {
+    "platform": "crytic-compile",
+    "platformConfig": {
+      "target": ".",
+      "solcVersion": "",
+      "exportDirectory": "",
+      "args": ["--foundry-compile-all"]
+    }
+  }
 }
 ```
 
@@ -260,11 +255,12 @@ To test an ERC721 token, follow these steps:
 
 You can see the output for a [compliant token](#example-output-for-a-compliant-token-1), and [non compliant token](#example-output-for-a-non-compliant-token-1).
 
-
 #### Integration
-Decide if you want to do internal or external testing. Both approaches have advantages and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html). 
+
+Decide if you want to do internal or external testing. Both approaches have advantages and disadvantages, you can check more information about them [here](https://secure-contracts.com/program-analysis/echidna/basic/common-testing-approaches.html).
 
 For internal testing, create a new Solidity file containing the `CryticERC721InternalHarness` contract. `USER1`, `USER2` and `USER3` constants are initialized by default in `PropertiesConstants` contract to be the addresses from where echidna sends transactions.
+
 ```Solidity
 pragma solidity ^0.8.0;
 import "@crytic/properties/contracts/ERC721/internal/properties/ERC721BasicProperties.sol";
@@ -282,29 +278,40 @@ In the `CryticERC721ExternalHarness` contract you can specify which properties t
 ```Solidity
 pragma solidity ^0.8.0;
 import "./MyToken.sol";
-import {ITokenMock} from "@crytic/properties/contracts/ERC721/external/util/ITokenMock.sol";
+import {IERC721Internal} from "@crytic/properties/contracts/ERC721/util/IERC721Internal.sol";
 import {CryticERC721ExternalBasicProperties} from "@crytic/properties/contracts/ERC721/external/properties/ERC721ExternalBasicProperties.sol";
 import {PropertiesConstants} from "@crytic/properties/contracts/util/PropertiesConstants.sol";
 
 
-contract CryticERC721ExternalHarness is CryticERC721ExternalBasicProperties {   
+contract CryticERC721ExternalHarness is CryticERC721ExternalBasicProperties {
     constructor() {
         // Deploy ERC721
-        token = ITokenMock(address(new CryticTokenMock()));
+        token = IERC721Internal(address(new CryticTokenMock()));
     }
 }
 
 contract CryticTokenMock is MyToken, PropertiesConstants {
-
+    uint256 public counter;
     bool public isMintableOrBurnable;
 
-    constructor () {
+    constructor() {
         isMintableOrBurnable = true;
+    }
+
+    function burn(uint256 tokenId) public {
+        _burn(tokenId);
+    }
+
+    function _customMint(address to, uint256 amount) public {
+        for (uint256 i; i < amount; i++) {
+            _mint(to, counter++);
+        }
     }
 }
 ```
 
 #### Configuration
+
 Create the following Echidna config file
 
 ```yaml
@@ -323,20 +330,23 @@ allContracts: true
 
 To perform more than one test, save the files with a descriptive path, to identify what test each file or corpus belongs to. For these examples, we use `tests/crytic/erc721/echidna-internal.yaml` and `tests/crytic/erc721/echidna-external.yaml` for the Echidna tests for ERC721. We recommended to modify the `corpusDir` for external tests accordingly.
 
-The above configuration will start Echidna in assertion mode. Contract will be deployed from address `0x10000`, and transactions will be sent from the owner and two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once Echidna finishes the fuzzing campaign, corpus and coverage results will be available in the `tests/crytic/erc721/echidna-corpus-internal` directory. 
+The above configuration will start Echidna in assertion mode. Contract will be deployed from address `0x10000`, and transactions will be sent from the owner and two different users (`0x20000` and `0x30000`). There is an initial limit of `100000` tests, but depending on the token code complexity, this can be increased. Finally, once Echidna finishes the fuzzing campaign, corpus and coverage results will be available in the `tests/crytic/erc721/echidna-corpus-internal` directory.
 
 #### Run
-Run Echidna: 
-- For internal testing: `echidna . --contract CryticERC721InternalHarness --config tests/crytic/erc721/echidna-internal.yaml` 
-- For external testing: `echidna . --contract CryticERC721ExternalHarness --config tests/crytic/erc721/echidna-external.yaml` 
-  
+
+Run Echidna:
+
+- For internal testing: `echidna . --contract CryticERC721InternalHarness --config tests/crytic/erc721/echidna-internal.yaml`
+- For external testing: `echidna . --contract CryticERC721ExternalHarness --config tests/crytic/erc721/echidna-external.yaml`
+
 Finally, inspect the coverage report in `tests/crytic/erc721/echidna-corpus-internal` or `tests/crytic/erc721/echidna-corpus-external` when it finishes.
 
 #### Example: Output for a compliant token
 
 If the token under test is compliant and no properties will fail during fuzzing, the Echidna output should be similar to the screen below:
+
 ```
-$ echidna . --contract CryticERC721InternalHarness --config tests/echidna.config.yaml 
+$ echidna . --contract CryticERC721InternalHarness --config tests/echidna.config.yaml
 Loaded total of 23 transactions from corpus/coverage
 Analyzing contract: contracts/ERC721/CryticERC721InternalHarness.sol:CryticERC721InternalHarness
 name():  passed! 🎉
@@ -350,6 +360,7 @@ totalSupply():  passed! 🎉
 #### Example: Output for a non-compliant token
 
 For this example, the ExampleToken's balanceOf function was modified so it does not check that `owner` is the zero address:
+
 ```
 function balanceOf(address owner) public view virtual override returns (uint256) {
     return _balances[owner];
@@ -357,6 +368,7 @@ function balanceOf(address owner) public view virtual override returns (uint256)
 ```
 
 In this case, the Echidna output should be similar to the screen below, notice that all functions that rely on `balanceOf()` to work correctly will have their assertions broken, and will report the situation.
+
 ```
 $ echidna . --contract CryticERC721ExternalHarness --config tests/echidna.config.yaml
 Loaded total of 25 transactions from corpus/coverage
@@ -365,7 +377,7 @@ name():  passed! 🎉
 test_ERC721_external_transferFromUpdatesOwner():  passed! 🎉
 approve(address,uint256):  passed! 🎉
 ...
-test_ERC721_external_balanceOfZeroAddressMustRevert(): failed!💥  
+test_ERC721_external_balanceOfZeroAddressMustRevert(): failed!💥
   Call sequence:
     test_ERC721_external_balanceOfZeroAddressMustRevert()
 
@@ -376,10 +388,10 @@ Event sequence: Panic(1), AssertFail("address(0) balance query should have rever
 ### ERC4626 Tests
 
 To test an ERC4626 token, follow these steps:
+
 1. [Integration](#integration-2)
 2. [Configuration](#configuration-2)
 3. [Run](#run-2)
-
 
 #### Integration
 
@@ -453,7 +465,6 @@ We provide a number of tests related with fundamental mathematical properties of
 
 1. [Integration](#integration-3)
 2. [Run](#run-3)
-
 
 #### Integration
 
