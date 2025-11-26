@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/crytic/properties#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts": "^5.4.0",
     "markdown-link-check": "^3.11.0",
     "prettier": "^3.6.2",
     "prettier-plugin-solidity": "^2.2.0",
