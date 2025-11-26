@@ -10,7 +10,7 @@
     "format-embedded-solidity": "prettier --write \"**/*.md\" --embedded-language-formatting=auto --plugin prettier-plugin-solidity --tab-width 4 --print-width 120 && prettier --write \"**/*.md\"",
     "lint": "npm run lint-check-format && npm run lint-check-links",
     "lint-check-format": "prettier --check .",
-    "lint-check-links": "find . -name '*.md' -not -path './node_modules/*' -print0 | xargs -0 -n1 markdown-link-check"
+    "lint-check-links": "find . -name '*.md' -not -path './node_modules/*' -not -path './lib/*' -not -path './contracts/Math/ABDKMath64x64/*' -print0 | xargs -0 -n1 markdown-link-check"
   },
   "repository": {
     "type": "git",

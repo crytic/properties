@@ -12,7 +12,7 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
     - [Tests for mintable tokens](#tests-for-mintable-tokens)
     - [Tests for pausable tokens](#tests-for-pausable-tokens)
     - [Tests for tokens implementing `increaseAllowance` and `decreaseAllowance`](#tests-for-tokens-implementing-increaseallowance-and-decreaseallowance)
-  - [ERC721](#erc721)
+- [ERC721](#erc721)
     - [Basic properties for standard functions](#basic-properties-for-standard-functions-1)
     - [Tests for burnable tokens](#tests-for-burnable-tokens-1)
     - [Tests for mintable tokens](#tests-for-mintable-tokens-1)
@@ -55,14 +55,14 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
 
 | ID                 | Name                                                                                                                                        | Invariant tested                                                         |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| ERC20-MINTABLE-001 | [test_ERC20_mintTokens](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20MintableProperties.sol#L19) | User balance and total supply should be updated correctly after minting. |
+| ERC20-MINTABLE-001 | [test_ERC20_mintTokens](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20MintableProperties.sol#L18) | User balance and total supply should be updated correctly after minting. |
 
 ### Tests for pausable tokens
 
 | ID                 | Name                                                                                                                                                | Invariant tested                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| ERC20-PAUSABLE-001 | [test_ERC20_pausedTransfer](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20PausableProperties.sol#L35)     | Token `transfer`s should not be possible when paused state is enabled.     |
-| ERC20-PAUSABLE-002 | [test_ERC20_pausedTransferFrom](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20PausableProperties.sol#L52) | Token `transferFrom`s should not be possible when paused state is enabled. |
+| ERC20-PAUSABLE-001 | [test_ERC20_pausedTransfer](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20PausableProperties.sol#L37)     | Token `transfer`s should not be possible when paused state is enabled.     |
+| ERC20-PAUSABLE-002 | [test_ERC20_pausedTransferFrom](https://github.com/crytic/properties/blob/main/contracts/ERC20/internal/properties/ERC20PausableProperties.sol#L62) | Token `transferFrom`s should not be possible when paused state is enabled. |
 
 ### Tests for tokens implementing `increaseAllowance` and `decreaseAllowance`
 
@@ -113,7 +113,7 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
 | ID          | Name                                                                                                                                                 | Invariant tested                                         |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | ERC4626-001 | [verify_assetMustNotRevert](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/MustNotRevertProps.sol#L10)                  | `asset` must not revert.                                 |
-| ERC4626-002 | [verify_totalAssetsMustNotRevert](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/MustNotRevertProps.sol#L20)            | `totalAssets` must not revert.                           |
+| ERC4626-002 | [verify_totalAssetsMustNotRevert](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/MustNotRevertProps.sol#L23)            | `totalAssets` must not revert.                           |
 | ERC4626-003 | [verify_convertToAssetsMustNotRevert](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/MustNotRevertProps.sol#L30)        | `convertToAssets` must not revert for reasonable values. |
 | ERC4626-004 | [verify_convertToSharesMustNotRevert](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/MustNotRevertProps.sol#L54)        | `convertToShares` must not revert for reasonable values. |
 | ERC4626-005 | [verify_maxDepositMustNotRevert](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/MustNotRevertProps.sol#L71)             | `maxDeposit` must not revert.                            |

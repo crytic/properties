@@ -4,9 +4,24 @@
 - [Properties](#properties)
   - [Testing the properties with fuzzing](#testing-the-properties-with-fuzzing)
     - [ERC20 tests](#erc20-tests)
-    - [ERC721 Tests](#erc721-tests)
+      - [Integration](#integration)
+      - [Configuration](#configuration)
+      - [Run](#run)
+      - [Example: Output for a compliant token](#example-output-for-a-compliant-token)
+      - [Example: Output for a non-compliant token](#example-output-for-a-non-compliant-token)
+    - [ERC721 tests](#erc721-tests)
+      - [Integration](#integration-1)
+      - [Configuration](#configuration-1)
+      - [Run](#run-1)
+      - [Example: Output for a compliant token](#example-output-for-a-compliant-token-1)
+      - [Example: Output for a non-compliant token](#example-output-for-a-non-compliant-token-1)
     - [ERC4626 Tests](#erc4626-tests)
+      - [Integration](#integration-2)
+      - [Configuration](#configuration-2)
+      - [Run](#run-2)
     - [ABDKMath64x64 tests](#abdkmath64x64-tests)
+      - [Integration](#integration-3)
+      - [Run](#run-3)
   - [Additional resources](#additional-resources)
 - [Helper functions](#helper-functions)
   - [Usage examples](#usage-examples)
@@ -558,7 +573,7 @@ contract TestProperties is PropertiesAsserts {
 
 # HEVM cheat codes support
 
-Since version 2.0.5, Echidna supports [HEVM cheat codes](https://hevm.dev/ds-test-tutorial.html#supported-cheat-codes). This repository contains a [`Hevm.sol`](contracts/util/Hevm.sol) contract that exposes cheat codes for easy integration into contracts under test.
+Since version 2.0.5, Echidna supports [HEVM cheat codes](https://hevm.dev/std-test-tutorial.html#supported-cheat-codes). This repository contains a [`Hevm.sol`](contracts/util/Hevm.sol) contract that exposes cheat codes for easy integration into contracts under test.
 
 Cheat codes should be used with care, since they can alter the execution environment in ways that are not expected, and may introduce false positives or false negatives.
 
