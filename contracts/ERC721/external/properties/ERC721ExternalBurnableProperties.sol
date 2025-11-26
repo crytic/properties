@@ -4,8 +4,11 @@ pragma solidity ^0.8.13;
 import "../util/ERC721ExternalTestBase.sol";
 import "../../../util/Hevm.sol";
 
-abstract contract CryticERC721ExternalBurnableProperties is CryticERC721ExternalTestBase {
+abstract contract CryticERC721ExternalBurnableProperties is
+    CryticERC721ExternalTestBase
+{
     using Address for address;
+
     ////////////////////////////////////////
     // Properties
 
@@ -17,18 +20,27 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
 
         uint256 oldTotalSupply = token.totalSupply();
 
-        for(uint256 i; i < selfBalance; i++) {
+        for (uint256 i; i < selfBalance; i++) {
             uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
             hevm.prank(msg.sender);
             token.burn(tokenId);
         }
         // Check for underflow
-        assertWithMsg(selfBalance <= oldTotalSupply, "Underflow - user balance larger than total supply");
-        assertEq(oldTotalSupply - selfBalance, token.totalSupply(), "Incorrect supply update on burn");
+        assertWithMsg(
+            selfBalance <= oldTotalSupply,
+            "Underflow - user balance larger than total supply"
+        );
+        assertEq(
+            oldTotalSupply - selfBalance,
+            token.totalSupply(),
+            "Incorrect supply update on burn"
+        );
     }
 
     // A burned token should not be transferrable
-    function test_ERC721_external_burnRevertOnTransfer(address target) public virtual {
+    function test_ERC721_external_burnRevertOnTransferFromPreviousOwner(
+        address target
+    ) public virtual {
         require(token.isMintableOrBurnable());
         uint256 selfBalance = token.balanceOf(msg.sender);
         require(selfBalance > 0);
@@ -38,6 +50,20 @@ abstract contract CryticERC721ExternalBurnableProperties is CryticERC721External
         token.burn(tokenId);
         hevm.prank(msg.sender);
         token.transferFrom(msg.sender, target, tokenId);
+        assertWithMsg(false, "Transferring a burned token didn't revert");
+    }
+
+    function test_ERC721_external_burnRevertOnTransferFromZeroAddress(
+        address target
+    ) public virtual {
+        require(token.isMintableOrBurnable());
+        uint256 selfBalance = token.balanceOf(msg.sender);
+        require(selfBalance > 0);
+
+        uint256 tokenId = token.tokenOfOwnerByIndex(msg.sender, 0);
+        hevm.prank(msg.sender);
+        token.burn(tokenId);
+        token.transferFrom(address(0), target, tokenId);
         assertWithMsg(false, "Transferring a burned token didn't revert");
     }
 
