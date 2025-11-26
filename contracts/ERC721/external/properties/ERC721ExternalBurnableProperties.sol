@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "../util/ERC721ExternalTestBase.sol";
-import "../../../util/Hevm.sol";
+import "../../../util/IHevm.sol";
 
 abstract contract CryticERC721ExternalBurnableProperties is
     CryticERC721ExternalTestBase

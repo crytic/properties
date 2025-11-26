@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../../util/PropertiesConstants.sol";
-import "../../../util/PropertiesHelper.sol";
+import "../../../util/PropertiesAsserts.sol";
 
 abstract contract CryticERC20Base is
     ERC20,

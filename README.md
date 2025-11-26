@@ -491,7 +491,7 @@ Run the test suite using `echidna . --contract CryticABDKMath64x64Harness --seq-
 
 # Helper functions
 
-The repository provides a collection of functions and events meant to simplify the debugging and testing of assertions in Echidna. Commonly used functions, such as integer clamping or logging for different types are available in [contracts/util/PropertiesHelper.sol](contracts/util/PropertiesHelper.sol).
+The repository provides a collection of functions and events meant to simplify the debugging and testing of assertions in Echidna. Commonly used functions, such as integer clamping or logging for different types are available in [contracts/util/PropertiesAsserts.sol](contracts/util/PropertiesAsserts.sol).
 
 Available helpers:
 
@@ -508,7 +508,7 @@ Log a value for debugging. When the assertion is violated, the value of `someVal
 ```solidity
 pragma solidity ^0.8.0;
 
-import "@crytic/properties/contracts/util/PropertiesHelper.sol";
+import "@crytic/properties/contracts/util/PropertiesAsserts.sol";
 
 contract TestProperties is PropertiesAsserts {
   // ...
@@ -536,7 +536,7 @@ Assert equality, and log violations:
 ```solidity
 pragma solidity ^0.8.0;
 
-import "@crytic/properties/contracts/util/PropertiesHelper.sol";
+import "@crytic/properties/contracts/util/PropertiesAsserts.sol";
 
 contract TestProperties is PropertiesAsserts {
   // ...
@@ -564,7 +564,7 @@ Assure that a function's fuzzed parameter is in a certain range:
 ```solidity
 pragma solidity ^0.8.0;
 
-import "@crytic/properties/contracts/util/PropertiesHelper.sol";
+import "@crytic/properties/contracts/util/PropertiesAsserts.sol";
 
 contract TestProperties is PropertiesAsserts {
   int256 constant MAX_VALUE = 2 ** 160;
@@ -584,7 +584,7 @@ contract TestProperties is PropertiesAsserts {
 
 # HEVM cheat codes support
 
-Since version 2.0.5, Echidna supports [HEVM cheat codes](https://hevm.dev/std-test-tutorial.html#supported-cheat-codes). This repository contains a [`Hevm.sol`](contracts/util/Hevm.sol) contract that exposes cheat codes for easy integration into contracts under test.
+Since version 2.0.5, Echidna supports [HEVM cheat codes](https://hevm.dev/std-test-tutorial.html#supported-cheat-codes). This repository contains a [`IHevm.sol`](contracts/util/IHevm.sol) contract that exposes cheat codes for easy integration into contracts under test.
 
 Cheat codes should be used with care, since they can alter the execution environment in ways that are not expected, and may introduce false positives or false negatives.
 
@@ -595,7 +595,7 @@ Use `prank` to simulate a call from a different `msg.sender`:
 ```solidity
 pragma solidity ^0.8.0;
 
-import "@crytic/properties/contracts/util/Hevm.sol";
+import "@crytic/properties/contracts/util/IHevm.sol";
 
 contract TestProperties {
   // ...

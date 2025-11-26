@@ -5,7 +5,7 @@ import {IERC20} from "../../util/IERC20.sol";
 import {IERC4626} from "../../util/IERC4626.sol";
 import {TestERC20Token} from "./TestERC20Token.sol";
 import {Actor} from "../util/Actor.sol";
-import {PropertiesAsserts} from "../../util/PropertiesHelper.sol";
+import {PropertiesAsserts} from "../../util/PropertiesAsserts.sol";
 import {RedemptionProxy} from "./RedemptionProxy.sol";
 
 /// @notice This contract is used as a base contract for all 4626 property tests.
