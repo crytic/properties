@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../util/ERC20ExternalTestBase.sol";
-import "../../../util/Hevm.sol";
+import "../../../util/IHevm.sol";
 
 abstract contract CryticERC20ExternalPausableProperties is
     CryticERC20ExternalTestBase

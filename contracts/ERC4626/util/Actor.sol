@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IERC4626} from "../../util/IERC4626.sol";
 import {TestERC20Token} from "../util/TestERC20Token.sol";
-import {PropertiesAsserts} from "../../util/PropertiesHelper.sol";
+import {PropertiesAsserts} from "../../util/PropertiesAsserts.sol";
 
 /// @notice This contract has two purposes:
 ///  1. Act as a proxy for performing vault deposits/withdraws (since we don't have vm.prank)
