@@ -1,7 +1,7 @@
 const urlOverride = process.env.ETH_PROVIDER_URL;
 const chainId = parseInt(process.env.CHAIN_ID ?? "31337", 10);
 
-module.exports = {
+export default {
   paths: {
     artifacts: "./artifacts",
     sources: "./contracts",
@@ -32,9 +32,9 @@ module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
+      type: "edr-simulated",
       chainId,
       loggingEnabled: false,
-      saveDeployments: false,
     },
     localhost: {
       chainId,

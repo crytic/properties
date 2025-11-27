@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Pre-made invariants for fuzz testing smart-contracts",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "compile": "hardhat compile",
     "postinstall": "git submodule update --init --recursive",
