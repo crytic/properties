@@ -33,22 +33,29 @@ npm run lint                   # Check formatting and markdown links
 
 Tests are organized in `tests/<standard>/<framework>/` directories (e.g., `tests/ERC20/foundry/`).
 
-**Echidna (from test directory):**
+**Echidna (from root directory):**
 ```bash
 # Internal testing
-echidna . --contract CryticERC20InternalHarness --config echidna-config.yaml
+# ERC20
+echidna tests/ERC20/foundry/test/CryticTest.sol --contract CryticERC20InternalHarness --config tests/ERC20/foundry/echidna-config.yaml
+
+# ERC721
+echidna tests/ERC721/foundry/test/CryticTest.sol --contract CryticERC721InternalHarness --config tests/ERC721/foundry/echidna-config.yaml
+
+# ERC4626
+echidna tests/ERC4626/foundry/test/CryticTest.sol --contract CryticERC4626InternalHarness --config tests/ERC4626/foundry/echidna.yaml
 
 # External testing
-echidna . --contract CryticERC20ExternalHarness --config echidna-config-ext.yaml
+# Use similar command structure, pointing to external harness contract and config
 ```
 
-**Medusa (from test directory):**
+**Medusa (from root directory):**
 ```bash
 # Build first
 forge build --build-info
 
 # Run fuzzer
-medusa fuzz --target-contracts CryticERC20InternalHarness --config medusa-config.json
+medusa fuzz --target-contracts CryticERC20InternalHarness --config tests/ERC20/foundry/medusa-config.json
 ```
 
 ## Architecture
