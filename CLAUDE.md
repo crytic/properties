@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository by Trail of Bits provides 168 pre-made Solidity property tests for fuzz testing smart contracts with [Echidna](https://github.com/crytic/echidna) or [Medusa](https://github.com/crytic/medusa). It covers:
+This repository by Trail of Bits provides 181+ pre-made Solidity property tests for fuzz testing smart contracts with [Echidna](https://github.com/crytic/echidna) or [Medusa](https://github.com/crytic/medusa). It covers:
 - ERC20 tokens (25 properties)
 - ERC721 tokens (19 properties)
 - ERC4626 vaults (37 properties)
 - ABDKMath64x64 fixed-point library (106 properties)
+- Concentrated Liquidity AMMs (13+ properties)
 
 ## Build Commands
 
@@ -56,6 +57,7 @@ medusa fuzz --target-contracts CryticERC20InternalHarness --config medusa-config
 ### Directory Structure
 - `contracts/` - Property contracts by standard
   - `ERC20/`, `ERC721/`, `ERC4626/` - Each split into `internal/` and `external/` testing
+  - `ConcentratedLiquidity/` - Uniswap V3 style AMM properties (tick math, liquidity accounting, swaps)
   - `Math/ABDKMath64x64/` - Fixed-point math properties
   - `util/` - Helper functions (PropertiesHelper.sol, Hevm.sol, PropertiesConstants.sol)
 - `tests/` - Example test harnesses for Foundry and Hardhat
