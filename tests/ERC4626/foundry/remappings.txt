@@ -1,3 +1,6 @@
-ds-test/=lib/forge-std/lib/ds-test/src/
-forge-std/=lib/forge-std/src/
+ds-test/=../../../lib/forge-std/lib/ds-test/src/
+forge-std/=../../../lib/forge-std/src/
 properties/=../../../contracts/
+solmate/=../../../lib/solmate/src/
+@openzeppelin/contracts/=../../../lib/openzeppelin-contracts/contracts/
+@openzeppelin/=../../../lib/openzeppelin-contracts/contracts/

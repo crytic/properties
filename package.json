@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",
+    "postinstall": "git submodule update --init --recursive",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write . && npm run format-embedded-solidity",
     "format-embedded-solidity": "prettier --write \"**/*.md\" --embedded-language-formatting=auto --plugin prettier-plugin-solidity --tab-width 4 --print-width 120 && prettier --write \"**/*.md\"",
