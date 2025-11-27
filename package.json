@@ -32,6 +32,7 @@
     "solmate": "^6.8.0"
   },
   "devDependencies": {
+    "@crytic/properties": "file:.",
     "hardhat": "^3.0.15"
   }
 }
