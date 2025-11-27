@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+contracts/Math/ABDKMath64x64/
+
+# Foundry libraries (external dependencies)
+lib/
+
+# Build artifacts
+artifacts/
+cache/
+out/
