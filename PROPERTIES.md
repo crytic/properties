@@ -1,6 +1,6 @@
 # Introduction
 
-This file lists all the currently implemented Echidna property tests for ERC20, ERC721, ERC4626 and ABDKMath64x64. For each property, there is a permalink to the file implementing it in the repository and a small description of the invariant tested.
+This file lists all the currently implemented Echidna property tests for ERC20, ERC721, ERC4626, MultiSig wallets, and ABDKMath64x64. For each property, there is a permalink to the file implementing it in the repository and a small description of the invariant tested.
 
 ## Table of contents
 
@@ -17,6 +17,11 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
     - [Tests for burnable tokens](#tests-for-burnable-tokens-1)
     - [Tests for mintable tokens](#tests-for-mintable-tokens-1)
   - [ERC4626](#erc4626)
+  - [MultiSig](#multisig)
+    - [Basic properties](#basic-properties)
+    - [Threshold properties](#threshold-properties)
+    - [Signature and approval properties](#signature-and-approval-properties)
+    - [Nonce properties](#nonce-properties)
   - [ABDKMath64x64](#abdkmath64x64)
 
 ## ERC20
@@ -149,6 +154,55 @@ This file lists all the currently implemented Echidna property tests for ERC20, 
 | ERC4626-035 | [verify_withdrawRequiresTokenApproval](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/RedeemUsingApprovalProps.sol#L56) | Verifies that `withdraw` requires token approval.        |
 | ERC4626-036 | [verify_redeemRequiresTokenApproval](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/RedeemUsingApprovalProps.sol#L73)   | Verifies that `redeem` requires token approval.          |
 | ERC4626-037 | [verify_convertToSharesMustNotRevert](https://github.com/crytic/properties/blob/main/contracts/ERC4626/properties/MustNotRevertProps.sol#L54)        | `convertToShares` must not revert for reasonable values. |
+
+## MultiSig
+
+### Basic properties
+
+| ID                  | Name                                                                                                                                                                      | Invariant tested                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| MULTISIG-BASIC-001  | [test_MultiSig_onlyOwnersCanApprove](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L17)               | Only wallet owners can be valid approvers.                                       |
+| MULTISIG-BASIC-002  | [test_MultiSig_thresholdWithinBounds](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L33)              | Threshold must be greater than zero and not exceed owner count.                  |
+| MULTISIG-BASIC-003  | [test_MultiSig_noZeroAddressOwners](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L48)                | No owner can be the zero address.                                                |
+| MULTISIG-BASIC-004  | [test_MultiSig_ownerCountMeetsThreshold](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L61)           | Owner count must be at least equal to the threshold.                             |
+| MULTISIG-BASIC-005  | [test_MultiSig_ownerListNotEmpty](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L73)                  | Owner list must contain at least one owner.                                      |
+| MULTISIG-BASIC-006  | [test_MultiSig_executedTransactionsStayExecuted](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L82)   | Once executed, transactions remain in executed state.                            |
+| MULTISIG-BASIC-007  | [test_MultiSig_isOwnerConsistentWithOwnerList](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L101)    | `isOwner` function must be consistent with the owner list.                       |
+| MULTISIG-BASIC-008  | [test_MultiSig_noDuplicateOwners](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigBasicProperties.sol#L132)                 | No address should appear more than once in the owner list.                       |
+
+### Threshold properties
+
+| ID                      | Name                                                                                                                                                                           | Invariant tested                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| MULTISIG-THRESHOLD-001  | [test_MultiSig_cannotExecuteBelowThreshold](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigThresholdProperties.sol#L22)         | Transactions with approvals below threshold cannot be executed.                         |
+| MULTISIG-THRESHOLD-002  | [test_MultiSig_insufficientApprovalsNotExecuted](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigThresholdProperties.sol#L39)   | Transactions with insufficient approvals should not be executed.                        |
+| MULTISIG-THRESHOLD-003  | [test_MultiSig_thresholdNeverZero](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigThresholdProperties.sol#L56)                 | Threshold must always be at least 1.                                                    |
+| MULTISIG-THRESHOLD-004  | [test_MultiSig_thresholdNotAboveOwnerCount](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigThresholdProperties.sol#L66)        | Threshold cannot exceed the number of owners.                                           |
+| MULTISIG-THRESHOLD-005  | [test_MultiSig_thresholdChangeMaintainsOperability](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigThresholdProperties.sol#L77) | Threshold changes must maintain wallet operability (valid bounds).                      |
+| MULTISIG-THRESHOLD-006  | [test_MultiSig_approvalCountWithinBounds](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigThresholdProperties.sol#L94)          | Approval count cannot exceed total number of owners.                                    |
+
+### Signature and approval properties
+
+| ID                      | Name                                                                                                                                                                            | Invariant tested                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| MULTISIG-SIGNATURE-001  | [test_MultiSig_approvalsNotReusedAcrossTransactions](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigSignatureProperties.sol#L24) | Approvals for one transaction do not apply to other transactions.                 |
+| MULTISIG-SIGNATURE-002  | [test_MultiSig_executedTxApprovalsImmutable](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigSignatureProperties.sol#L42)         | Approval state for executed transactions should not change.                        |
+| MULTISIG-SIGNATURE-003  | [test_MultiSig_onlyOwnersCanApprove](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigSignatureProperties.sol#L67)                 | Only owners can have recorded approvals.                                           |
+| MULTISIG-SIGNATURE-004  | [test_MultiSig_approvalCountMatchesApprovals](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigSignatureProperties.sol#L79)        | Reported approval count must match actual number of owner approvals.               |
+| MULTISIG-SIGNATURE-005  | [test_MultiSig_approvalCountNeverDecreases](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigSignatureProperties.sol#L98)          | For pending transactions, approval count can only increase.                        |
+| MULTISIG-SIGNATURE-006  | [test_MultiSig_noDoubleApprovalCounting](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigSignatureProperties.sol#L115)            | Each owner can only approve once per transaction (no double-counting).             |
+| MULTISIG-SIGNATURE-007  | [test_MultiSig_zeroAddressCannotApprove](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigSignatureProperties.sol#L133)            | Zero address should never be recorded as having approved.                          |
+
+### Nonce properties
+
+| ID                  | Name                                                                                                                                                                      | Invariant tested                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| MULTISIG-NONCE-001  | [test_MultiSig_nonceMonotonicallyIncreases](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigNonceProperties.sol#L25)        | Nonce strictly increases monotonically (never decreases, increases by 1).          |
+| MULTISIG-NONCE-002  | [test_MultiSig_nonceUsedOnlyOnce](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigNonceProperties.sol#L52)                 | Each nonce can only be used once.                                                   |
+| MULTISIG-NONCE-003  | [test_MultiSig_nonceIncrementsOnlyOnExecution](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigNonceProperties.sol#L72)    | Nonce only increments on successful transaction execution.                          |
+| MULTISIG-NONCE-004  | [test_MultiSig_oldNoncesRejected](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigNonceProperties.sol#L91)                 | Transactions with nonces less than current nonce should be rejected.                |
+| MULTISIG-NONCE-005  | [test_MultiSig_nonceStartsAtExpectedValue](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigNonceProperties.sol#L108)       | Current nonce must always be greater than or equal to initial nonce.                |
+| MULTISIG-NONCE-006  | [test_MultiSig_noNonceGaps](https://github.com/crytic/properties/blob/main/contracts/MultiSig/internal/properties/MultiSigNonceProperties.sol#L120)                      | All nonces from initial to current (exclusive) should be marked as used (no gaps). |
 
 ## ABDKMath64x64
 
