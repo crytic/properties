@@ -6,7 +6,43 @@ import "properties/UniswapV2/internal/properties/UniswapV2RemoveLiquidityPropert
 import "properties/UniswapV2/internal/properties/UniswapV2SwapProperties.sol";
 import "properties/UniswapV2/internal/properties/UniswapV2InvariantProperties.sol";
 import "../src/SimplePair.sol";
-import "../src/MockERC20.sol";
+
+contract TestToken {
+    string public name;
+    string public symbol;
+    uint8 public decimals = 18;
+    uint256 public totalSupply;
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    constructor(string memory _name, string memory _symbol) {
+        name = _name;
+        symbol = _symbol;
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        balanceOf[msg.sender] -= amount;
+        balanceOf[to] += amount;
+        return true;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        allowance[from][msg.sender] -= amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+        return true;
+    }
+
+    function mint(address to, uint256 amount) external {
+        totalSupply += amount;
+        balanceOf[to] += amount;
+    }
+}
 
 contract CryticUniswapV2InternalHarness is
     SimplePair,
@@ -15,13 +51,13 @@ contract CryticUniswapV2InternalHarness is
     CryticUniswapV2SwapProperties,
     CryticUniswapV2InvariantProperties
 {
-    MockERC20 public tokenA;
-    MockERC20 public tokenB;
+    TestToken public tokenA;
+    TestToken public tokenB;
 
     constructor() SimplePair(address(0), address(0)) {
-        // Deploy mock tokens
-        tokenA = new MockERC20("Token A", "TKA");
-        tokenB = new MockERC20("Token B", "TKB");
+        // Deploy test tokens
+        tokenA = new TestToken("Token A", "TKA");
+        tokenB = new TestToken("Token B", "TKB");
 
         // Set token addresses
         token0 = address(tokenA);

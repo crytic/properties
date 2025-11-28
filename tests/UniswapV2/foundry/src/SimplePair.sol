@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./MockERC20.sol";
+interface IERC20 {
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
+}
 
 contract SimplePair {
     string public name = "Uniswap V2";
@@ -59,8 +62,8 @@ contract SimplePair {
 
     function mint(address to) external returns (uint256 liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
-        uint256 balance0 = MockERC20(token0).balanceOf(address(this));
-        uint256 balance1 = MockERC20(token1).balanceOf(address(this));
+        uint256 balance0 = IERC20(token0).balanceOf(address(this));
+        uint256 balance1 = IERC20(token1).balanceOf(address(this));
         uint256 amount0 = balance0 - _reserve0;
         uint256 amount1 = balance1 - _reserve1;
 
@@ -82,8 +85,8 @@ contract SimplePair {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         address _token0 = token0;
         address _token1 = token1;
-        uint256 balance0 = MockERC20(_token0).balanceOf(address(this));
-        uint256 balance1 = MockERC20(_token1).balanceOf(address(this));
+        uint256 balance0 = IERC20(_token0).balanceOf(address(this));
+        uint256 balance1 = IERC20(_token1).balanceOf(address(this));
         uint256 liquidity = balanceOf[address(this)];
 
         uint256 _totalSupply = totalSupply;
@@ -91,10 +94,10 @@ contract SimplePair {
         amount1 = (liquidity * balance1) / _totalSupply;
         require(amount0 > 0 && amount1 > 0, 'INSUFFICIENT_LIQUIDITY_BURNED');
         _burn(address(this), liquidity);
-        MockERC20(_token0).transfer(to, amount0);
-        MockERC20(_token1).transfer(to, amount1);
-        balance0 = MockERC20(_token0).balanceOf(address(this));
-        balance1 = MockERC20(_token1).balanceOf(address(this));
+        IERC20(_token0).transfer(to, amount0);
+        IERC20(_token1).transfer(to, amount1);
+        balance0 = IERC20(_token0).balanceOf(address(this));
+        balance1 = IERC20(_token1).balanceOf(address(this));
 
         _update(balance0, balance1);
         emit Burn(msg.sender, amount0, amount1, to);
@@ -105,11 +108,11 @@ contract SimplePair {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         require(amount0Out < _reserve0 && amount1Out < _reserve1, 'INSUFFICIENT_LIQUIDITY');
 
-        if (amount0Out > 0) MockERC20(token0).transfer(to, amount0Out);
-        if (amount1Out > 0) MockERC20(token1).transfer(to, amount1Out);
+        if (amount0Out > 0) IERC20(token0).transfer(to, amount0Out);
+        if (amount1Out > 0) IERC20(token1).transfer(to, amount1Out);
 
-        uint256 balance0 = MockERC20(token0).balanceOf(address(this));
-        uint256 balance1 = MockERC20(token1).balanceOf(address(this));
+        uint256 balance0 = IERC20(token0).balanceOf(address(this));
+        uint256 balance1 = IERC20(token1).balanceOf(address(this));
 
         uint256 amount0In = balance0 > _reserve0 - amount0Out ? balance0 - (_reserve0 - amount0Out) : 0;
         uint256 amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
@@ -126,12 +129,12 @@ contract SimplePair {
     function skim(address to) external {
         address _token0 = token0;
         address _token1 = token1;
-        MockERC20(_token0).transfer(to, MockERC20(_token0).balanceOf(address(this)) - reserve0);
-        MockERC20(_token1).transfer(to, MockERC20(_token1).balanceOf(address(this)) - reserve1);
+        IERC20(_token0).transfer(to, IERC20(_token0).balanceOf(address(this)) - reserve0);
+        IERC20(_token1).transfer(to, IERC20(_token1).balanceOf(address(this)) - reserve1);
     }
 
     function sync() external {
-        _update(MockERC20(token0).balanceOf(address(this)), MockERC20(token1).balanceOf(address(this)));
+        _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)));
     }
 
     function sqrt(uint256 y) internal pure returns (uint256 z) {
