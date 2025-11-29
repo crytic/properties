@@ -81,6 +81,37 @@ medusa fuzz --target-contracts CryticERC20InternalHarness --config tests/ERC20/f
 3. **PropertiesHelper** provides `assertEq`, `assertWithMsg`, `clampBetween`, and `LogXxx` events for debugging
 4. **Echidna/Medusa configs** use assertion mode (`testMode: assertion`) with deployer `0x10000`
 
+## ERC20 Edge Case Testing
+
+For protocols that integrate with arbitrary ERC20 tokens, use the edge case helper in `contracts/util/erc20/`:
+
+```solidity
+import "@crytic/properties/contracts/util/erc20/ERC20EdgeCases.sol";
+
+contract MyProtocolTest {
+    ERC20EdgeCases edgeCases;
+
+    constructor() {
+        edgeCases = new ERC20EdgeCases();
+    }
+
+    function test_protocolWithAllTokens() public {
+        address[] memory tokens = edgeCases.all_erc20();
+        // Test with 20 different token types including:
+        // - Missing return values (USDT, BNB)
+        // - Fee-on-transfer (STA, PAXG)
+        // - Reentrant (ERC777, AMP)
+        // - Admin controls (USDC blocklist, BNB pause)
+        // - And 15+ more edge cases
+    }
+}
+```
+
+This deploys 20 tokens with known problematic behaviors so you can test your protocol against all of them at once. See `contracts/util/erc20/README.md` for full documentation and `tests/ERC20EdgeCases/` for examples.
+
+**Use case**: Testing protocols (DEXs, vaults, lending) that accept any ERC20 token
+**Prevents**: Fee-on-transfer bugs (Balancer $500k), reentrancy (imBTC/lendf.me), missing return values (stuck tokens), etc.
+
 ## Adding New Properties
 
 1. Add property to appropriate file in `contracts/<standard>/internal/properties/` and `external/properties/`
