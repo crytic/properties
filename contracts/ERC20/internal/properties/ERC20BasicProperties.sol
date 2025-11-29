@@ -290,4 +290,30 @@ abstract contract CryticERC20BasicProperties is CryticERC20Base {
             );
         }
     }
+
+    // TransferFrom for more than allowance should not be allowed
+    function test_ERC20_transferFromMoreThanAllowance(
+        address target
+    ) public {
+        uint256 balance_sender = balanceOf(msg.sender);
+        uint256 balance_receiver = balanceOf(target);
+        uint256 allowance = allowance(msg.sender, address(this));
+        require(balance_sender > 0 && allowance < balance_sender);
+
+        bool r = this.transferFrom(msg.sender, target, allowance + 1);
+        assertWithMsg(
+            r == false,
+            "Successful transferFrom for more than allowance"
+        );
+        assertEq(
+            balanceOf(msg.sender),
+            balance_sender,
+            "TransferFrom for more than approval affected source balance"
+        );
+        assertEq(
+            balanceOf(target),
+            balance_receiver,
+            "TransferFrom for more than approval affected target balance"
+        );
+    }
 }
