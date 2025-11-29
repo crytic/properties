@@ -439,6 +439,63 @@ abstract contract PropertiesAsserts {
         }
         return a;
     }
+
+    /* ================================================================
+       FORGE-STD COMPATIBLE ASSERTION ALIASES
+
+       The following functions provide compatibility with forge-std/Test.sol
+       naming conventions, enabling seamless integration with existing Foundry
+       codebases. These are aliases that delegate to the existing assertion
+       implementations above.
+       ================================================================ */
+
+    /// @notice Forge-std compatible alias for assertWithMsg
+    /// @dev Asserts that condition is true. Reverts with reason if false.
+    function assertTrue(bool condition, string memory reason) internal {
+        assertWithMsg(condition, reason);
+    }
+
+    /// @notice Forge-std compatible assertion for false conditions
+    /// @dev Asserts that condition is false. Reverts with reason if true.
+    function assertFalse(bool condition, string memory reason) internal {
+        assertWithMsg(!condition, reason);
+    }
+
+    /// @notice Forge-std compatible alias for assertNeq (uint256)
+    /// @dev Asserts that a is not equal to b. Violations are logged using reason.
+    function assertNotEq(uint256 a, uint256 b, string memory reason) internal {
+        assertNeq(a, b, reason);
+    }
+
+    /// @notice Forge-std compatible alias for assertNeq (int256)
+    /// @dev Asserts that a is not equal to b. Violations are logged using reason.
+    function assertNotEq(int256 a, int256 b, string memory reason) internal {
+        assertNeq(a, b, reason);
+    }
+
+    /// @notice Forge-std compatible alias for assertGte (uint256)
+    /// @dev Asserts that a is greater than or equal to b. Violations are logged using reason.
+    function assertGe(uint256 a, uint256 b, string memory reason) internal {
+        assertGte(a, b, reason);
+    }
+
+    /// @notice Forge-std compatible alias for assertGte (int256)
+    /// @dev Asserts that a is greater than or equal to b. Violations are logged using reason.
+    function assertGe(int256 a, int256 b, string memory reason) internal {
+        assertGte(a, b, reason);
+    }
+
+    /// @notice Forge-std compatible alias for assertLte (uint256)
+    /// @dev Asserts that a is less than or equal to b. Violations are logged using reason.
+    function assertLe(uint256 a, uint256 b, string memory reason) internal {
+        assertLte(a, b, reason);
+    }
+
+    /// @notice Forge-std compatible alias for assertLte (int256)
+    /// @dev Asserts that a is less than or equal to b. Violations are logged using reason.
+    function assertLe(int256 a, int256 b, string memory reason) internal {
+        assertLte(a, b, reason);
+    }
 }
 
 /// @notice Efficient library for creating string representations of integers.
