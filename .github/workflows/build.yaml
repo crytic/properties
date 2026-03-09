@@ -9,6 +9,45 @@ on:
       - "*"
 
 jobs:
+  validate-remappings:
+    name: Validate remappings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Check all remapping targets exist
+        run: |
+          rc=0
+          for file in $(find . -name remappings.txt -not -path './lib/*' -not -path './node_modules/*'); do
+            dir=$(dirname "$file")
+            # Collect search bases: the remappings dir + libs from foundry.toml
+            bases="$dir"
+            if [ -f "$dir/foundry.toml" ]; then
+              for lib in $(grep "^libs" "$dir/foundry.toml" | sed "s/.*\[//;s/\].*//;s/'//g;s/\"//g;s/,/ /g"); do
+                bases="$bases $dir/$lib"
+              done
+            fi
+            while IFS= read -r line; do
+              [ -z "$line" ] && continue
+              target=$(echo "$line" | sed 's/.*=//')
+              found=false
+              for base in $bases; do
+                if [ -d "$base/$target" ]; then
+                  found=true
+                  break
+                fi
+              done
+              if [ "$found" = false ]; then
+                echo "::error file=$file::Broken remapping: $line (target '$target' not found)"
+                rc=1
+              fi
+            done < "$file"
+          done
+          exit $rc
+
   foundry-root:
     name: Compile root contracts (Foundry)
     runs-on: ubuntu-latest
