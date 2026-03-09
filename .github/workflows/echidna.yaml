@@ -8,9 +8,6 @@ on:
     branches:
       - "*"
 
-env:
-  FOUNDRY_PROFILE: ci
-
 jobs:
   foundry:
     name: Test Foundry examples

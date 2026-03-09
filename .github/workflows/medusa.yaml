@@ -8,9 +8,6 @@ on:
     branches:
       - "*"
 
-env:
-  FOUNDRY_PROFILE: ci
-
 jobs:
   foundry:
     name: Test Foundry examples
@@ -51,6 +48,20 @@ jobs:
         working-directory: tests/ERC20/foundry
         run: |
           medusa fuzz --target-contracts CryticERC20ExternalHarness --config medusa-config-ext.json
+
+      - name: Compile ERC721 Foundry example
+        working-directory: tests/ERC721/foundry
+        run: forge build --build-info
+
+      - name: Run Medusa for Internal ERC721 tests
+        working-directory: tests/ERC721/foundry
+        run: |
+          medusa fuzz --target-contracts CryticERC721InternalHarness --config medusa-config.json
+
+      - name: Run Medusa for External ERC721 tests
+        working-directory: tests/ERC721/foundry
+        run: |
+          medusa fuzz --target-contracts CryticERC721ExternalHarness --config medusa-config-ext.json
 
       - name: Compile ERC4626 Foundry example
         working-directory: tests/ERC4626/foundry
